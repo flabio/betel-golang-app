@@ -113,9 +113,12 @@ func NewRouter() {
 	{
 		subDetachmentRoutes.GET("/", subDetachmentController.All)
 		subDetachmentRoutes.GET("/:id", subDetachmentController.FindById)
+		subDetachmentRoutes.GET("/detachment/:id", subDetachmentController.FindByIdDetachment)
 		subDetachmentRoutes.POST("/", subDetachmentController.Create)
+		subDetachmentRoutes.POST("/add-user-sub/", subDetachmentController.AddUserSubDetachment)
 		subDetachmentRoutes.PUT("/", subDetachmentController.Update)
 		subDetachmentRoutes.DELETE("/:id", subDetachmentController.Remove)
+		subDetachmentRoutes.DELETE("/romove-user-sub/:id", subDetachmentController.RemoveUserSubDetachment)
 	}
 	patrolRoutes := r.Group("api/v1/patrol", middleware.AuthorizeJWT(jwtService))
 	{

@@ -253,6 +253,8 @@ func (userService *userService) FindUserNameLastName(context *gin.Context) {
 		return
 	}
 	context.JSON(http.StatusOK, utilities.BuildResponse(true, "OK", users))
+	return
+
 }
 func (userService *userService) All(context *gin.Context) {
 	total := userService.userRepository.CountUser()

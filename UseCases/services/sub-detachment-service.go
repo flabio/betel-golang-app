@@ -18,7 +18,11 @@ type SubDetachmentService interface {
 	Update(context *gin.Context)
 	Remove(context *gin.Context)
 	FindById(context *gin.Context)
+	FindByIdDetachment(context *gin.Context)
 	All(context *gin.Context)
+
+	AddUserSubDetachment(context *gin.Context)
+	RemoveUserSubDetachment(context *gin.Context)
 }
 
 //subDetachmentService
@@ -120,13 +124,62 @@ func (subDetachmentService *subDetachmentService) FindById(context *gin.Context)
 		validadErrors(err, context)
 		return
 	}
-
 	findById, _ := subDetachmentService.subDetachmentRepository.FindById(uint(id))
 	if findById.Id == 0 {
 		validadErrorById(context)
 		return
 	}
 	context.JSON(http.StatusOK, utilities.BuildResponse(true, "ok", findById))
+}
+
+//FindByIdDetachment
+func (subDetachmentService *subDetachmentService) FindByIdDetachment(context *gin.Context) {
+	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
+	if err != nil {
+		validadErrors(err, context)
+		return
+	}
+	res, err := subDetachmentService.subDetachmentRepository.FindByIdDetachment(uint(id))
+
+	if err != nil {
+		validadErrors(err, context)
+		return
+	}
+	context.JSON(http.StatusOK, utilities.BuildResponse(true, "ok", res))
+}
+
+//AddUserSubDetachment
+func (subDetachmentService *subDetachmentService) AddUserSubDetachment(context *gin.Context) {
+	usersubDetachment := entity.UserSubdetachement{}
+	var dtos dto.UserSubDetachmentDTO
+
+	context.ShouldBind(&dtos)
+	if validateUserSubDetachments(dtos, context) {
+		return
+	}
+	smapping.FillStruct(&usersubDetachment, smapping.MapFields(&dtos))
+	res, err := subDetachmentService.subDetachmentRepository.AddUserSubDetachment(usersubDetachment)
+	if err != nil {
+		validadErrors(err, context)
+		return
+	}
+	context.JSON(http.StatusOK, utilities.BuildCreateResponse(res))
+}
+func (subDetachmentService *subDetachmentService) RemoveUserSubDetachment(context *gin.Context) {
+
+	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
+	if err != nil {
+		validadErrors(err, context)
+		return
+	}
+
+	res, err := subDetachmentService.subDetachmentRepository.RemoveUserSubDetachment(uint(id))
+	if err != nil {
+		validadErrors(err, context)
+		return
+	}
+	context.JSON(http.StatusOK, utilities.BuildDeteleteResponse(res, id))
+
 }
 
 //All
@@ -149,6 +202,21 @@ func validateSubDetachments(dto dto.SubDetachmentDTO, context *gin.Context) bool
 		return true
 	}
 	if dto.DetachmentId == 0 {
+		msg := utilities.MessageRequired{}
+		validadRequiredMsg(msg.RequiredDetachment(), context)
+		return true
+	}
+	return false
+}
+func validateUserSubDetachments(dto dto.UserSubDetachmentDTO, context *gin.Context) bool {
+
+	context.ShouldBind(&dto)
+	if dto.UserId == 0 {
+		msg := utilities.MessageRequired{}
+		validadRequiredMsg(msg.RequiredId(), context)
+		return true
+	}
+	if dto.SubDetachmentId == 0 {
 		msg := utilities.MessageRequired{}
 		validadRequiredMsg(msg.RequiredDetachment(), context)
 		return true
