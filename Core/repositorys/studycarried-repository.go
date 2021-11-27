@@ -18,53 +18,53 @@ type studycarriedConnection struct {
 }
 
 func NewStudyCarriedRepository() StudyCarriedRepository {
-var db *gorm.DB=entity.DatabaseConnection()
+	var db *gorm.DB = entity.DatabaseConnection()
 	return &studycarriedConnection{
 		connection: db,
 	}
 }
 
 func (db *studycarriedConnection) CreateStudyCarried(studycarried entity.StudyCarried) entity.StudyCarried {
-	var errChan =make(chan error,1)
-	go func(db *studycarriedConnection){
-		err:=db.connection.Save(&studycarried).Error
+	var errChan = make(chan error, 1)
+	go func() {
+		err := db.connection.Save(&studycarried).Error
 		defer entity.Closedb()
-		errChan<-err
-	}(db)
+		errChan <- err
+	}()
 	<-errChan
 	return studycarried
 }
 
 func (db *studycarriedConnection) AllStudyCarried() []entity.StudyCarried {
 	var result []entity.StudyCarried
-	var errChan =make(chan error,1)
-	go func(db *studycarriedConnection){
-		err:=db.connection.Find(&result).Error
+	var errChan = make(chan error, 1)
+	go func() {
+		err := db.connection.Find(&result).Error
 		defer entity.Closedb()
-		errChan<-err
-	}(db)
+		errChan <- err
+	}()
 	<-errChan
 	return result
 }
 func (db *studycarriedConnection) FindStudyCarriedById(Id uint) entity.StudyCarried {
 	var result entity.StudyCarried
-	var errChan =make(chan error,1)
-	go func(db *studycarriedConnection){
-		err:=db.connection.Find(&result, Id).Error
+	var errChan = make(chan error, 1)
+	go func() {
+		err := db.connection.Find(&result, Id).Error
 		defer entity.Closedb()
-		errChan<-err
-	}(db)
+		errChan <- err
+	}()
 	<-errChan
 	return result
 }
 func (db *studycarriedConnection) DeleteStudyCarried(Id uint) bool {
 
-	var errChan =make(chan error,1)
-	go func(db *studycarriedConnection){
-		err:=db.connection.Delete(Id).Error
+	var errChan = make(chan error, 1)
+	go func() {
+		err := db.connection.Delete(Id).Error
 		defer entity.Closedb()
-		errChan<-err
-	}(db)
+		errChan <- err
+	}()
 	<-errChan
 	if <-errChan != nil {
 		return true

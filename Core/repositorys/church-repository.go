@@ -26,55 +26,55 @@ func NewChurchRepository() ChurchRepository {
 }
 
 func (db *churchConnection) CreateChurch(church entity.Church) (entity.Church, error) {
-	var errChan=make(chan error,1)
-	go func (db *churchConnection){
+	var errChan = make(chan error, 1)
+	go func() {
 		err := db.connection.Save(&church).Error
 		defer entity.Closedb()
-		errChan<-err
-	}(db)
+		errChan <- err
+	}()
 	err := <-errChan
 	return church, err
 }
 func (db *churchConnection) UpdateChurch(church entity.Church) (entity.Church, error) {
-	var errChan=make(chan error,1)
-	go func (db *churchConnection){
+	var errChan = make(chan error, 1)
+	go func() {
 		err := db.connection.Save(&church).Error
 		defer entity.Closedb()
-		errChan<-err
-	}(db)
+		errChan <- err
+	}()
 	err := <-errChan
 	return church, err
 }
 func (db *churchConnection) FindChurchById(Id uint) (entity.Church, error) {
 	var church entity.Church
-	var errChan=make(chan error,1)
-	go func (db *churchConnection){
+	var errChan = make(chan error, 1)
+	go func() {
 		err := db.connection.Find(&church, Id).Error
 		defer entity.Closedb()
-		errChan<-err
-	}(db)
+		errChan <- err
+	}()
 	err := <-errChan
 	return church, err
 }
 func (db *churchConnection) AllChurch() ([]entity.Church, error) {
 	var churchs []entity.Church
-	var errChan=make(chan error,1)
-	go func (db *churchConnection){
+	var errChan = make(chan error, 1)
+	go func() {
 		err := db.connection.Find(&churchs).Error
 		defer entity.Closedb()
-		errChan<-err
-	}(db)
+		errChan <- err
+	}()
 	err := <-errChan
 	return churchs, err
 }
 func (db *churchConnection) DeleteChurch(church entity.Church) (bool, error) {
 
-	var errChan=make(chan error,1)
-	go func (db *churchConnection){
+	var errChan = make(chan error, 1)
+	go func() {
 		err := db.connection.Delete(&church).Error
 		defer entity.Closedb()
-		errChan<-err
-	}(db)
+		errChan <- err
+	}()
 	err := <-errChan
 	if err == nil {
 		return true, err

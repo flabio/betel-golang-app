@@ -19,31 +19,31 @@ type userRolConnection struct {
 //NewUserRepository is creates a new instance of UserRepository
 
 func NewUserRolRepository() UserRolRepository {
-	var db *gorm.DB=entity.DatabaseConnection()
+	var db *gorm.DB = entity.DatabaseConnection()
 	return &userConnection{
 		connection: db,
 	}
 }
 
 func (db *userConnection) InsertUserRol(rol entity.Role) entity.Role {
-	var errChan=make(chan error,1)
-	go func(db *userConnection){
-		err:=db.connection.Save(&rol).Error
+	var errChan = make(chan error, 1)
+	go func() {
+		err := db.connection.Save(&rol).Error
 		defer entity.Closedb()
-		errChan<-err
-	}(db)
+		errChan <- err
+	}()
 	<-errChan
 	return rol
 }
 
 func (db *userConnection) AllUserRole() []entity.Role {
 	var role []entity.Role
-	var errChan=make(chan error,1)
-	go func(db *userConnection){
-		err:=db.connection.Joins("User").Joins("Rol").Find(&role).Error
+	var errChan = make(chan error, 1)
+	go func() {
+		err := db.connection.Joins("User").Joins("Rol").Find(&role).Error
 		defer entity.Closedb()
-		errChan<-err
-	}(db)
+		errChan <- err
+	}()
 	<-errChan
 	return role
 }

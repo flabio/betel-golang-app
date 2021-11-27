@@ -44,13 +44,13 @@ func NewRouter() {
 	r.Use(cors.Middleware(config))
 
 	//
-	authRoutes := r.Group("api/login")
+	authRoutes := r.Group("api/v1/login")
 	{
 		authRoutes.POST("/", authController.Login)
 		//authRoutes.POST("/register", authController.Register)
 	}
 	//userRoutes := r.Group("api/user", middleware.AuthorizeJWT(jwtService))
-	userRoutes := r.Group("api/user", middleware.AuthorizeJWT(jwtService))
+	userRoutes := r.Group("api/v1/user", middleware.AuthorizeJWT(jwtService))
 	{
 		userRoutes.GET("/", userController.Profile)
 		userRoutes.GET("/users", userController.ListUser)
@@ -66,21 +66,22 @@ func NewRouter() {
 
 		userRoutes.DELETE("/:id", userController.Delete)
 	}
-	kanbanRoutes := r.Group("api/kanban", middleware.AuthorizeJWT(jwtService))
+	kanbanRoutes := r.Group("api/v1/kanban", middleware.AuthorizeJWT(jwtService))
 	{
 		kanbanRoutes.GET("/kanban", kanbanController.GetKanban)
 		kanbanRoutes.GET("/count_kanban", kanbanController.CountKanban)
 	}
-	rolRoutes := r.Group("api/rol", middleware.AuthorizeJWT(jwtService))
+	rolRoutes := r.Group("api/v1/rol", middleware.AuthorizeJWT(jwtService))
 	{
 		rolRoutes.GET("/", rolController.All)
+		rolRoutes.GET("/rolemodule", rolController.AllRoleModule)
 		rolRoutes.POST("/create", rolController.Create)
 		rolRoutes.PUT("/", rolController.Update)
 		rolRoutes.DELETE("/:id", rolController.Delete)
 		rolRoutes.GET("/:id", rolController.FindRol)
 	}
-	// middleware.AuthorizeJWT(jwtService)
-	detachmentRoutes := r.Group("api/detachment", middleware.AuthorizeJWT(jwtService))
+
+	detachmentRoutes := r.Group("api/v1/detachment", middleware.AuthorizeJWT(jwtService))
 	{
 		detachmentRoutes.GET("/", detachmentController.All)
 		detachmentRoutes.GET("/:id", detachmentController.FindById)
@@ -89,7 +90,7 @@ func NewRouter() {
 		detachmentRoutes.DELETE("/:id", detachmentController.Delete)
 
 	}
-	churchRoutes := r.Group("api/church", middleware.AuthorizeJWT(jwtService))
+	churchRoutes := r.Group("api/v1/church", middleware.AuthorizeJWT(jwtService))
 	{
 		churchRoutes.GET("/", churchController.All)
 		churchRoutes.GET("/:id", churchController.FindById)
@@ -98,9 +99,11 @@ func NewRouter() {
 		churchRoutes.DELETE("/:id", churchController.Delete)
 
 	}
-	moduleRoutes := r.Group("api/module", middleware.AuthorizeJWT(jwtService))
+	moduleRoutes := r.Group("api/v1/module", middleware.AuthorizeJWT(jwtService))
 	{
 		moduleRoutes.GET("/", moduleController.All)
+		moduleRoutes.GET("rolemodule/:id", moduleController.ByRoleModule)
+
 		moduleRoutes.GET("/:id", moduleController.FindModuleById)
 		moduleRoutes.POST("/", moduleController.Create)
 		moduleRoutes.PUT("/", moduleController.Update)

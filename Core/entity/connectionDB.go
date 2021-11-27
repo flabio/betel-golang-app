@@ -26,20 +26,21 @@ func DatabaseConnection() *gorm.DB {
 		panic("Failed to create a connection to database")
 	}
 	db.AutoMigrate(
-		// 	&User{},
-		// 	&Rol{},
-		// 	&Role{},
-		// 	&Church{},
-		// 	&Detachment{},
-		// 	&SubDetachment{},
-		// 	&Patrol{},
-		// 	&StudyCarried{},
-		// 	&Module{},
-		// 	&RoleModule{},
-		// 	&RoleChurch{},
-		// 	&ParentScout{},
-		// 	&MinisterialAcademy{},
-		&UserSubdetachement{},
+	// &User{},
+	// &Rol{},
+	// &Role{},
+	// &Church{},
+	// &Detachment{},
+	// &SubDetachment{},
+	// &Patrol{},
+	// &StudyCarried{},
+	// &Module{},
+	// &RoleModule{},
+	// &RoleChurch{},
+	// &ParentScout{},
+	// &MinisterialAcademy{},
+	// &UserSubdetachement{},
+	//&Attendance{},
 	)
 
 	return db

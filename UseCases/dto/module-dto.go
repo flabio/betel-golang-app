@@ -8,5 +8,5 @@ type ModuleDTO struct {
 
 type ModuleRoleDTO struct {
 	ModuleId uint `json:"moduleid" form:"moduleid" binding:"required"`
-	RoleId   uint `json:"roleid" form:"roleid" binding:"required"`
+	RolId    uint `json:"roleid" form:"rolid" binding:"required"`
 }

@@ -19,6 +19,7 @@ type RolService interface {
 	FindById(context *gin.Context)
 	Delete(context *gin.Context)
 	All(context *gin.Context)
+	AllRoleModule(context *gin.Context)
 }
 
 type rolService struct {
@@ -34,7 +35,6 @@ func NewRolService() RolService {
 		rolRepository: rolRepository,
 	}
 }
-
 
 //service of create
 func (service *rolService) Create(context *gin.Context) {
@@ -95,6 +95,19 @@ func (service *rolService) All(context *gin.Context) {
 		return
 	}
 	res := utilities.BuildResponse(true, "OK", rols)
+	context.JSON(http.StatusOK, res)
+
+}
+
+//service of all
+func (service *rolService) AllRoleModule(context *gin.Context) {
+
+	var roleModule, err = service.rolRepository.RolsModule()
+	if err != nil {
+		validadErrors(err, context)
+		return
+	}
+	res := utilities.BuildResponse(true, "OK", roleModule)
 	context.JSON(http.StatusOK, res)
 
 }

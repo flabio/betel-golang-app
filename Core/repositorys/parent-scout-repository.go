@@ -25,11 +25,11 @@ func NewParentScoutRepository() ParentScoutRepository {
 func (db *parentScoutConnection) Create(parent entity.ParentScout) (entity.ParentScout, error) {
 
 	var errChan = make(chan error, 1)
-	go func(db *parentScoutConnection) {
+	go func() {
 		err := db.connection.Save(&parent).Error
 		defer entity.Closedb()
 		errChan <- err
-	}(db)
+	}()
 	err := <-errChan
 	return parent, err
 }
@@ -37,11 +37,11 @@ func (db *parentScoutConnection) Create(parent entity.ParentScout) (entity.Paren
 func (db *parentScoutConnection) Remove(id int) (bool, error) {
 
 	var errChan = make(chan error, 1)
-	go func(db *parentScoutConnection) {
+	go func() {
 		err := db.connection.Delete(&id).Error
 		defer entity.Closedb()
 		errChan <- err
-	}(db)
+	}()
 	err := <-errChan
 	if err == nil {
 		return true, err

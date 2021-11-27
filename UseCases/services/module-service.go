@@ -16,6 +16,7 @@ import (
 type ModuleService interface {
 	CreateModule(context *gin.Context)
 	AddModuleRole(context *gin.Context)
+	AllByRoleModule(context *gin.Context)
 	UpdateModule(context *gin.Context)
 	AllModule(context *gin.Context)
 	FindModuleById(context *gin.Context)
@@ -33,6 +34,7 @@ func NewModuleService() ModuleService {
 		moduleRepository: moduleRepository,
 	}
 }
+
 //create module
 func (service *moduleService) CreateModule(context *gin.Context) {
 	module := entity.Module{}
@@ -59,7 +61,7 @@ func (service *moduleService) UpdateModule(context *gin.Context) {
 	validarModuleEditar(moduledto, context)
 
 	smapping.FillStruct(&module, smapping.MapFields(&moduledto))
-fmt.Println(module)
+
 	res, err := service.moduleRepository.CreateModule(module)
 
 	if err != nil {
@@ -67,11 +69,11 @@ fmt.Println(module)
 		return
 	}
 
-	//findByModule, _ := service.moduleRepository.FindModuleById(uint(moduledto.Id))
-	//if findByModule.Id == 0 {
-	//	validadErrorById(context)
-	//	return
-	//}
+	findByModule, _ := service.moduleRepository.FindModuleById(uint(moduledto.Id))
+	if findByModule.Id == 0 {
+		validadErrorById(context)
+		return
+	}
 	data := utilities.BuildUpdateResponse(res)
 	context.JSON(http.StatusOK, data)
 
@@ -156,6 +158,22 @@ func (service *moduleService) AddModuleRole(context *gin.Context) {
 	context.JSON(http.StatusOK, res)
 }
 
+//AllByRoleModule
+func (service *moduleService) AllByRoleModule(context *gin.Context) {
+	id, errid := strconv.ParseUint(context.Param("id"), 0, 0)
+	if errid != nil {
+		validadErrors(errid, context)
+		return
+	}
+	var modules, err = service.moduleRepository.AllByRoleModule(uint(id))
+	if err != nil {
+		validadErrors(err, context)
+		return
+	}
+	res := utilities.BuildResponse(true, "OK", modules)
+	context.JSON(http.StatusOK, res)
+}
+
 //delete rolemodule
 func (service *moduleService) DeleteRoleModule(context *gin.Context) {
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
@@ -174,7 +192,7 @@ func (service *moduleService) DeleteRoleModule(context *gin.Context) {
 		return
 	}
 
-	status, err := service.moduleRepository.DeleteModule(uint(id))
+	status, err := service.moduleRepository.DeleteRoleModule(uint(id))
 	if err != nil {
 		response := utilities.BuildCanNotDeteleteResponse(module)
 		context.JSON(http.StatusBadRequest, response)

@@ -31,31 +31,31 @@ func NewSubDetachmentRepository() SubDetachmentRepository {
 
 func (db *subConnection) Create(subdetachment entity.SubDetachment) (entity.SubDetachment, error) {
 	var errChan = make(chan error, 1)
-	go func(db *subConnection) {
+	go func() {
 		err := db.connection.Save(&subdetachment).Error
 		defer entity.Closedb()
 		errChan <- err
-	}(db)
+	}()
 	return subdetachment, <-errChan
 }
 
 func (db *subConnection) Update(subdetachment entity.SubDetachment) (entity.SubDetachment, error) {
 	var errChan = make(chan error, 1)
-	go func(db *subConnection) {
+	go func() {
 		err := db.connection.Save(&subdetachment).Error
 		defer entity.Closedb()
 		errChan <- err
-	}(db)
+	}()
 	return subdetachment, <-errChan
 }
 
 func (db *subConnection) Remove(Id uint) (bool, error) {
 	var errChan = make(chan error, 1)
-	go func(db *subConnection) {
+	go func() {
 		err := db.connection.Delete(&entity.SubDetachment{}, Id).Error
 		defer entity.Closedb()
 		errChan <- err
-	}(db)
+	}()
 	err := <-errChan
 	if err != nil {
 		return false, err
@@ -66,33 +66,33 @@ func (db *subConnection) Remove(Id uint) (bool, error) {
 func (db *subConnection) FindById(Id uint) (entity.SubDetachment, error) {
 	var subdetachment entity.SubDetachment
 	var errChan = make(chan error, 1)
-	go func(db *subConnection) {
+	go func() {
 		err := db.connection.Find(&subdetachment, Id).Error
 		defer entity.Closedb()
 		errChan <- err
-	}(db)
+	}()
 	err := <-errChan
 	return subdetachment, err
 }
 func (db *subConnection) All() ([]entity.SubDetachment, error) {
 	var subdetachment []entity.SubDetachment
 	var errChan = make(chan error, 1)
-	go func(db *subConnection) {
+	go func() {
 		err := db.connection.Order("id desc").Preload("Detachment").Find(&subdetachment).Error
 		defer entity.Closedb()
 		errChan <- err
-	}(db)
+	}()
 	err := <-errChan
 	return subdetachment, err
 }
 func (db *subConnection) FindByIdDetachment(Id uint) ([]entity.SubDetachment, error) {
 	var subdetachment []entity.SubDetachment
 	var errChan = make(chan error, 1)
-	go func(db *subConnection) {
+	go func() {
 		err := db.connection.Order("id desc").Preload("Detachment").Where("detachment_id", Id).Find(&subdetachment).Error
 		defer entity.Closedb()
 		errChan <- err
-	}(db)
+	}()
 	err := <-errChan
 	return subdetachment, err
 }
@@ -100,21 +100,21 @@ func (db *subConnection) FindByIdDetachment(Id uint) ([]entity.SubDetachment, er
 //AddUserSubDetachment
 func (db *subConnection) AddUserSubDetachment(userSubdetachement entity.UserSubdetachement) (entity.UserSubdetachement, error) {
 	var errChan = make(chan error, 1)
-	go func(db *subConnection) {
+	go func() {
 		err := db.connection.Save(&userSubdetachement).Error
 		defer entity.Closedb()
 		errChan <- err
-	}(db)
+	}()
 	return userSubdetachement, <-errChan
 }
 
 func (db *subConnection) RemoveUserSubDetachment(Id uint) (bool, error) {
 	var errChan = make(chan error, 1)
-	go func(db *subConnection) {
+	go func() {
 		err := db.connection.Delete(&entity.UserSubdetachement{}, Id).Error
 		defer entity.Closedb()
 		errChan <- err
-	}(db)
+	}()
 	err := <-errChan
 	if err != nil {
 		return false, err

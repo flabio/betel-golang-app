@@ -13,6 +13,7 @@ type ModuleController interface {
 	Create(context *gin.Context)
 	Update(context *gin.Context)
 	All(context *gin.Context)
+	ByRoleModule(context *gin.Context)
 	FindModuleById(context *gin.Context)
 	Delete(context *gin.Context)
 	AddModuleRole(context *gin.Context)
@@ -39,6 +40,18 @@ func (c *moduleController) All(context *gin.Context) {
 	rol, _ := middleware.GetRol(c.jwt, context)
 	if rol == 1 {
 		c.module.AllModule(context)
+		return
+	}
+	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+}
+
+//GET /lists of modules
+
+func (c *moduleController) ByRoleModule(context *gin.Context) {
+
+	rol, _ := middleware.GetRol(c.jwt, context)
+	if rol == 1 {
+		c.module.AllByRoleModule(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
