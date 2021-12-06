@@ -11,7 +11,7 @@ type ModuleRepository interface {
 	UpdateModule(module entity.Module) (entity.Module, error)
 	AddModule(rolemodule entity.RoleModule) (entity.RoleModule, error)
 	AllModule() ([]entity.Module, error)
-	AllByRoleModule(Id uint) ([]entity.Module, error)
+	AllByRoleModule(Id uint) ([]entity.RoleModule, error)
 	FindModuleById(Id uint) (entity.Module, error)
 	DeleteModule(Id uint) (bool, error)
 	DeleteRoleModule(Id uint) (bool, error)
@@ -71,11 +71,12 @@ func (db *moduleConnection) AllModule() ([]entity.Module, error) {
 	err := <-errChan
 	return modules, err
 }
-func (db *moduleConnection) AllByRoleModule(Id uint) ([]entity.Module, error) {
-	var modules []entity.Module
+func (db *moduleConnection) AllByRoleModule(Id uint) ([]entity.RoleModule, error) {
+	var modules []entity.RoleModule
 	var errChan = make(chan error, 1)
 	go func() {
-		err := db.connection.Preload("RoleModule").Joins("left join role_modules on role_modules.module_id = modules.id").Where("role_modules.rol_id", Id).Find(&modules).Error
+		//err := db.connection.Preload("RoleModule").Joins("left join role_modules on role_modules.module_id = modules.id").Where("role_modules.rol_id", Id).Find(&modules).Error
+		err := db.connection.Preload("Module").Where("rol_id", Id).Find(&modules).Error
 		defer entity.Closedb()
 		errChan <- err
 	}()

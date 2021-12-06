@@ -152,7 +152,7 @@ func (c *userController) Profile(context *gin.Context) {
 func (c *userController) FindUser(context *gin.Context) {
 
 	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	if rol > 0 {
 
 		c.user.FindUser(context)
 		return

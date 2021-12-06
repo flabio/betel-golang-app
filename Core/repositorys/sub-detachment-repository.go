@@ -13,9 +13,6 @@ type SubDetachmentRepository interface {
 	FindById(Id uint) (entity.SubDetachment, error)
 	FindByIdDetachment(Id uint) ([]entity.SubDetachment, error)
 	All() ([]entity.SubDetachment, error)
-
-	AddUserSubDetachment(userSubDetachment entity.UserSubdetachement) (entity.UserSubdetachement, error)
-	RemoveUserSubDetachment(Id uint) (bool, error)
 }
 
 type subConnection struct {
@@ -95,30 +92,4 @@ func (db *subConnection) FindByIdDetachment(Id uint) ([]entity.SubDetachment, er
 	}()
 	err := <-errChan
 	return subdetachment, err
-}
-
-//AddUserSubDetachment
-func (db *subConnection) AddUserSubDetachment(userSubdetachement entity.UserSubdetachement) (entity.UserSubdetachement, error) {
-	var errChan = make(chan error, 1)
-	go func() {
-		err := db.connection.Save(&userSubdetachement).Error
-		defer entity.Closedb()
-		errChan <- err
-	}()
-	return userSubdetachement, <-errChan
-}
-
-func (db *subConnection) RemoveUserSubDetachment(Id uint) (bool, error) {
-	var errChan = make(chan error, 1)
-	go func() {
-		err := db.connection.Delete(&entity.UserSubdetachement{}, Id).Error
-		defer entity.Closedb()
-		errChan <- err
-	}()
-	err := <-errChan
-	if err != nil {
-		return false, err
-	} else {
-		return true, err
-	}
 }

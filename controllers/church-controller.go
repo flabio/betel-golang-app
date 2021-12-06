@@ -34,7 +34,7 @@ func NewChurchController() ChurchController {
 //api/getAll
 func (c *churchController) All(context *gin.Context) {
 	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	if rol > 0 {
 		c.church.AllChurch(context)
 		return
 	}

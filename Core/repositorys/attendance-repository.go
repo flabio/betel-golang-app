@@ -46,7 +46,7 @@ func (db *attendanceConnection) Remove(Id uint) (bool, error) {
 }
 func (db *attendanceConnection) All() ([]entity.Attendance, error) {
 	var attendance []entity.Attendance
-	err := db.connection.Find(&attendance).Error
+	err := db.connection.Preload("User").Preload("SubDetachment").Find(&attendance).Error
 	defer entity.Closedb()
 	return attendance, err
 }

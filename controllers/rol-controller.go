@@ -13,6 +13,7 @@ import (
 
 type RolController interface {
 	All(context *gin.Context)
+	AllGroupRol(context *gin.Context)
 	AllRoleModule(context *gin.Context)
 	FindRol(context *gin.Context)
 	Create(context *gin.Context)
@@ -39,6 +40,17 @@ func (c *rolController) All(context *gin.Context) {
 	rol, _ := middleware.GetRol(c.jwt, context)
 	if rol == 1 {
 		c.rol.All(context)
+		return
+	}
+	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+}
+
+//GET /rols
+// get list of rol
+func (c *rolController) AllGroupRol(context *gin.Context) {
+	rol, _ := middleware.GetRol(c.jwt, context)
+	if rol == 1 {
+		c.rol.AllGroupRol(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())

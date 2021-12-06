@@ -15,6 +15,7 @@ type Detachment struct {
 	Active        bool             `gorm:"type:TINYINT" json:"active"`
 	CreatedAt     time.Time        `gorm:"<-:created_at" json:"created_at"`
 	UpdatedAt     *time.Time       `gorm:"type:TIMESTAMP(6)" json:"updated_at"`
-	User          *[]User          `json:"users,omitempty"`
 	SubDetachment *[]SubDetachment `json:"subdetachments,omitempty"`
+	// ChurchId      uint             `gorm:"NULL" json:"churchid"`
+	// Church        Church           `gorm:"foreignkey:ChurchId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"church"`
 }

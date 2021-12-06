@@ -10,6 +10,7 @@ type RolRepository interface {
 	CreateRol(rol entity.Rol) (entity.Rol, error)
 	UpdateRol(rol entity.Rol) (entity.Rol, error)
 	AllRol() ([]entity.Rol, error)
+	AllGroupRol() ([]entity.Rol, error)
 	RolsModule() ([]entity.RoleModule, error)
 	DeleteRol(rol entity.Rol) (bool, error)
 	FindRolById(Id uint) (entity.Rol, error)
@@ -85,6 +86,12 @@ func (db *rolConnection) AllRol() ([]entity.Rol, error) {
 	return rols, err
 }
 
+func (db *rolConnection) AllGroupRol() ([]entity.Rol, error) {
+	var rols []entity.Rol
+	err := db.connection.Where("id IN ?", []int{6, 26, 27, 28}).Find(&rols).Error
+	defer entity.Closedb()
+	return rols, err
+}
 func (db *rolConnection) RolsModule() ([]entity.RoleModule, error) {
 	var errChan = make(chan error, 1)
 	var roleModule []entity.RoleModule

@@ -16,8 +16,6 @@ type SubdetachmentController interface {
 	Update(context *gin.Context)
 	Remove(context *gin.Context)
 	FindByIdDetachment(context *gin.Context)
-	AddUserSubDetachment(context *gin.Context)
-	RemoveUserSubDetachment(context *gin.Context)
 }
 
 type subdetachmentController struct {
@@ -38,7 +36,7 @@ func NewSubdetachmentController() SubdetachmentController {
 func (c *subdetachmentController) All(context *gin.Context) {
 
 	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	if rol > 0 {
 		c.subDetachment.All(context)
 		return
 	}
@@ -94,24 +92,4 @@ func (c *subdetachmentController) Remove(context *gin.Context) {
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
 
-}
-
-//create AddUserSubDetachment method post
-func (c *subdetachmentController) AddUserSubDetachment(context *gin.Context) {
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
-		c.subDetachment.AddUserSubDetachment(context)
-		return
-	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
-}
-
-//create AddUserSubDetachment method post
-func (c *subdetachmentController) RemoveUserSubDetachment(context *gin.Context) {
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
-		c.subDetachment.RemoveUserSubDetachment(context)
-		return
-	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
 }

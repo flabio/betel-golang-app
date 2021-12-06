@@ -4,6 +4,7 @@ import (
 	"bete/Core/entity"
 	"bete/Core/repositorys"
 	"bete/UseCases/dto"
+	"fmt"
 
 	"github.com/mashingan/smapping"
 	"golang.org/x/crypto/bcrypt"
@@ -35,6 +36,7 @@ func (authService *authService) VerifyCredential(email string, password string) 
 	res := authService.userRepository.VerifyCredential(email, password)
 
 	if v, ok := res.(entity.User); ok {
+		fmt.Println(v.SubDetachmentId)
 		comparedPassword := comparePassword(v.Password, []byte(password))
 		if comparedPassword {
 			if v.Email == email && comparedPassword {

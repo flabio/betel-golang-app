@@ -26,6 +26,7 @@ type UserService interface {
 	UpdatePassword(context *gin.Context)
 	All(context *gin.Context)
 	ListUser(context *gin.Context)
+	ListKingsScouts(context *gin.Context)
 	Delete(context *gin.Context)
 	Profile(userID uint, context *gin.Context)
 	FindUser(context *gin.Context)
@@ -48,6 +49,24 @@ func NewUserService() UserService {
 func (userService *userService) ListUser(context *gin.Context) {
 
 	users, err := userService.userRepository.AllUser()
+
+	if err != nil {
+		validadErrors(err, context)
+		return
+	}
+	context.JSON(http.StatusOK, utilities.BuildResponse(true, "OK", users))
+}
+
+// list ListKingsScouts
+
+func (userService *userService) ListKingsScouts(context *gin.Context) {
+	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
+
+	if err != nil {
+		validadErrors(err, context)
+		return
+	}
+	users, err := userService.userRepository.ListKingsScouts(uint(id))
 
 	if err != nil {
 		validadErrors(err, context)
@@ -96,6 +115,7 @@ func (userService *userService) Create(context *gin.Context) {
 
 		roleToCreated.RolId = userDTO.RolId
 		roleToCreated.UserId = uint(user_id)
+
 		err := userService.userRepository.InsertRole(roleToCreated)
 		if err != nil {
 			log.Println(err)
@@ -107,15 +127,14 @@ func (userService *userService) Create(context *gin.Context) {
 			validadErrors(err, context)
 			return
 		}
-
 	}
-
 }
 
 //update user
 func (userService *userService) Update(context *gin.Context) {
 	userToCreated := entity.User{}
 	roleToCreated := entity.Role{}
+
 	var userDTO dto.UserDTO
 
 	context.ShouldBind(&userDTO)
@@ -128,6 +147,7 @@ func (userService *userService) Update(context *gin.Context) {
 
 	roleToCreated.RolId = userDTO.RolId
 	roleToCreated.UserId = userDTO.Id
+
 	wg.Add(1)
 	go goRunitaUpdateRole(userService, roleToCreated)
 	wg.Wait()
@@ -307,7 +327,7 @@ func goRunitaUpdateRole(userService *userService, roleToCreated entity.Role) {
 		log.Println(err)
 		checkError(err)
 	}
-	fmt.Println(role.Id)
+
 	if role.Id == 0 {
 		userService.userRepository.InsertRole(roleToCreated)
 	}
@@ -362,7 +382,7 @@ func validarUser(u dto.UserDTO, userService *userService, context *gin.Context, 
 		validadRequiredMsg(msg.RequiredChurch(), context)
 		return true
 	}
-	if u.DetachmentId == 0 {
+	if u.SubDetachmentId == 0 {
 		validadRequiredMsg(msg.RequiredDetachment(), context)
 		return true
 	}

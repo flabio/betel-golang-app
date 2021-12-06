@@ -19,6 +19,7 @@ type RolService interface {
 	FindById(context *gin.Context)
 	Delete(context *gin.Context)
 	All(context *gin.Context)
+	AllGroupRol(context *gin.Context)
 	AllRoleModule(context *gin.Context)
 }
 
@@ -96,7 +97,17 @@ func (service *rolService) All(context *gin.Context) {
 	}
 	res := utilities.BuildResponse(true, "OK", rols)
 	context.JSON(http.StatusOK, res)
+}
 
+// service of group AllGroupRol
+func (service *rolService) AllGroupRol(context *gin.Context) {
+	var rols, err = service.rolRepository.AllGroupRol()
+	if err != nil {
+		validadErrors(err, context)
+		return
+	}
+	res := utilities.BuildResponse(true, "OK", rols)
+	context.JSON(http.StatusOK, res)
 }
 
 //service of all

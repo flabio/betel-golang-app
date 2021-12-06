@@ -17,6 +17,7 @@ var (
 
 	authController          controllers.AuthController          = controllers.NewAuthController()
 	userController          controllers.UserController          = controllers.NewUserController()
+	scoutController         controllers.ScoutController         = controllers.NewScoutController()
 	rolController           controllers.RolController           = controllers.NewRolController()
 	detachmentController    controllers.DetachmentController    = controllers.NewDetachmentController()
 	churchController        controllers.ChurchController        = controllers.NewChurchController()
@@ -24,6 +25,7 @@ var (
 	subDetachmentController controllers.SubdetachmentController = controllers.NewSubdetachmentController()
 	patrolController        controllers.PatrolController        = controllers.NewPatrolController()
 	kanbanController        controllers.KanbanController        = controllers.NewKanbanController()
+	attendanceController    controllers.AttendanceController    = controllers.NewAttendanceController()
 )
 
 func NewRouter() {
@@ -59,12 +61,27 @@ func NewRouter() {
 		//userRoutes.GET("/users/", userController.All)
 		//userRoutes.GET("/usersroles", userController.UsersRoles)
 		userRoutes.POST("/create", userController.Create)
-
 		userRoutes.PUT("/edit", userController.Update)
 		userRoutes.PUT("/update_password", userController.PasswordChange)
 		userRoutes.PUT("/", userController.UpdateProfile)
-
 		userRoutes.DELETE("/:id", userController.Delete)
+	}
+
+	//userRoutes := r.Group("api/user", middleware.AuthorizeJWT(jwtService))
+	scoutRoutes := r.Group("api/v1/scout", middleware.AuthorizeJWT(jwtService))
+	{
+		scoutRoutes.GET("/:id", scoutController.ListKingsScouts)
+		scoutRoutes.POST("/create", scoutController.Create)
+		scoutRoutes.PUT("/edit", scoutController.Update)
+		//scoutRoutes.DELETE("/:id", scoutController.Delete)
+	}
+
+	attendanceRoutes := r.Group("api/v1/attendance", middleware.AuthorizeJWT(jwtService))
+	{
+		attendanceRoutes.GET("/", attendanceController.All)
+		attendanceRoutes.POST("/create", attendanceController.Create)
+		attendanceRoutes.PUT("/edit", attendanceController.Update)
+		attendanceRoutes.DELETE("/:id", attendanceController.Remove)
 	}
 	kanbanRoutes := r.Group("api/v1/kanban", middleware.AuthorizeJWT(jwtService))
 	{
@@ -74,6 +91,7 @@ func NewRouter() {
 	rolRoutes := r.Group("api/v1/rol", middleware.AuthorizeJWT(jwtService))
 	{
 		rolRoutes.GET("/", rolController.All)
+		rolRoutes.GET("/group", rolController.AllGroupRol)
 		rolRoutes.GET("/rolemodule", rolController.AllRoleModule)
 		rolRoutes.POST("/create", rolController.Create)
 		rolRoutes.PUT("/", rolController.Update)
@@ -103,6 +121,7 @@ func NewRouter() {
 	{
 		moduleRoutes.GET("/", moduleController.All)
 		moduleRoutes.GET("rolemodule/:id", moduleController.ByRoleModule)
+		moduleRoutes.GET("menumodule/:id", moduleController.ByRoleModule)
 
 		moduleRoutes.GET("/:id", moduleController.FindModuleById)
 		moduleRoutes.POST("/", moduleController.Create)
@@ -118,10 +137,10 @@ func NewRouter() {
 		subDetachmentRoutes.GET("/:id", subDetachmentController.FindById)
 		subDetachmentRoutes.GET("/detachment/:id", subDetachmentController.FindByIdDetachment)
 		subDetachmentRoutes.POST("/", subDetachmentController.Create)
-		subDetachmentRoutes.POST("/add-user-sub/", subDetachmentController.AddUserSubDetachment)
+
 		subDetachmentRoutes.PUT("/", subDetachmentController.Update)
 		subDetachmentRoutes.DELETE("/:id", subDetachmentController.Remove)
-		subDetachmentRoutes.DELETE("/romove-user-sub/:id", subDetachmentController.RemoveUserSubDetachment)
+
 	}
 	patrolRoutes := r.Group("api/v1/patrol", middleware.AuthorizeJWT(jwtService))
 	{

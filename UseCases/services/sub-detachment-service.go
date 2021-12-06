@@ -20,9 +20,6 @@ type SubDetachmentService interface {
 	FindById(context *gin.Context)
 	FindByIdDetachment(context *gin.Context)
 	All(context *gin.Context)
-
-	AddUserSubDetachment(context *gin.Context)
-	RemoveUserSubDetachment(context *gin.Context)
 }
 
 //subDetachmentService
@@ -146,40 +143,6 @@ func (subDetachmentService *subDetachmentService) FindByIdDetachment(context *gi
 		return
 	}
 	context.JSON(http.StatusOK, utilities.BuildResponse(true, "ok", res))
-}
-
-//AddUserSubDetachment
-func (subDetachmentService *subDetachmentService) AddUserSubDetachment(context *gin.Context) {
-	usersubDetachment := entity.UserSubdetachement{}
-	var dtos dto.UserSubDetachmentDTO
-
-	context.ShouldBind(&dtos)
-	if validateUserSubDetachments(dtos, context) {
-		return
-	}
-	smapping.FillStruct(&usersubDetachment, smapping.MapFields(&dtos))
-	res, err := subDetachmentService.subDetachmentRepository.AddUserSubDetachment(usersubDetachment)
-	if err != nil {
-		validadErrors(err, context)
-		return
-	}
-	context.JSON(http.StatusOK, utilities.BuildCreateResponse(res))
-}
-func (subDetachmentService *subDetachmentService) RemoveUserSubDetachment(context *gin.Context) {
-
-	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
-	if err != nil {
-		validadErrors(err, context)
-		return
-	}
-
-	res, err := subDetachmentService.subDetachmentRepository.RemoveUserSubDetachment(uint(id))
-	if err != nil {
-		validadErrors(err, context)
-		return
-	}
-	context.JSON(http.StatusOK, utilities.BuildDeteleteResponse(res, id))
-
 }
 
 //All
