@@ -1,6 +1,7 @@
 package utilities
 
 import (
+	"log"
 	"strconv"
 	"strings"
 
@@ -63,7 +64,7 @@ func BuildDanedResponse() Response {
 
 //BuildErrorAllResponse method is to inject dasta value to dynamic failed response
 func BuildErrorAllResponse(err string) Response {
-
+	log.Fatalf("%v", err)
 	res := Response{
 		Status:  false,
 		Message: err,
@@ -73,7 +74,7 @@ func BuildErrorAllResponse(err string) Response {
 
 //BuildErrorAllResponse method is to inject dasta value to dynamic failed response
 func BuildErrorAllResponseMessage(message string) Response {
-
+	log.Fatalf("%v", message)
 	res := Response{
 		Status:  false,
 		Message: message,

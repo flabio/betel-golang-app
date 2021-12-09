@@ -55,7 +55,7 @@ func (c *authController) Login(ctx *gin.Context) {
 		//
 		RoldId := c.authService.GetIdRol(v.Id)
 
-		generatedToken := c.jwtService.GenerateToken(strconv.FormatUint(uint64(v.Id), 10), strconv.FormatUint(uint64(RoldId), 10))
+		generatedToken := c.jwtService.GenerateToken(strconv.FormatUint(uint64(v.Id), 10), strconv.FormatUint(uint64(RoldId), 10), strconv.FormatUint(uint64(v.SubDetachmentId), 10), strconv.FormatUint(uint64(v.ChurchId), 10))
 		v.Token = generatedToken
 		response := utilities.BuildResponse(true, "OK!", v)
 		ctx.JSON(http.StatusOK, response)

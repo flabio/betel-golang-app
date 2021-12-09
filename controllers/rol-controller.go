@@ -37,8 +37,8 @@ func NewRolController() RolController {
 //GET /rols
 // get list of rol
 func (c *rolController) All(context *gin.Context) {
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.rol.All(context)
 		return
 	}
@@ -48,8 +48,8 @@ func (c *rolController) All(context *gin.Context) {
 //GET /rols
 // get list of rol
 func (c *rolController) AllGroupRol(context *gin.Context) {
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.rol.AllGroupRol(context)
 		return
 	}
@@ -59,8 +59,8 @@ func (c *rolController) AllGroupRol(context *gin.Context) {
 //GET /role module
 // get list of role module
 func (c *rolController) AllRoleModule(context *gin.Context) {
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.rol.AllRoleModule(context)
 		return
 	}
@@ -70,8 +70,8 @@ func (c *rolController) AllRoleModule(context *gin.Context) {
 // get
 func (c *rolController) FindRol(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.rol.FindById(context)
 		return
 	}
@@ -82,8 +82,8 @@ func (c *rolController) FindRol(context *gin.Context) {
 //create rol metho post
 func (c *rolController) Create(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.rol.Create(context)
 		return
 	}
@@ -93,8 +93,8 @@ func (c *rolController) Create(context *gin.Context) {
 
 //update rol method put
 func (c *rolController) Update(context *gin.Context) {
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.rol.Update(context)
 		return
 	}
@@ -104,8 +104,8 @@ func (c *rolController) Update(context *gin.Context) {
 
 // delete rol
 func (c *rolController) Delete(context *gin.Context) {
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.rol.Delete(context)
 		return
 	}

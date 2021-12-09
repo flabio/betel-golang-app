@@ -43,8 +43,8 @@ func NewUserController() UserController {
 
 //create user method post
 func (c *userController) Create(context *gin.Context) {
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.user.Create(context)
 		return
 	}
@@ -54,8 +54,8 @@ func (c *userController) Create(context *gin.Context) {
 //update profile method pust
 func (c *userController) UpdateProfile(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.user.Update(context)
 		return
 	}
@@ -65,8 +65,8 @@ func (c *userController) UpdateProfile(context *gin.Context) {
 //update password
 func (c *userController) PasswordChange(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.user.UpdatePassword(context)
 		return
 	}
@@ -76,8 +76,8 @@ func (c *userController) PasswordChange(context *gin.Context) {
 //update user method push
 func (c *userController) Update(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.user.Update(context)
 		return
 	}
@@ -86,10 +86,8 @@ func (c *userController) Update(context *gin.Context) {
 }
 
 func (c *userController) ListUser(context *gin.Context) {
-
-	rol, _ := middleware.GetRol(c.jwt, context)
-
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.user.ListUser(context)
 		return
 	}
@@ -97,9 +95,8 @@ func (c *userController) ListUser(context *gin.Context) {
 }
 
 func (c *userController) FindUserNameLastName(context *gin.Context) {
-	rol, _ := middleware.GetRol(c.jwt, context)
-
-	if rol > 0 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol > 0 {
 		c.user.FindUserNameLastName(context)
 		return
 	}
@@ -127,8 +124,8 @@ func (c *userController) FindUserNameLastName(context *gin.Context) {
 //delete user
 func (c *userController) Delete(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.user.Delete(context)
 		return
 	}
@@ -139,10 +136,9 @@ func (c *userController) Delete(context *gin.Context) {
 //profile user
 func (c *userController) Profile(context *gin.Context) {
 
-	rol, id := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
-
-		c.user.Profile(uint(id), context)
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
+		c.user.Profile(uint(claim.Id), context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -151,9 +147,8 @@ func (c *userController) Profile(context *gin.Context) {
 //profile user
 func (c *userController) FindUser(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol > 0 {
-
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol > 0 {
 		c.user.FindUser(context)
 		return
 	}

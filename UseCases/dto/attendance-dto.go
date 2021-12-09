@@ -1,12 +1,13 @@
 package dto
 
 type AttendanceDTO struct {
-	Id         uint `json:"id" form:"id" `
-	Notebook   bool `form:"notebook" json:"notebook"`
-	Bible      bool `form:"bible   " json:"bible"`
-	Attendance bool `form:"attendan" json:"attendance"`
-	Uniform    bool `form:"uniform " json:"uniform"`
-	Offering   bool `form:"offering" json:"offering"`
-	Active     bool `form:"active  " json:"active"`
-	UserId     uint `form:"user_id  " json:"user_id"`
+	Id              uint `json:"id" form:"id" `
+	Notebook        bool `json:"notebook" form:"notebook"`
+	Bible           bool `json:"bible" form:"bible"`
+	Attendance      bool `json:"attendance" form:"attendance"`
+	Uniform         bool `json:"uniform" form:"uniform"`
+	Offering        bool `json:"offering" form:"offering"`
+	Active          bool `json:"active" form:"active"`
+	UserId          uint `json:"user_id" form:"user_id"`
+	SubDetachmentId uint `json:"sub_detachment_id" form:"sub_detachment_id"`
 }

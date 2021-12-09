@@ -13,10 +13,11 @@ import (
 )
 
 type AttendanceService interface {
-	Create(context *gin.Context)
+	Create(sub_detachment_id uint, context *gin.Context)
 	Update(context *gin.Context)
 	Remove(context *gin.Context)
 	All(context *gin.Context)
+	AttendancesSubdetachment(sub_detachment_id uint, context *gin.Context)
 }
 
 type attendanceService struct {
@@ -28,6 +29,20 @@ func NewAttendanceService() AttendanceService {
 		attendanceRepository: repositorys.NewAttendanceRepository(),
 	}
 }
+func (s *attendanceService) AttendancesSubdetachment(sub_detachment_id uint, context *gin.Context) {
+	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
+	if err != nil {
+		validadErrors(err, context)
+		return
+	}
+
+	attendances, err := s.attendanceRepository.AttendancesSubdetachment(uint(id), sub_detachment_id)
+	if err != nil {
+		validadErrors(err, context)
+		return
+	}
+	context.JSON(http.StatusOK, utilities.BuildResponse(true, "ok", attendances))
+}
 func (s *attendanceService) All(context *gin.Context) {
 	attendances, err := s.attendanceRepository.All()
 	if err != nil {
@@ -36,11 +51,14 @@ func (s *attendanceService) All(context *gin.Context) {
 	}
 	context.JSON(http.StatusOK, utilities.BuildResponse(true, "ok", attendances))
 }
-func (s *attendanceService) Create(context *gin.Context) {
+func (s *attendanceService) Create(sub_detachment_id uint, context *gin.Context) {
 	attendance := entity.Attendance{}
 	var attendanceDTO dto.AttendanceDTO
 
-	context.ShouldBind(attendanceDTO)
+	context.ShouldBind(&attendanceDTO)
+	attendanceDTO.SubDetachmentId = uint(sub_detachment_id)
+
+	smapping.FillStruct(&attendance, smapping.MapFields(&attendanceDTO))
 
 	if validarAttendanceCreate(attendanceDTO, context) {
 		return

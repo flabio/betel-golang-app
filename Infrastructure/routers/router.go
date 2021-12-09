@@ -70,7 +70,7 @@ func NewRouter() {
 	//userRoutes := r.Group("api/user", middleware.AuthorizeJWT(jwtService))
 	scoutRoutes := r.Group("api/v1/scout", middleware.AuthorizeJWT(jwtService))
 	{
-		scoutRoutes.GET("/:id", scoutController.ListKingsScouts)
+		scoutRoutes.GET("/", scoutController.ListKingsScouts)
 		scoutRoutes.POST("/create", scoutController.Create)
 		scoutRoutes.PUT("/edit", scoutController.Update)
 		//scoutRoutes.DELETE("/:id", scoutController.Delete)
@@ -79,7 +79,8 @@ func NewRouter() {
 	attendanceRoutes := r.Group("api/v1/attendance", middleware.AuthorizeJWT(jwtService))
 	{
 		attendanceRoutes.GET("/", attendanceController.All)
-		attendanceRoutes.POST("/create", attendanceController.Create)
+		attendanceRoutes.GET("/:id", attendanceController.AttendancesSubdetachment)
+		attendanceRoutes.POST("/", attendanceController.Create)
 		attendanceRoutes.PUT("/edit", attendanceController.Update)
 		attendanceRoutes.DELETE("/:id", attendanceController.Remove)
 	}

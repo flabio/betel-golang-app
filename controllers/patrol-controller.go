@@ -34,8 +34,8 @@ func NewPatrolController() PatrolController {
 // get list of rol
 func (c *patrolController) All(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.patrol.All(context)
 		return
 	}
@@ -44,8 +44,8 @@ func (c *patrolController) All(context *gin.Context) {
 
 // get
 func (c *patrolController) FindById(context *gin.Context) {
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.patrol.FindById(context)
 		return
 	}
@@ -54,8 +54,8 @@ func (c *patrolController) FindById(context *gin.Context) {
 
 //create rol metho post
 func (c *patrolController) Create(context *gin.Context) {
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.patrol.Create(context)
 		return
 	}
@@ -64,8 +64,8 @@ func (c *patrolController) Create(context *gin.Context) {
 
 //update rol method put
 func (c *patrolController) Update(context *gin.Context) {
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.patrol.Update(context)
 		return
 	}
@@ -74,8 +74,8 @@ func (c *patrolController) Update(context *gin.Context) {
 
 // delete rol
 func (c *patrolController) Remove(context *gin.Context) {
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.patrol.Remove(context)
 		return
 	}

@@ -3,12 +3,14 @@ package services
 import (
 	"bete/Core/entity"
 	"bete/Core/repositorys"
+	"strconv"
+	"strings"
+	"time"
 
 	"bete/UseCases/dto"
 	"bete/UseCases/utilities"
 	"log"
 	"net/http"
-	"strconv"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -19,9 +21,9 @@ var wgs sync.WaitGroup
 
 //UserService is a contract.....
 type ScoutService interface {
-	Create(context *gin.Context)
-	Update(context *gin.Context)
-	ListKingsScouts(context *gin.Context)
+	Create(SubdetachmentId uint, ChurchId uint, context *gin.Context)
+	Update(SubdetachmentId uint, ChurchId uint, context *gin.Context)
+	ListKingsScouts(id uint, context *gin.Context)
 }
 
 type scoutService struct {
@@ -38,13 +40,8 @@ func NewScoutService() ScoutService {
 
 // list ListKingsScouts
 
-func (scoutService *scoutService) ListKingsScouts(context *gin.Context) {
-	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
+func (scoutService *scoutService) ListKingsScouts(id uint, context *gin.Context) {
 
-	if err != nil {
-		validadErrors(err, context)
-		return
-	}
 	users, err := scoutService.userRepository.ListKingsScouts(uint(id))
 
 	if err != nil {
@@ -55,7 +52,7 @@ func (scoutService *scoutService) ListKingsScouts(context *gin.Context) {
 }
 
 //Create scout
-func (scoutService *scoutService) Create(context *gin.Context) {
+func (scoutService *scoutService) Create(SubdetachmentId uint, ChurchId uint, context *gin.Context) {
 	userChan := make(chan int)
 	option := 0
 
@@ -63,13 +60,17 @@ func (scoutService *scoutService) Create(context *gin.Context) {
 	roleToCreated := entity.Role{}
 
 	var userDTO dto.ScoutDTO
+	userDTO.SubDetachmentId = SubdetachmentId
+	userDTO.ChurchId = ChurchId
 
 	context.ShouldBind(&userDTO)
 
 	if len(userDTO.Email) == 0 {
 		userDTO.Email = " "
 	}
-
+	if validateBirthDayScout(userDTO, scoutService, context) {
+		return
+	}
 	if validarScout(userDTO, scoutService, context, option) {
 		return
 	}
@@ -114,15 +115,19 @@ func (scoutService *scoutService) Create(context *gin.Context) {
 }
 
 //update scout
-func (scoutService *scoutService) Update(context *gin.Context) {
+func (scoutService *scoutService) Update(SubdetachmentId uint, ChurchId uint, context *gin.Context) {
 	userToCreated := entity.User{}
 	roleToCreated := entity.Role{}
 
 	var userDTO dto.ScoutDTO
-
+	userDTO.SubDetachmentId = SubdetachmentId
+	userDTO.ChurchId = ChurchId
 	err := context.ShouldBind(&userDTO)
 	if len(userDTO.Email) == 0 {
 		userDTO.Email = " "
+	}
+	if validateBirthDayScout(userDTO, scoutService, context) {
+		return
 	}
 	if validarScout(userDTO, scoutService, context, 1) {
 		return
@@ -234,7 +239,6 @@ func validarScout(u dto.ScoutDTO, scoutService *scoutService, context *gin.Conte
 		validadRequiredMsg(msg.RequiredGender(), context)
 		return true
 	}
-
 	if u.ChurchId == 0 {
 		validadRequiredMsg(msg.RequiredChurch(), context)
 		return true
@@ -257,6 +261,47 @@ func validarScout(u dto.ScoutDTO, scoutService *scoutService, context *gin.Conte
 			return true
 		}
 
+	}
+	return false
+}
+func validateBirthDayScout(u dto.ScoutDTO, scoutService *scoutService, context *gin.Context) bool {
+
+	context.ShouldBind(&u)
+	msg := utilities.MessageRequired{}
+	YearBirthday := strings.Split(u.Birthday, "-")
+	currentDate := time.Now()
+
+	yearB, _ := strconv.ParseUint(YearBirthday[0], 0, 0)
+
+	difYear := uint64(currentDate.Year()) - yearB
+
+	if u.SubDetachmentId == 1 {
+		if difYear < 3 || difYear > 8 {
+			validadBirdateRequiredMsg(msg.RequiredBirthday(), context)
+			return true
+		}
+		return false
+	}
+	if u.SubDetachmentId == 2 {
+		if difYear <= 8 || difYear > 11 {
+			validadBirdateRequiredMsg(msg.RequiredBirthday(), context)
+			return true
+		}
+		return false
+	}
+	if u.SubDetachmentId == 3 {
+		if difYear <= 11 || difYear > 14 {
+			validadBirdateRequiredMsg(msg.RequiredBirthday(), context)
+			return true
+		}
+		return false
+	}
+	if u.SubDetachmentId == 4 {
+		if difYear <= 14 || difYear > 18 {
+			validadBirdateRequiredMsg(msg.RequiredBirthday(), context)
+			return true
+		}
+		return false
 	}
 	return false
 }

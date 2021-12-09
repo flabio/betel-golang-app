@@ -33,8 +33,8 @@ func NewChurchController() ChurchController {
 //method:GET
 //api/getAll
 func (c *churchController) All(context *gin.Context) {
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol > 0 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol > 0 {
 		c.church.AllChurch(context)
 		return
 	}
@@ -45,8 +45,8 @@ func (c *churchController) All(context *gin.Context) {
 //api/getFindById/:id
 func (c *churchController) FindById(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.church.FindChurchById(context)
 		return
 	}
@@ -57,8 +57,8 @@ func (c *churchController) FindById(context *gin.Context) {
 //api/setCreate
 func (c *churchController) Create(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.church.CreateChurch(context)
 		return
 	}
@@ -70,8 +70,8 @@ func (c *churchController) Create(context *gin.Context) {
 //api/setUpdate
 func (c *churchController) Update(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.church.UpdateChurch(context)
 		return
 	}
@@ -82,8 +82,8 @@ func (c *churchController) Update(context *gin.Context) {
 // api/setDelete?:id
 func (c *churchController) Delete(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.church.DeleteChurch(context)
 		return
 	}

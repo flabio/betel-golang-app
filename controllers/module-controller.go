@@ -37,8 +37,8 @@ func NewModuleController() ModuleController {
 
 func (c *moduleController) All(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol > 0 {
 		c.module.AllModule(context)
 		return
 	}
@@ -49,8 +49,8 @@ func (c *moduleController) All(context *gin.Context) {
 
 func (c *moduleController) ByRoleModule(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol > 0 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol > 0 {
 		c.module.AllByRoleModule(context)
 		return
 	}
@@ -61,8 +61,8 @@ func (c *moduleController) ByRoleModule(context *gin.Context) {
 // find module by id
 func (c *moduleController) FindModuleById(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.module.FindModuleById(context)
 		return
 	}
@@ -73,8 +73,8 @@ func (c *moduleController) FindModuleById(context *gin.Context) {
 //create rol metho post
 func (c *moduleController) Create(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.module.CreateModule(context)
 		return
 	}
@@ -84,8 +84,8 @@ func (c *moduleController) Create(context *gin.Context) {
 //PUT/Module
 //update module method put
 func (c *moduleController) Update(context *gin.Context) {
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.module.UpdateModule(context)
 		return
 	}
@@ -95,8 +95,8 @@ func (c *moduleController) Update(context *gin.Context) {
 //DELETE/module/1
 // delete module
 func (c *moduleController) Delete(context *gin.Context) {
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.module.DeleteModule(context)
 		return
 	}
@@ -107,8 +107,8 @@ func (c *moduleController) Delete(context *gin.Context) {
 //create rolemodule method post
 func (c *moduleController) AddModuleRole(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.module.AddModuleRole(context)
 		return
 	}
@@ -119,8 +119,8 @@ func (c *moduleController) AddModuleRole(context *gin.Context) {
 //delete rolemodule method delete
 func (c *moduleController) DeleteModuleRole(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.module.DeleteRoleModule(context)
 		return
 	}

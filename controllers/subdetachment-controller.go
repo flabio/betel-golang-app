@@ -35,8 +35,8 @@ func NewSubdetachmentController() SubdetachmentController {
 // get list of subdetachment
 func (c *subdetachmentController) All(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol > 0 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol > 0 {
 		c.subDetachment.All(context)
 		return
 	}
@@ -45,8 +45,8 @@ func (c *subdetachmentController) All(context *gin.Context) {
 
 // get
 func (c *subdetachmentController) FindById(context *gin.Context) {
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.subDetachment.FindById(context)
 		return
 	}
@@ -55,8 +55,8 @@ func (c *subdetachmentController) FindById(context *gin.Context) {
 
 //FindByIdDetachment
 func (c *subdetachmentController) FindByIdDetachment(context *gin.Context) {
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.subDetachment.FindByIdDetachment(context)
 		return
 	}
@@ -65,8 +65,8 @@ func (c *subdetachmentController) FindByIdDetachment(context *gin.Context) {
 
 //create subdetachment method post
 func (c *subdetachmentController) Create(context *gin.Context) {
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.subDetachment.Create(context)
 		return
 	}
@@ -75,8 +75,8 @@ func (c *subdetachmentController) Create(context *gin.Context) {
 
 //update subdetachment method put
 func (c *subdetachmentController) Update(context *gin.Context) {
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.subDetachment.Update(context)
 		return
 	}
@@ -85,8 +85,8 @@ func (c *subdetachmentController) Update(context *gin.Context) {
 
 // delete subdetachment
 func (c *subdetachmentController) Remove(context *gin.Context) {
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.subDetachment.Remove(context)
 		return
 	}

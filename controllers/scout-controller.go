@@ -35,9 +35,9 @@ func NewScoutController() ScoutController {
 
 //create user method post
 func (c *scoutController) Create(context *gin.Context) {
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol > 0 {
-		c.user.Create(context)
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol > 0 {
+		c.user.Create(claim.Subdetachmentid, claim.Churchid, context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -46,9 +46,9 @@ func (c *scoutController) Create(context *gin.Context) {
 //update user method push
 func (c *scoutController) Update(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol > 0 {
-		c.user.Update(context)
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol > 0 {
+		c.user.Update(claim.Subdetachmentid, claim.Churchid, context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -57,10 +57,9 @@ func (c *scoutController) Update(context *gin.Context) {
 
 func (c *scoutController) ListKingsScouts(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-
-	if rol > 0 {
-		c.user.ListKingsScouts(context)
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol > 0 {
+		c.user.ListKingsScouts(claim.Subdetachmentid, context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())

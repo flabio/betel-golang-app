@@ -69,3 +69,6 @@ func (msg MessageRequired) RequiredPassword() string {
 func (msg MessageRequired) RequiredPasswordConfirm() string {
 	return "The passwords are not the same"
 }
+func (msg MessageRequired) RequiredBirthday() string {
+	return "Please check the date of birth"
+}

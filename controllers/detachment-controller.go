@@ -36,8 +36,8 @@ func NewDetachmentController() DetachmentController {
 //api/getAll
 func (c *detachmentController) All(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.detachmentService.All(context)
 		return
 	}
@@ -48,8 +48,8 @@ func (c *detachmentController) All(context *gin.Context) {
 //api/getFindById/:id
 func (c *detachmentController) FindById(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.detachmentService.FindById(context)
 		return
 	}
@@ -66,8 +66,8 @@ func (c *detachmentController) Create(context *gin.Context) {
 //api/setUpdate
 func (c *detachmentController) Update(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.detachmentService.Update(context)
 		return
 	}
@@ -78,8 +78,8 @@ func (c *detachmentController) Update(context *gin.Context) {
 // api/setDelete?:id
 func (c *detachmentController) Delete(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	if rol == 1 {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol == 1 {
 		c.detachmentService.Delete(context)
 		return
 	}

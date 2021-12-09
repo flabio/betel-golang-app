@@ -3,7 +3,8 @@ package controllers
 import (
 	"bete/Infrastructure/middleware"
 	"bete/UseCases/services"
-	"fmt"
+	"bete/UseCases/utilities"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -30,18 +31,21 @@ func NewKanbanController() KanbanController {
 
 func (c *kanbanController) GetKanban(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	fmt.Println(rol)
-	c.kanban.GetKanbans(context)
-
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol > 0 {
+		c.kanban.GetKanbans(context)
+		return
+	}
+	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
 }
 
 func (c *kanbanController) CountKanban(context *gin.Context) {
 
-	rol, _ := middleware.GetRol(c.jwt, context)
-	fmt.Println(rol)
-	c.kanban.GetCountKanbans(context)
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol > 0 {
+		c.kanban.GetCountKanbans(context)
 
-	// }
-	// context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+		return
+	}
+	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
 }

@@ -19,12 +19,18 @@ func checkError(err error) bool {
 
 //func of validation
 func validadErrors(errDTO error, context *gin.Context) {
+
 	res := utilities.BuildErrorAllResponse(errDTO.Error())
 	context.AbortWithStatusJSON(http.StatusBadRequest, res)
 }
 
 //validadRequiredMsg
 func validadRequiredMsg(message string, context *gin.Context) {
+
+	res := utilities.BuildErrorAllResponseMessage(message)
+	context.AbortWithStatusJSON(http.StatusBadRequest, res)
+}
+func validadBirdateRequiredMsg(message string, context *gin.Context) {
 
 	res := utilities.BuildErrorAllResponseMessage(message)
 	context.AbortWithStatusJSON(http.StatusBadRequest, res)

@@ -12,6 +12,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type GetVariableSession interface {
+}
+type VariableSession struct {
+	Rol             uint
+	Id              uint
+	Subdetachmentid uint
+	Churchid        uint
+}
+
 //AuthorizeJWT validates the token suer given, return 401 if not valid
 func AuthorizeJWT(jwtService services.JWTService) gin.HandlerFunc {
 
@@ -25,49 +34,37 @@ func AuthorizeJWT(jwtService services.JWTService) gin.HandlerFunc {
 		token, err := jwtService.ValidateToken(authHeader)
 		if token != nil {
 			claims := token.Claims.(jwt.MapClaims)
+			log.Println("Claim[id]: ", claims)
 			log.Println("Claim[id]: ", claims["id"])
 			log.Println("Claim[issuer] :", claims["issuer"])
 			log.Println("Claim[rol] :", claims["rol"])
+			log.Println("Claim[subdetachmentid] :", claims["subdetachmentid"])
+			log.Println("claims[exp]", claims["exp"])
 		} else {
 			log.Println(err)
 			response := utilities.BuildErrorResponse("Token is not valid", err.Error(), nil)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
 		}
-		// authHeader := c.GetHeader("Authorization")
 
-		// if authHeader == "" {
-		// 	response := utilities.BuildErrorResponse("Failed to process request", "no token found", nil)
-		// 	c.AbortWithStatusJSON(http.StatusUnauthorized, response)
-		// 	return
-		// }
-
-		// token, err := jwtService.ValidateToken(authHeader)
-
-		// if token.Valid {
-
-		// 	claims := token.Claims.(jwt.MapClaims)
-
-		// 	claims["exp"] = time.Now().Add(time.Minute * 60).Unix()
-		// 	fmt.Println(claims["exp"])
-		// 	// log.Println("claims[id]", claims["id"])
-		// 	// log.Println("claims[issuer]", claims["issuer"])
-		// 	// log.Println("claims[exp]", claims["exp"])
-
-		// } else {
-		// 	log.Println(err)
-		// 	response := utilities.BuildErrorResponse("Token isnot valid", err.Error(), nil)
-		// 	c.AbortWithStatusJSON(http.StatusUnauthorized, response)
-		// }
 	}
 }
 
 //AuthorizeJWT validates the token suer given, return 401 if not valid
-func GetRol(jwtService services.JWTService, context *gin.Context) (uint, uint) {
+func GetRol(jwtService services.JWTService, context *gin.Context) VariableSession {
 	authHeader := context.GetHeader("Authorization")
 	token, _ := jwtService.ValidateToken(authHeader)
 	claims := token.Claims.(jwt.MapClaims)
 	rol, _ := strconv.ParseUint(fmt.Sprintf("%v", claims["rol"]), 0, 0)
 
 	id, _ := strconv.ParseUint(fmt.Sprintf("%v", claims["id"]), 0, 0)
-	return uint(rol), uint(id)
+	subdetachmentid, _ := strconv.ParseUint(fmt.Sprintf("%v", claims["subdetachmentid"]), 0, 0)
+	churchid, _ := strconv.ParseUint(fmt.Sprintf("%v", claims["churchid"]), 0, 0)
+	u := VariableSession{
+		Id:              uint(id),
+		Rol:             uint(rol),
+		Subdetachmentid: uint(subdetachmentid),
+		Churchid:        uint(churchid),
+	}
+
+	return u
 }
