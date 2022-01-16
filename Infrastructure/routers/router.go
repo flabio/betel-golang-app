@@ -26,6 +26,9 @@ var (
 	patrolController        controllers.PatrolController        = controllers.NewPatrolController()
 	kanbanController        controllers.KanbanController        = controllers.NewKanbanController()
 	attendanceController    controllers.AttendanceController    = controllers.NewAttendanceController()
+	cityController          controllers.CityController          = controllers.NewCityController()
+	parentController        controllers.ParentController        = controllers.NewParentController()
+	visitController         controllers.VisitController         = controllers.NewVisitController()
 )
 
 func NewRouter() {
@@ -80,6 +83,7 @@ func NewRouter() {
 	{
 		attendanceRoutes.GET("/", attendanceController.All)
 		attendanceRoutes.GET("/:id", attendanceController.AttendancesSubdetachment)
+		attendanceRoutes.GET("/weeks", attendanceController.WeeksbySubDetachments)
 		attendanceRoutes.POST("/", attendanceController.Create)
 		attendanceRoutes.PUT("/edit", attendanceController.Update)
 		attendanceRoutes.DELETE("/:id", attendanceController.Remove)
@@ -123,7 +127,6 @@ func NewRouter() {
 		moduleRoutes.GET("/", moduleController.All)
 		moduleRoutes.GET("rolemodule/:id", moduleController.ByRoleModule)
 		moduleRoutes.GET("menumodule/:id", moduleController.ByRoleModule)
-
 		moduleRoutes.GET("/:id", moduleController.FindModuleById)
 		moduleRoutes.POST("/", moduleController.Create)
 		moduleRoutes.PUT("/", moduleController.Update)
@@ -138,7 +141,6 @@ func NewRouter() {
 		subDetachmentRoutes.GET("/:id", subDetachmentController.FindById)
 		subDetachmentRoutes.GET("/detachment/:id", subDetachmentController.FindByIdDetachment)
 		subDetachmentRoutes.POST("/", subDetachmentController.Create)
-
 		subDetachmentRoutes.PUT("/", subDetachmentController.Update)
 		subDetachmentRoutes.DELETE("/:id", subDetachmentController.Remove)
 
@@ -151,6 +153,26 @@ func NewRouter() {
 		patrolRoutes.PUT("/", patrolController.Update)
 		patrolRoutes.DELETE("/:id", patrolController.Remove)
 
+	}
+	parentRoutes := r.Group("api/v1/parent", middleware.AuthorizeJWT(jwtService))
+	{
+		parentRoutes.GET("/", parentController.All)
+		parentRoutes.GET("/:id", parentController.AllParentScout)
+		parentRoutes.POST("/:id", parentController.Create)
+		parentRoutes.PUT("/", parentController.Update)
+		parentRoutes.DELETE("/:id", parentController.Remove)
+	}
+	visitRoutes := r.Group("api/v1/visit", middleware.AuthorizeJWT(jwtService))
+	{
+		visitRoutes.GET("/", visitController.All)
+		visitRoutes.GET("/:id", visitController.AllVisitByUserAndSubDatachment)
+		visitRoutes.POST("/", visitController.CreateVisit)
+		visitRoutes.PUT("/", visitController.UpdateVisit)
+		visitRoutes.DELETE("/:id", visitController.RemoveVisit)
+	}
+	cityRoutes := r.Group("api/v1/city", middleware.AuthorizeJWT(jwtService))
+	{
+		cityRoutes.GET("/", cityController.All)
 	}
 	r.Static("assets", "./assets")
 	r.Run(":8080")

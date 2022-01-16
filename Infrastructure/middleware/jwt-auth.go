@@ -41,7 +41,6 @@ func AuthorizeJWT(jwtService services.JWTService) gin.HandlerFunc {
 			log.Println("Claim[subdetachmentid] :", claims["subdetachmentid"])
 			log.Println("claims[exp]", claims["exp"])
 		} else {
-			log.Println(err)
 			response := utilities.BuildErrorResponse("Token is not valid", err.Error(), nil)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
 		}

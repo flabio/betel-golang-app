@@ -14,12 +14,17 @@ type UserDTO struct {
 	Birthday               string `json:"birthday" form:"birthday"`
 	Birthplace             string `json:"birthplace" form:"birthplace" `
 	Gender                 string `json:"gender" form:"gender" `
+	Rh                     string `json:"rh" form:"rh"`
 	Direction              string `json:"direction" form:"direction" `
 	PhoneNumber            string `json:"phone_number" `
 	CellPhone              string `json:"cell_phone" form:"cell_phone" `
 	CivilStatus            string `json:"civil_status" form:"civil_status" `
 	Position               string `json:"position" form:"position" `
 	Occupation             string `json:"occupation" form:"occupation" `
+	School                 string `json:"school" form:"school"`
+	Grade                  string `json:"grade" form:"grade"`
+	HobbiesInterests       string `json:"hobbies_interests" form:"hobbies_interests"`
+	Allergies              string `json:"allergies" form:"allergies"`
 	BaptismWater           bool   `json:"baptism_water" form:"baptism_water" `
 	BaptismSpirit          bool   `json:"baptism_spirit" form:"baptism_spirit" `
 	YearConversion         int64  `json:"year_conversion" form:"year_conversion" `
@@ -42,10 +47,16 @@ type ScoutDTO struct {
 	Birthplace             string `json:"birthplace" form:"birthplace" `
 	Gender                 string `json:"gender" form:"gender" `
 	Direction              string `json:"direction" form:"direction" `
-	CellPhone              string `json:"cell_phone" form:"cell_phone" `
+	CellPhone              string `json:"cell_phone" form:"cell_phone"`
+	Rh                     string `json:"rh" form:"rh"`
+	School                 string `json:"school" form:"school"`
+	Grade                  string `json:"grade" form:"grade"`
+	HobbiesInterests       string `json:"hobbies_interests" form:"hobbies_interests"`
+	Allergies              string `json:"allergies" form:"allergies"`
 	Active                 bool   `json:"active" form:"active" `
 	SubDetachmentId        uint   `json:"subdetachmentid" form:"subdetachmentid" `
 	ChurchId               uint   `json:"churchid" form:"churchid" `
+	CityId                 uint   `json:"cityid" form:"cityid"`
 }
 
 //LoginDTO is a model that used by client when POST from /login url

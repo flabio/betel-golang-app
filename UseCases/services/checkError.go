@@ -24,11 +24,15 @@ func validadErrors(errDTO error, context *gin.Context) {
 	context.AbortWithStatusJSON(http.StatusBadRequest, res)
 }
 
+func validadExistScout(context *gin.Context) {
+
+	context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildExistResponse())
+}
+
 //validadRequiredMsg
 func validadRequiredMsg(message string, context *gin.Context) {
 
-	res := utilities.BuildErrorAllResponseMessage(message)
-	context.AbortWithStatusJSON(http.StatusBadRequest, res)
+	context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrorAllResponseMessage(message))
 }
 func validadBirdateRequiredMsg(message string, context *gin.Context) {
 

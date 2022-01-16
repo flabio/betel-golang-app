@@ -4,7 +4,6 @@ import (
 	"bete/Infrastructure/middleware"
 	"bete/UseCases/services"
 	"bete/UseCases/utilities"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -16,6 +15,7 @@ type AttendanceController interface {
 	Remove(context *gin.Context)
 	All(context *gin.Context)
 	AttendancesSubdetachment(context *gin.Context)
+	WeeksbySubDetachments(context *gin.Context)
 }
 
 type attendanceController struct {
@@ -37,7 +37,6 @@ func (c *attendanceController) Create(context *gin.Context) {
 		c.attendance.Create(claim.Subdetachmentid, context)
 		return
 	}
-	fmt.Println("claim", claim)
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
 }
 
@@ -76,6 +75,16 @@ func (c *attendanceController) AttendancesSubdetachment(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol > 0 {
 		c.attendance.AttendancesSubdetachment(claim.Subdetachmentid, context)
+		return
+	}
+	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+}
+
+//WeeksbySubDetachments
+func (c *attendanceController) WeeksbySubDetachments(context *gin.Context) {
+	claim := middleware.GetRol(c.jwt, context)
+	if claim.Rol > 0 {
+		c.attendance.WeeksbySubDetachments(claim.Subdetachmentid, context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())

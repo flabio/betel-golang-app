@@ -60,8 +60,8 @@ func (j *jwtService) GenerateToken(UserId string, RolId string, SubDetachmentId 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	t, err := token.SignedString([]byte(j.secretKey))
 	if err != nil {
-		//checkError(err)
-		fmt.Println(err.Error())
+		checkError(err)
+		//fmt.Println(err.Error())
 	}
 	return t
 }

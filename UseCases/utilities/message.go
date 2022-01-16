@@ -10,6 +10,13 @@ type GetMessageRequired interface {
 func (msg MessageRequired) RequiredId() string {
 	return "The id is required"
 }
+func (msg MessageRequired) RequiredUserId() string {
+	return "The id user is required"
+}
+
+func (msg MessageRequired) RequiredSubDetachmentId() string {
+	return "The id of subdetachment is required"
+}
 
 func (msg MessageRequired) RequiredName() string {
 	return "The name is required"
@@ -71,4 +78,16 @@ func (msg MessageRequired) RequiredPasswordConfirm() string {
 }
 func (msg MessageRequired) RequiredBirthday() string {
 	return "Please check the date of birth"
+}
+func (msg MessageRequired) RequiredWeek() string {
+	return "The week is required"
+}
+func (msg MessageRequired) ExtisByUserWeek() string {
+	return "You already have this week assigned"
+}
+func (msg MessageRequired) RequiredState() string {
+	return "The state is required"
+}
+func (msg MessageRequired) RequiredDescription() string {
+	return "The description is required"
 }

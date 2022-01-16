@@ -1,7 +1,6 @@
 package utilities
 
 import (
-	"log"
 	"strconv"
 	"strings"
 
@@ -37,13 +36,13 @@ func BuildErrorResponse(message string, err string, data interface{}) Response {
 		Status:  false,
 		Message: message,
 		Error:   splittedError,
-		Data:    data}
+		Data:    data,
+	}
 	return res
 }
 
 //BuildErrorResponse method is to inject dasta value to dynamic failed response
 func BuildNotFoudResponse() Response {
-
 	res := Response{
 		Status:  false,
 		Message: "not found",
@@ -62,9 +61,19 @@ func BuildDanedResponse() Response {
 	return res
 }
 
+//BuildErrorResponse method is to inject dasta value to dynamic failed response
+func BuildExistResponse() Response {
+	res := Response{
+		Status:  false,
+		Message: "Scout already exists.",
+		Error:   nil,
+	}
+
+	return res
+}
+
 //BuildErrorAllResponse method is to inject dasta value to dynamic failed response
 func BuildErrorAllResponse(err string) Response {
-	log.Fatalf("%v", err)
 	res := Response{
 		Status:  false,
 		Message: err,
@@ -74,7 +83,7 @@ func BuildErrorAllResponse(err string) Response {
 
 //BuildErrorAllResponse method is to inject dasta value to dynamic failed response
 func BuildErrorAllResponseMessage(message string) Response {
-	log.Fatalf("%v", message)
+
 	res := Response{
 		Status:  false,
 		Message: message,
@@ -147,7 +156,6 @@ func BuildUpdateResponses(err string, data interface{}) Response {
 
 //BuildErrorResponse method is to inject dasta value to dynamic failed response
 func BuildDeteleteResponse(status bool, data interface{}) Response {
-
 	res := Response{
 		Status:  status,
 		Message: "It was successfully removed",

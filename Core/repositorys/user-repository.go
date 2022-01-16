@@ -221,7 +221,7 @@ func (db *userConnection) ProfileUser(userID uint) (entity.User, error) {
 	var user entity.User
 	var errChan = make(chan error, 1)
 	go func() {
-		err := db.connection.Preload("Roles.Rol").Preload("Roles.StudyCarried").Preload("MinisterialAcademys").Preload("Church").Find(&user, userID).Error
+		err := db.connection.Preload("City").Preload("SubDetachment").Preload("Roles.Rol").Preload("Roles.StudyCarried").Preload("MinisterialAcademys").Preload("Church").Find(&user, userID).Error
 		defer entity.Closedb()
 		errChan <- err
 	}()

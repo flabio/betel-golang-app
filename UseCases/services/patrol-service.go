@@ -141,7 +141,7 @@ func validatePatroCreate(dto dto.PatrolDTO, context *gin.Context) bool {
 	context.ShouldBind(&dto)
 	if len(dto.Name) == 0 {
 		msg := utilities.MessageRequired{}
-		validadRequiredMsg(msg.RequiredId(), context)
+		validadRequiredMsg(msg.RequiredName(), context)
 		return true
 	}
 	if dto.SubDetachmentId == 0 {

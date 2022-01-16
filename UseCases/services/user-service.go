@@ -174,8 +174,7 @@ func (userService *userService) Update(context *gin.Context) {
 		validadErrors(err, context)
 		return
 	}
-	res := utilities.BuildUpdateResponse(u)
-	context.JSON(http.StatusOK, res)
+	context.JSON(http.StatusOK, utilities.BuildUpdateResponse(u))
 
 }
 func (userService *userService) UpdatePassword(context *gin.Context) {

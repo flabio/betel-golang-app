@@ -11,6 +11,7 @@ type AttendanceRepository interface {
 	Update(attendance entity.Attendance) (entity.Attendance, error)
 	Remove(Id uint) (bool, error)
 	FindByIdAttendance(Id uint) (entity.Attendance, error)
+	FindByIdWeeksDetachment(week string, userid uint) (entity.Attendance, error)
 	All() ([]entity.Attendance, error)
 	AttendancesSubdetachment(IdUser uint, IdSubDetachment uint) ([]entity.Attendance, error)
 }
@@ -67,6 +68,13 @@ func (db *attendanceConnection) AttendancesSubdetachment(IdUser uint, IdSubDetac
 func (db *attendanceConnection) FindByIdAttendance(Id uint) (entity.Attendance, error) {
 	var attendance entity.Attendance
 	err := db.connection.Find(&attendance, Id).Error
+	defer entity.Closedb()
+	return attendance, err
+}
+
+func (db *attendanceConnection) FindByIdWeeksDetachment(week string, userid uint) (entity.Attendance, error) {
+	var attendance entity.Attendance
+	err := db.connection.Where("user_id=?", userid).Where("week_sub_detachment=?", week).Find(&attendance).Error
 	defer entity.Closedb()
 	return attendance, err
 }
