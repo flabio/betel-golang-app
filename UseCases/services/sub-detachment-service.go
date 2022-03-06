@@ -3,6 +3,7 @@ package services
 import (
 	"bete/Core/entity"
 	"bete/Core/repositorys"
+	constantvariables "bete/Infrastructure/constantVariables"
 	"bete/UseCases/dto"
 	"bete/UseCases/utilities"
 	"net/http"
@@ -14,12 +15,12 @@ import (
 
 //SubDetachmentService
 type SubDetachmentService interface {
-	Create(context *gin.Context)
-	Update(context *gin.Context)
-	Remove(context *gin.Context)
-	FindById(context *gin.Context)
-	FindByIdDetachment(context *gin.Context)
-	All(context *gin.Context)
+	SetCreateSubDetachmentService(context *gin.Context)
+	SetUpdateSubDetachmentService(context *gin.Context)
+	SetRemoveSubDetachmentService(context *gin.Context)
+	GetFindByIdSubDetachmentService(context *gin.Context)
+	GetFindByIdDetachmentSubDetachmentService(context *gin.Context)
+	GetAllSubDetachmentService(context *gin.Context)
 }
 
 //subDetachmentService
@@ -36,11 +37,11 @@ func NewSubDetachmentService() SubDetachmentService {
 }
 
 //Create
-func (subDetachmentService *subDetachmentService) Create(context *gin.Context) {
+func (subDetachmentService *subDetachmentService) SetCreateSubDetachmentService(context *gin.Context) {
 	subDetachment := entity.SubDetachment{}
 	var dto dto.SubDetachmentDTO
 	context.ShouldBind(&dto)
-	if validateSubDetachments(dto, context) {
+	if validateSubDetachments(dto, context, constantvariables.OPTION_CREATE) {
 		return
 	}
 	smapping.FillStruct(&subDetachment, smapping.MapFields(&dto))
@@ -48,7 +49,7 @@ func (subDetachmentService *subDetachmentService) Create(context *gin.Context) {
 	filename, err := UploadFile(context)
 	subDetachment.Archives = filename
 
-	res, err := subDetachmentService.subDetachmentRepository.Create(subDetachment)
+	res, err := subDetachmentService.subDetachmentRepository.SetCreateSubDetachment(subDetachment)
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -57,16 +58,16 @@ func (subDetachmentService *subDetachmentService) Create(context *gin.Context) {
 }
 
 //Update
-func (subDetachmentService *subDetachmentService) Update(context *gin.Context) {
+func (subDetachmentService *subDetachmentService) SetUpdateSubDetachmentService(context *gin.Context) {
 	subDetachment := entity.SubDetachment{}
 	var dto dto.SubDetachmentDTO
 	context.ShouldBind(&dto)
-	if validateSubDetachments(dto, context) {
+	if validateSubDetachments(dto, context, constantvariables.OPTION_EDIT) {
 		return
 	}
 	smapping.FillStruct(&subDetachment, smapping.MapFields(&dto))
 
-	findById, _ := subDetachmentService.subDetachmentRepository.FindById(uint(dto.Id))
+	findById, _ := subDetachmentService.subDetachmentRepository.GetFindByIdSubDetachment(uint(dto.Id))
 	if findById.Id == 0 {
 		validadErrorById(context)
 		return
@@ -83,7 +84,7 @@ func (subDetachmentService *subDetachmentService) Update(context *gin.Context) {
 		}
 	}
 
-	res, err := subDetachmentService.subDetachmentRepository.Update(subDetachment)
+	res, err := subDetachmentService.subDetachmentRepository.SetCreateSubDetachment(subDetachment)
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -92,7 +93,7 @@ func (subDetachmentService *subDetachmentService) Update(context *gin.Context) {
 }
 
 //Remove
-func (subDetachmentService *subDetachmentService) Remove(context *gin.Context) {
+func (subDetachmentService *subDetachmentService) SetRemoveSubDetachmentService(context *gin.Context) {
 
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 	if err != nil {
@@ -100,12 +101,12 @@ func (subDetachmentService *subDetachmentService) Remove(context *gin.Context) {
 		return
 	}
 
-	findById, _ := subDetachmentService.subDetachmentRepository.FindById(uint(id))
+	findById, _ := subDetachmentService.subDetachmentRepository.GetFindByIdSubDetachment(uint(id))
 	if findById.Id == 0 {
 		validadErrorById(context)
 		return
 	}
-	res, err := subDetachmentService.subDetachmentRepository.Remove(findById.Id)
+	res, err := subDetachmentService.subDetachmentRepository.SetRemoveSubDetachment(findById.Id)
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -115,13 +116,13 @@ func (subDetachmentService *subDetachmentService) Remove(context *gin.Context) {
 }
 
 //FindById
-func (subDetachmentService *subDetachmentService) FindById(context *gin.Context) {
+func (subDetachmentService *subDetachmentService) GetFindByIdSubDetachmentService(context *gin.Context) {
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 	if err != nil {
 		validadErrors(err, context)
 		return
 	}
-	findById, _ := subDetachmentService.subDetachmentRepository.FindById(uint(id))
+	findById, _ := subDetachmentService.subDetachmentRepository.GetFindByIdSubDetachment(uint(id))
 	if findById.Id == 0 {
 		validadErrorById(context)
 		return
@@ -130,13 +131,13 @@ func (subDetachmentService *subDetachmentService) FindById(context *gin.Context)
 }
 
 //FindByIdDetachment
-func (subDetachmentService *subDetachmentService) FindByIdDetachment(context *gin.Context) {
+func (subDetachmentService *subDetachmentService) GetFindByIdDetachmentSubDetachmentService(context *gin.Context) {
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 	if err != nil {
 		validadErrors(err, context)
 		return
 	}
-	res, err := subDetachmentService.subDetachmentRepository.FindByIdDetachment(uint(id))
+	res, err := subDetachmentService.subDetachmentRepository.GetFindByIdDetachmentSubDetachment(uint(id))
 
 	if err != nil {
 		validadErrors(err, context)
@@ -146,8 +147,8 @@ func (subDetachmentService *subDetachmentService) FindByIdDetachment(context *gi
 }
 
 //All
-func (subDetachmentService *subDetachmentService) All(context *gin.Context) {
-	res, err := subDetachmentService.subDetachmentRepository.All()
+func (subDetachmentService *subDetachmentService) GetAllSubDetachmentService(context *gin.Context) {
+	res, err := subDetachmentService.subDetachmentRepository.GetAllSubDetachment()
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -156,33 +157,41 @@ func (subDetachmentService *subDetachmentService) All(context *gin.Context) {
 }
 
 //Validate
-func validateSubDetachments(dto dto.SubDetachmentDTO, context *gin.Context) bool {
+func validateSubDetachments(dto dto.SubDetachmentDTO, context *gin.Context, options int) bool {
 
 	context.ShouldBind(&dto)
-	if len(dto.Name) == 0 {
-		msg := utilities.MessageRequired{}
-		validadRequiredMsg(msg.RequiredId(), context)
-		return true
+	switch options {
+	case 1:
+		if len(dto.Name) == 0 {
+			msg := utilities.MessageRequired{}
+			validadRequiredMsg(msg.RequiredId(), context)
+			return true
+		}
+		if dto.DetachmentId == 0 {
+			msg := utilities.MessageRequired{}
+			validadRequiredMsg(msg.RequiredDetachment(), context)
+			return true
+		}
+
 	}
-	if dto.DetachmentId == 0 {
-		msg := utilities.MessageRequired{}
-		validadRequiredMsg(msg.RequiredDetachment(), context)
-		return true
-	}
+
 	return false
 }
-func validateUserSubDetachments(dto dto.UserSubDetachmentDTO, context *gin.Context) bool {
+func validateUserSubDetachments(dto dto.UserSubDetachmentDTO, context *gin.Context, options int) bool {
 
 	context.ShouldBind(&dto)
-	if dto.UserId == 0 {
-		msg := utilities.MessageRequired{}
-		validadRequiredMsg(msg.RequiredId(), context)
-		return true
-	}
-	if dto.SubDetachmentId == 0 {
-		msg := utilities.MessageRequired{}
-		validadRequiredMsg(msg.RequiredDetachment(), context)
-		return true
+	switch options {
+	case 1:
+		if dto.UserId == 0 {
+			msg := utilities.MessageRequired{}
+			validadRequiredMsg(msg.RequiredId(), context)
+			return true
+		}
+		if dto.SubDetachmentId == 0 {
+			msg := utilities.MessageRequired{}
+			validadRequiredMsg(msg.RequiredDetachment(), context)
+			return true
+		}
 	}
 	return false
 }

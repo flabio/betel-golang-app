@@ -37,7 +37,7 @@ func (c *subdetachmentController) All(context *gin.Context) {
 
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol > 0 {
-		c.subDetachment.All(context)
+		c.subDetachment.GetAllSubDetachmentService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -47,7 +47,8 @@ func (c *subdetachmentController) All(context *gin.Context) {
 func (c *subdetachmentController) FindById(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol == 1 {
-		c.subDetachment.FindById(context)
+		c.subDetachment.GetFindByIdSubDetachmentService(context)
+
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -57,7 +58,7 @@ func (c *subdetachmentController) FindById(context *gin.Context) {
 func (c *subdetachmentController) FindByIdDetachment(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol == 1 {
-		c.subDetachment.FindByIdDetachment(context)
+		c.subDetachment.GetFindByIdDetachmentSubDetachmentService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -67,7 +68,7 @@ func (c *subdetachmentController) FindByIdDetachment(context *gin.Context) {
 func (c *subdetachmentController) Create(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol == 1 {
-		c.subDetachment.Create(context)
+		c.subDetachment.SetCreateSubDetachmentService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -77,7 +78,7 @@ func (c *subdetachmentController) Create(context *gin.Context) {
 func (c *subdetachmentController) Update(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol == 1 {
-		c.subDetachment.Update(context)
+		c.subDetachment.SetUpdateSubDetachmentService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -87,7 +88,7 @@ func (c *subdetachmentController) Update(context *gin.Context) {
 func (c *subdetachmentController) Remove(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol == 1 {
-		c.subDetachment.Remove(context)
+		c.subDetachment.SetRemoveSubDetachmentService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())

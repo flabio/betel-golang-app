@@ -4,6 +4,7 @@ import (
 	"bete/Infrastructure/middleware"
 	"bete/UseCases/services"
 	"bete/UseCases/utilities"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -18,7 +19,7 @@ type RolController interface {
 	FindRol(context *gin.Context)
 	Create(context *gin.Context)
 	Update(context *gin.Context)
-	Delete(context *gin.Context)
+	Remove(context *gin.Context)
 }
 
 type rolController struct {
@@ -39,7 +40,7 @@ func NewRolController() RolController {
 func (c *rolController) All(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol == 1 {
-		c.rol.All(context)
+		c.rol.GetAllService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -50,7 +51,7 @@ func (c *rolController) All(context *gin.Context) {
 func (c *rolController) AllGroupRol(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol == 1 {
-		c.rol.AllGroupRol(context)
+		c.rol.GetAllGroupRolService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -61,7 +62,7 @@ func (c *rolController) AllGroupRol(context *gin.Context) {
 func (c *rolController) AllRoleModule(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol == 1 {
-		c.rol.AllRoleModule(context)
+		c.rol.GetAllRoleModuleService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -72,7 +73,8 @@ func (c *rolController) FindRol(context *gin.Context) {
 
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol == 1 {
-		c.rol.FindById(context)
+		fmt.Println("aqui controller")
+		c.rol.GetFindByIdService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -84,7 +86,7 @@ func (c *rolController) Create(context *gin.Context) {
 
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol == 1 {
-		c.rol.Create(context)
+		c.rol.SetCreateService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -95,7 +97,7 @@ func (c *rolController) Create(context *gin.Context) {
 func (c *rolController) Update(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol == 1 {
-		c.rol.Update(context)
+		c.rol.SetUpdateService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -103,10 +105,10 @@ func (c *rolController) Update(context *gin.Context) {
 }
 
 // delete rol
-func (c *rolController) Delete(context *gin.Context) {
+func (c *rolController) Remove(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol == 1 {
-		c.rol.Delete(context)
+		c.rol.SetRemoveService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())

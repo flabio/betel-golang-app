@@ -2,13 +2,14 @@ package repositorys
 
 import (
 	"bete/Core/entity"
+	constantvariables "bete/Infrastructure/constantVariables"
 
 	"gorm.io/gorm"
 )
 
 type RoleModule interface {
-	Create(roleModule entity.RoleModule) (entity.RoleModule, error)
-	Remove(Id uint) (bool, error)
+	SetCreateRoleModule(roleModule entity.RoleModule) (entity.RoleModule, error)
+	SetRemoveRoleModule(Id uint) (bool, error)
 }
 
 type roleModuleConnection struct {
@@ -22,24 +23,24 @@ func NewRoleModuleRepository() RoleModule {
 	}
 }
 
-func (db *roleModuleConnection) Create(roleModule entity.RoleModule) (entity.RoleModule, error) {
-	var errChan = make(chan error, 1)
+var errChanRoleModule = make(chan error, constantvariables.CHAN_VALUE)
+
+func (db *roleModuleConnection) SetCreateRoleModule(roleModule entity.RoleModule) (entity.RoleModule, error) {
 	go func() {
 		err := db.connection.Save(&roleModule).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanRoleModule <- err
 	}()
-	err := <-errChan
+	err := <-errChanRoleModule
 	return roleModule, err
 }
-func (db *roleModuleConnection) Remove(Id uint) (bool, error) {
-	var errChan = make(chan error, 1)
+func (db *roleModuleConnection) SetRemoveRoleModule(Id uint) (bool, error) {
 	go func() {
 		err := db.connection.Delete(&entity.RoleModule{}, Id).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanRoleModule <- err
 	}()
-	err := <-errChan
+	err := <-errChanRoleModule
 	if err == nil {
 		return true, err
 	}

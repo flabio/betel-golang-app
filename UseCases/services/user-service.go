@@ -3,10 +3,10 @@ package services
 import (
 	"bete/Core/entity"
 	"bete/Core/repositorys"
+	constantvariables "bete/Infrastructure/constantVariables"
 
 	"bete/UseCases/dto"
 	"bete/UseCases/utilities"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -20,17 +20,17 @@ var wg sync.WaitGroup
 
 //UserService is a contract.....
 type UserService interface {
-	Create(context *gin.Context)
+	SetCreateService(context *gin.Context)
 
-	Update(context *gin.Context)
-	UpdatePassword(context *gin.Context)
-	All(context *gin.Context)
-	ListUser(context *gin.Context)
-	ListKingsScouts(context *gin.Context)
-	Delete(context *gin.Context)
-	Profile(userID uint, context *gin.Context)
-	FindUser(context *gin.Context)
-	FindUserNameLastName(context *gin.Context)
+	SetUpdateService(context *gin.Context)
+	SetUpdatePasswordService(context *gin.Context)
+	GetAllService(context *gin.Context)
+	GetListUserService(context *gin.Context)
+	GetListKingsScoutsService(context *gin.Context)
+	SetRemoveService(context *gin.Context)
+	GetProfileService(userID uint, context *gin.Context)
+	GetFindUserService(context *gin.Context)
+	GetFindUserNameLastNameService(context *gin.Context)
 }
 
 type userService struct {
@@ -46,9 +46,9 @@ func NewUserService() UserService {
 }
 
 //List user
-func (userService *userService) ListUser(context *gin.Context) {
+func (userService *userService) GetListUserService(context *gin.Context) {
 
-	users, err := userService.userRepository.AllUser()
+	users, err := userService.userRepository.GetAllUser()
 
 	if err != nil {
 		validadErrors(err, context)
@@ -59,14 +59,14 @@ func (userService *userService) ListUser(context *gin.Context) {
 
 // list ListKingsScouts
 
-func (userService *userService) ListKingsScouts(context *gin.Context) {
+func (userService *userService) GetListKingsScoutsService(context *gin.Context) {
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 
 	if err != nil {
 		validadErrors(err, context)
 		return
 	}
-	users, err := userService.userRepository.ListKingsScouts(uint(id))
+	users, err := userService.userRepository.GetListKingsScouts(uint(id))
 
 	if err != nil {
 		validadErrors(err, context)
@@ -76,10 +76,8 @@ func (userService *userService) ListKingsScouts(context *gin.Context) {
 }
 
 //Create user
-func (userService *userService) Create(context *gin.Context) {
+func (userService *userService) SetCreateService(context *gin.Context) {
 	userChan := make(chan int)
-	option := 0
-
 	userToCreated := entity.User{}
 	roleToCreated := entity.Role{}
 
@@ -87,7 +85,7 @@ func (userService *userService) Create(context *gin.Context) {
 
 	context.ShouldBind(&userDTO)
 
-	if validarUser(userDTO, userService, context, option) {
+	if validarUser(userDTO, userService, context, constantvariables.OPTION_CREATE) {
 		return
 	}
 
@@ -99,7 +97,7 @@ func (userService *userService) Create(context *gin.Context) {
 		filename, _ := UploadFile(context)
 
 		userToCreated.Image = filename
-		createdUser, errs := userService.userRepository.InsertUser(userToCreated)
+		createdUser, errs := userService.userRepository.SetInsertUser(userToCreated)
 		if errs != nil {
 			validadErrors(errs, context)
 			return
@@ -116,10 +114,10 @@ func (userService *userService) Create(context *gin.Context) {
 		roleToCreated.RolId = userDTO.RolId
 		roleToCreated.UserId = uint(user_id)
 
-		err := userService.userRepository.InsertRole(roleToCreated)
+		err := userService.userRepository.SetInsertRole(roleToCreated)
 		if err != nil {
 			log.Println(err)
-			result, err := userService.userRepository.DeleteUser(uint(user_id))
+			result, err := userService.userRepository.SetRemoveUser(uint(user_id))
 			if err != nil {
 				validadErrorRemove(result, context)
 				return
@@ -131,7 +129,7 @@ func (userService *userService) Create(context *gin.Context) {
 }
 
 //update user
-func (userService *userService) Update(context *gin.Context) {
+func (userService *userService) SetUpdateService(context *gin.Context) {
 	userToCreated := entity.User{}
 	roleToCreated := entity.Role{}
 
@@ -139,7 +137,7 @@ func (userService *userService) Update(context *gin.Context) {
 
 	context.ShouldBind(&userDTO)
 
-	if validarUser(userDTO, userService, context, 1) {
+	if validarUser(userDTO, userService, context, constantvariables.OPTION_EDIT) {
 		return
 	}
 
@@ -152,7 +150,7 @@ func (userService *userService) Update(context *gin.Context) {
 	go goRunitaUpdateRole(userService, roleToCreated)
 	wg.Wait()
 
-	findById, _ := userService.userRepository.ProfileUser(uint(userDTO.Id))
+	findById, _ := userService.userRepository.GetProfileUser(uint(userDTO.Id))
 	if findById.Id == 0 {
 		validadErrorById(context)
 		return
@@ -168,7 +166,7 @@ func (userService *userService) Update(context *gin.Context) {
 			userToCreated.Image = findById.Image
 		}
 	}
-	u, err := userService.userRepository.EditUser(userToCreated)
+	u, err := userService.userRepository.SetEditUser(userToCreated)
 
 	if err != nil {
 		validadErrors(err, context)
@@ -177,7 +175,7 @@ func (userService *userService) Update(context *gin.Context) {
 	context.JSON(http.StatusOK, utilities.BuildUpdateResponse(u))
 
 }
-func (userService *userService) UpdatePassword(context *gin.Context) {
+func (userService *userService) SetUpdatePasswordService(context *gin.Context) {
 	user := entity.User{}
 	var userDTO dto.UserPasswordDTO
 
@@ -188,7 +186,7 @@ func (userService *userService) UpdatePassword(context *gin.Context) {
 	}
 	err := smapping.FillStruct(&user, smapping.MapFields(&userDTO))
 	checkError(err)
-	errp := userService.userRepository.ChangePassword(user)
+	errp := userService.userRepository.SetChangePassword(user)
 	if errp != nil {
 		validadErrors(errp, context)
 		return
@@ -196,7 +194,7 @@ func (userService *userService) UpdatePassword(context *gin.Context) {
 	res := utilities.BuildUpdatePasswordResponse()
 	context.JSON(http.StatusOK, res)
 }
-func (userService *userService) Delete(context *gin.Context) {
+func (userService *userService) SetRemoveService(context *gin.Context) {
 	chanels := make(chan bool)
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 
@@ -204,14 +202,14 @@ func (userService *userService) Delete(context *gin.Context) {
 		validadErrors(err, context)
 		return
 	}
-	user, errprofile := userService.userRepository.ProfileUser(uint(id))
+	user, errprofile := userService.userRepository.GetProfileUser(uint(id))
 	if errprofile != nil {
 		validadErrorById(context)
 		return
 	}
 
 	go func() {
-		err := userService.userRepository.DeleteRoleUser(user.Id)
+		err := userService.userRepository.SetRemoveRoleUser(user.Id)
 		if err != nil {
 			chanels <- false
 			return
@@ -221,7 +219,7 @@ func (userService *userService) Delete(context *gin.Context) {
 	}()
 	if <-chanels {
 
-		result, err := userService.userRepository.DeleteUser(user.Id)
+		result, err := userService.userRepository.SetRemoveUser(user.Id)
 		if err != nil {
 			validadErrorRemove(result, context)
 			return
@@ -233,9 +231,9 @@ func (userService *userService) Delete(context *gin.Context) {
 	res := utilities.BuildNotFoudResponse()
 	context.JSON(http.StatusBadRequest, res)
 }
-func (userService *userService) Profile(Id uint, context *gin.Context) {
+func (userService *userService) GetProfileService(Id uint, context *gin.Context) {
 
-	user, err := userService.userRepository.ProfileUser(Id)
+	user, err := userService.userRepository.GetProfileUser(Id)
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -245,14 +243,14 @@ func (userService *userService) Profile(Id uint, context *gin.Context) {
 
 }
 
-func (userService *userService) FindUser(context *gin.Context) {
+func (userService *userService) GetFindUserService(context *gin.Context) {
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 
 	if err != nil {
 		validadErrors(err, context)
 		return
 	}
-	user, err := userService.userRepository.ProfileUser(uint(id))
+	user, err := userService.userRepository.GetProfileUser(uint(id))
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -261,11 +259,11 @@ func (userService *userService) FindUser(context *gin.Context) {
 	context.JSON(http.StatusOK, res)
 
 }
-func (userService *userService) FindUserNameLastName(context *gin.Context) {
+func (userService *userService) GetFindUserNameLastNameService(context *gin.Context) {
 
 	search := context.Param("search")
 
-	users, err := userService.userRepository.FindUserNameLastName(search)
+	users, err := userService.userRepository.GetFindUserNameLastName(search)
 
 	if err != nil {
 		validadErrors(err, context)
@@ -275,16 +273,16 @@ func (userService *userService) FindUserNameLastName(context *gin.Context) {
 	return
 
 }
-func (userService *userService) All(context *gin.Context) {
-	total := userService.userRepository.CountUser()
+func (userService *userService) GetAllService(context *gin.Context) {
+	total := userService.userRepository.GetCountUser()
 	var limit int64 = 9
 	page, begin := utilities.Pagination(context, int(limit))
 	pages := (total / limit)
 	if (total % limit) != 0 {
 		pages++
 	}
-	fmt.Printf("Current Page: %d, Begin: %d\n", page, begin)
-	users, err := userService.userRepository.PaginationUsers(begin, int(limit))
+
+	users, err := userService.userRepository.GetPaginationUsers(begin, int(limit))
 
 	if err != nil {
 		validadErrors(err, context)
@@ -311,7 +309,7 @@ func (userService *userService) All(context *gin.Context) {
 
 func goRunitaCreateRole(userService *userService, roleToCreated entity.Role) {
 	wg.Done()
-	err := userService.userRepository.InsertRole(roleToCreated)
+	err := userService.userRepository.SetInsertRole(roleToCreated)
 	if err != nil {
 		log.Println(err)
 		checkError(err)
@@ -321,14 +319,14 @@ func goRunitaCreateRole(userService *userService, roleToCreated entity.Role) {
 //goRunitaUpdateRole
 func goRunitaUpdateRole(userService *userService, roleToCreated entity.Role) {
 	wg.Done()
-	role, err := userService.userRepository.EditRole(roleToCreated)
+	role, err := userService.userRepository.SetEditRole(roleToCreated)
 	if err != nil {
 		log.Println(err)
 		checkError(err)
 	}
 
 	if role.Id == 0 {
-		userService.userRepository.InsertRole(roleToCreated)
+		userService.userRepository.SetInsertRole(roleToCreated)
 	}
 }
 
@@ -336,7 +334,37 @@ func goRunitaUpdateRole(userService *userService, roleToCreated entity.Role) {
 func validarUser(u dto.UserDTO, userService *userService, context *gin.Context, option int) bool {
 	context.ShouldBind(&u)
 	msg := utilities.MessageRequired{}
+	switch option {
+	case 1:
+		existEmail, _ := userService.userRepository.IsDuplicateEmail(u.Email)
+		existsIdentification := userService.userRepository.IsDuplicateIdentificatio(u.Identification)
+		if existsIdentification {
+			validadRequiredMsg(msg.RequiredExistIdentification(), context)
+			return true
+		}
+		if existEmail {
+			validadRequiredMsg(msg.RequiredExistEmail(), context)
+			return true
+		}
+		if validarUserField(u, context) {
+			return true
+		}
 
+	case 2:
+		if u.Id == 0 {
+			validadRequiredMsg(msg.RequiredId(), context)
+			return true
+		}
+		if validarUserField(u, context) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func validarUserField(u dto.UserDTO, context *gin.Context) bool {
+	msg := utilities.MessageRequired{}
 	if len(u.Name) == 0 {
 		validadRequiredMsg(msg.RequiredName(), context)
 		return true
@@ -385,31 +413,13 @@ func validarUser(u dto.UserDTO, userService *userService, context *gin.Context, 
 		validadRequiredMsg(msg.RequiredDetachment(), context)
 		return true
 	}
-	if option == 1 {
-
-		if u.Id == 0 {
-			validadRequiredMsg(msg.RequiredId(), context)
-			return true
-		}
-	} else {
-		existEmail, _ := userService.userRepository.IsDuplicateEmail(u.Email)
-		existsIdentification := userService.userRepository.IsDuplicateIdentificatio(u.Identification)
-		if existsIdentification {
-			validadRequiredMsg(msg.RequiredExistIdentification(), context)
-			return true
-		}
-		if existEmail {
-			validadRequiredMsg(msg.RequiredExistEmail(), context)
-			return true
-		}
-		if u.Password == "" {
-			validadRequiredMsg(msg.RequiredPassword(), context)
-			return true
-		}
-		if u.Password != u.ConfirmPassword {
-			validadRequiredMsg(msg.RequiredPasswordConfirm(), context)
-			return true
-		}
+	if u.Password == "" {
+		validadRequiredMsg(msg.RequiredPassword(), context)
+		return true
+	}
+	if u.Password != u.ConfirmPassword {
+		validadRequiredMsg(msg.RequiredPasswordConfirm(), context)
+		return true
 	}
 	return false
 }

@@ -2,20 +2,20 @@ package repositorys
 
 import (
 	"bete/Core/entity"
+	constantvariables "bete/Infrastructure/constantVariables"
 
 	"gorm.io/gorm"
 )
 
 type ModuleRepository interface {
-	CreateModule(module entity.Module) (entity.Module, error)
-	UpdateModule(module entity.Module) (entity.Module, error)
-	AddModule(rolemodule entity.RoleModule) (entity.RoleModule, error)
-	AllModule() ([]entity.Module, error)
-	AllByRoleModule(Id uint) ([]entity.RoleModule, error)
-	FindModuleById(Id uint) (entity.Module, error)
-	DeleteModule(Id uint) (bool, error)
-	DeleteRoleModule(Id uint) (bool, error)
-	FindRoleModuleById(Id uint) (entity.RoleModule, error)
+	SetCreateModule(module entity.Module) (entity.Module, error)
+	SetCreateModuleRole(rolemodule entity.RoleModule) (entity.RoleModule, error)
+	GetAllModule() ([]entity.Module, error)
+	GetAllByRoleModule(Id uint) ([]entity.RoleModule, error)
+	GetFindModuleById(Id uint) (entity.Module, error)
+	SetRemoveModule(Id uint) (bool, error)
+	SetRemoveRoleModule(Id uint) (bool, error)
+	GetFindRoleModuleById(Id uint) (entity.RoleModule, error)
 }
 
 type moduleConnection struct {
@@ -28,106 +28,91 @@ func NewModuleRepository() ModuleRepository {
 		connection: db,
 	}
 }
-func (db *moduleConnection) CreateModule(module entity.Module) (entity.Module, error) {
-	var errChan = make(chan error, 1)
+
+var errChanModule = make(chan error, constantvariables.CHAN_VALUE)
+
+func (db *moduleConnection) SetCreateModule(module entity.Module) (entity.Module, error) {
 	go func() {
 		err := db.connection.Save(&module).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanModule <- err
 	}()
-	err := <-errChan
-	return module, err
-}
-func (db *moduleConnection) UpdateModule(module entity.Module) (entity.Module, error) {
-	var errChan = make(chan error, 1)
-
-	go func() {
-		err := db.connection.Save(&module).Error
-		defer entity.Closedb()
-		errChan <- err
-	}()
-	err := <-errChan
+	err := <-errChanModule
 	return module, err
 }
 
-func (db *moduleConnection) AddModule(rolemodule entity.RoleModule) (entity.RoleModule, error) {
-	var errChan = make(chan error, 1)
+func (db *moduleConnection) SetCreateModuleRole(rolemodule entity.RoleModule) (entity.RoleModule, error) {
+
 	go func() {
 		err := db.connection.Save(&rolemodule).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanModule <- err
 	}()
-	err := <-errChan
+	err := <-errChanModule
 	return rolemodule, err
 }
-func (db *moduleConnection) AllModule() ([]entity.Module, error) {
+func (db *moduleConnection) GetAllModule() ([]entity.Module, error) {
 	var modules []entity.Module
-	var errChan = make(chan error, 1)
 	go func() {
 		err := db.connection.Preload("RoleModule").Find(&modules).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanModule <- err
 	}()
-	err := <-errChan
+	err := <-errChanModule
 	return modules, err
 }
-func (db *moduleConnection) AllByRoleModule(Id uint) ([]entity.RoleModule, error) {
+func (db *moduleConnection) GetAllByRoleModule(Id uint) ([]entity.RoleModule, error) {
 	var modules []entity.RoleModule
-	var errChan = make(chan error, 1)
 	go func() {
 		//err := db.connection.Preload("RoleModule").Joins("left join role_modules on role_modules.module_id = modules.id").Where("role_modules.rol_id", Id).Find(&modules).Error
 		err := db.connection.Preload("Module").Where("rol_id", Id).Find(&modules).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanModule <- err
 	}()
-	err := <-errChan
+	err := <-errChanModule
 	return modules, err
 }
 
-func (db *moduleConnection) FindModuleById(Id uint) (entity.Module, error) {
+func (db *moduleConnection) GetFindModuleById(Id uint) (entity.Module, error) {
 	var module entity.Module
-	var errChan = make(chan error, 1)
 	go func() {
 		err := db.connection.Find(&module, Id).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanModule <- err
 	}()
-	err := <-errChan
+	err := <-errChanModule
 	return module, err
 }
 
-func (db *moduleConnection) FindRoleModuleById(Id uint) (entity.RoleModule, error) {
+func (db *moduleConnection) GetFindRoleModuleById(Id uint) (entity.RoleModule, error) {
 	var module entity.RoleModule
-	var errChan = make(chan error, 1)
 	go func() {
 		err := db.connection.Find(&module, Id).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanModule <- err
 	}()
-	err := <-errChan
+	err := <-errChanModule
 	return module, err
 }
-func (db *moduleConnection) DeleteModule(Id uint) (bool, error) {
-	var errChan = make(chan error, 1)
+func (db *moduleConnection) SetRemoveModule(Id uint) (bool, error) {
 	go func() {
 		err := db.connection.Delete(&entity.Module{}, Id).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanModule <- err
 	}()
-	err := <-errChan
+	err := <-errChanModule
 	if err == nil {
 		return true, err
 	}
 	return false, err
 }
-func (db *moduleConnection) DeleteRoleModule(Id uint) (bool, error) {
-	var errChan = make(chan error, 1)
+func (db *moduleConnection) SetRemoveRoleModule(Id uint) (bool, error) {
 	go func() {
 		err := db.connection.Delete(&entity.RoleModule{}, Id).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanModule <- err
 	}()
-	err := <-errChan
+	err := <-errChanModule
 	if err == nil {
 		return true, err
 	}

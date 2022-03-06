@@ -49,7 +49,7 @@ func (detachmentService *detachmentService) Create(context *gin.Context) {
 
 	detachment.Archives = filename
 
-	data, err := detachmentService.detachmentRepository.CreateDetachment(detachment)
+	data, err := detachmentService.detachmentRepository.SetCreateDetachment(detachment)
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -69,7 +69,7 @@ func (detachmentService *detachmentService) Update(context *gin.Context) {
 	err := smapping.FillStruct(&detachment, smapping.MapFields(&detachmentDTO))
 	checkError(err)
 
-	findId, err := detachmentService.detachmentRepository.FindDetachmentById(detachmentDTO.Id)
+	findId, err := detachmentService.detachmentRepository.GetFindDetachmentById(detachmentDTO.Id)
 
 	if err != nil {
 		validadErrors(err, context)
@@ -91,7 +91,7 @@ func (detachmentService *detachmentService) Update(context *gin.Context) {
 			detachment.Archives = findId.Archives
 		}
 	}
-	data, err := detachmentService.detachmentRepository.UpdateDetachment(detachment)
+	data, err := detachmentService.detachmentRepository.SetCreateDetachment(detachment)
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -106,7 +106,7 @@ func (detachmentService *detachmentService) Delete(context *gin.Context) {
 		validadErrorById(context)
 		return
 	}
-	findId, err := detachmentService.detachmentRepository.FindDetachmentById(uint(id))
+	findId, err := detachmentService.detachmentRepository.GetFindDetachmentById(uint(id))
 
 	if findId.Id == 0 {
 		validadErrorById(context)
@@ -117,7 +117,7 @@ func (detachmentService *detachmentService) Delete(context *gin.Context) {
 		return
 	}
 
-	detachment, err := detachmentService.detachmentRepository.DeleteDetachment(findId)
+	detachment, err := detachmentService.detachmentRepository.SetRemoveDetachment(findId)
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -134,7 +134,7 @@ func (detachmentService *detachmentService) FindById(context *gin.Context) {
 		return
 	}
 
-	detachment, err := detachmentService.detachmentRepository.FindDetachmentById(uint(id))
+	detachment, err := detachmentService.detachmentRepository.GetFindDetachmentById(uint(id))
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -145,7 +145,7 @@ func (detachmentService *detachmentService) FindById(context *gin.Context) {
 
 //all od detachment
 func (detachmentService *detachmentService) All(context *gin.Context) {
-	detachment, err := detachmentService.detachmentRepository.AllDetachment()
+	detachment, err := detachmentService.detachmentRepository.GetAllDetachment()
 	if err != nil {
 		validadErrors(err, context)
 		return

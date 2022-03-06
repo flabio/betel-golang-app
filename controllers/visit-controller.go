@@ -33,7 +33,8 @@ func NewVisitController() VisitController {
 func (c *visitController) All(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol > 0 {
-		c.visit.All(context)
+		c.visit.GetAllVisitService(context)
+
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -42,7 +43,8 @@ func (c *visitController) All(context *gin.Context) {
 func (c *visitController) AllVisitByUserAndSubDatachment(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol > 0 {
-		c.visit.AllVisitByUser(claim.Subdetachmentid, context)
+		c.visit.GetAllVisitByUserVisitService(claim.Subdetachmentid, context)
+
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -50,7 +52,7 @@ func (c *visitController) AllVisitByUserAndSubDatachment(context *gin.Context) {
 func (c *visitController) CreateVisit(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol > 0 {
-		c.visit.Create(context)
+		c.visit.SetCreateVisitService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -58,7 +60,7 @@ func (c *visitController) CreateVisit(context *gin.Context) {
 func (c *visitController) UpdateVisit(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol > 0 {
-		c.visit.Update(context)
+		c.visit.SetUpdateVisitService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -66,7 +68,7 @@ func (c *visitController) UpdateVisit(context *gin.Context) {
 func (c *visitController) RemoveVisit(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol > 0 {
-		c.visit.Remove(context)
+		c.visit.SetRemoveVisitService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())

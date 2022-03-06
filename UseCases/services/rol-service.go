@@ -3,8 +3,10 @@ package services
 import (
 	"bete/Core/entity"
 	"bete/Core/repositorys"
+	constantvariables "bete/Infrastructure/constantVariables"
 	"bete/UseCases/dto"
 	"bete/UseCases/utilities"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -14,13 +16,13 @@ import (
 
 //rolService is a contract.....
 type RolService interface {
-	Create(context *gin.Context)
-	Update(context *gin.Context)
-	FindById(context *gin.Context)
-	Delete(context *gin.Context)
-	All(context *gin.Context)
-	AllGroupRol(context *gin.Context)
-	AllRoleModule(context *gin.Context)
+	SetCreateService(context *gin.Context)
+	SetUpdateService(context *gin.Context)
+	GetFindByIdService(context *gin.Context)
+	SetRemoveService(context *gin.Context)
+	GetAllService(context *gin.Context)
+	GetAllGroupRolService(context *gin.Context)
+	GetAllRoleModuleService(context *gin.Context)
 }
 
 type rolService struct {
@@ -38,17 +40,17 @@ func NewRolService() RolService {
 }
 
 //service of create
-func (service *rolService) Create(context *gin.Context) {
+func (service *rolService) SetCreateService(context *gin.Context) {
 
 	rol := entity.Rol{}
 	var rolDto dto.RolCreateDTO
 	context.ShouldBind(&rolDto)
-	if validarRolCreate(rolDto, context) {
+	if validarRol(rolDto, context, constantvariables.OPTION_CREATE) {
 		return
 	}
 	smapping.FillStruct(&rol, smapping.MapFields(&rolDto))
 
-	data, err := service.rolRepository.CreateRol(rol)
+	data, err := service.rolRepository.SetCreateRol(rol)
 
 	if err != nil {
 		validadErrors(err, context)
@@ -59,25 +61,25 @@ func (service *rolService) Create(context *gin.Context) {
 }
 
 //service of update
-func (service *rolService) Update(context *gin.Context) {
+func (service *rolService) SetUpdateService(context *gin.Context) {
 
 	rolToUpdate := entity.Rol{}
 	var rolDto dto.RolCreateDTO
 
 	context.ShouldBind(&rolDto)
-	if validarRolEditar(rolDto, context) {
+	if validarRol(rolDto, context, constantvariables.OPTION_EDIT) {
 		return
 	}
 	err := smapping.FillStruct(&rolToUpdate, smapping.MapFields(&rolDto))
 	checkError(err)
 
-	findById, _ := service.rolRepository.FindRolById(uint(rolDto.Id))
+	findById, _ := service.rolRepository.GetFindRolById(uint(rolDto.Id))
 	if findById.Id == 0 {
 		validadErrorById(context)
 		return
 	}
 
-	data, err := service.rolRepository.UpdateRol(rolToUpdate)
+	data, err := service.rolRepository.SetCreateRol(rolToUpdate)
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -88,9 +90,9 @@ func (service *rolService) Update(context *gin.Context) {
 }
 
 //service of all
-func (service *rolService) All(context *gin.Context) {
+func (service *rolService) GetAllService(context *gin.Context) {
 
-	var rols, err = service.rolRepository.AllRol()
+	var rols, err = service.rolRepository.GetAllRol()
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -100,8 +102,8 @@ func (service *rolService) All(context *gin.Context) {
 }
 
 // service of group AllGroupRol
-func (service *rolService) AllGroupRol(context *gin.Context) {
-	var rols, err = service.rolRepository.AllGroupRol()
+func (service *rolService) GetAllGroupRolService(context *gin.Context) {
+	var rols, err = service.rolRepository.GetAllGroupRol()
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -111,9 +113,9 @@ func (service *rolService) AllGroupRol(context *gin.Context) {
 }
 
 //service of all
-func (service *rolService) AllRoleModule(context *gin.Context) {
+func (service *rolService) GetAllRoleModuleService(context *gin.Context) {
 
-	var roleModule, err = service.rolRepository.RolsModule()
+	var roleModule, err = service.rolRepository.GetRolsModule()
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -122,11 +124,11 @@ func (service *rolService) AllRoleModule(context *gin.Context) {
 	context.JSON(http.StatusOK, res)
 
 }
-func (service *rolService) Delete(context *gin.Context) {
+func (service *rolService) SetRemoveService(context *gin.Context) {
 
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 
-	findById, _ := service.rolRepository.FindRolById(uint(id))
+	findById, _ := service.rolRepository.GetFindRolById(uint(id))
 	if findById.Id == 0 {
 		validadErrorById(context)
 		return
@@ -135,7 +137,7 @@ func (service *rolService) Delete(context *gin.Context) {
 		validadErrors(err, context)
 		return
 	}
-	status, err := service.rolRepository.DeleteRol(findById)
+	status, err := service.rolRepository.SetRemoveRol(findById)
 
 	if err != nil {
 		validadErrorRemove(findById, context)
@@ -146,7 +148,7 @@ func (service *rolService) Delete(context *gin.Context) {
 
 }
 
-func (service *rolService) FindById(context *gin.Context) {
+func (service *rolService) GetFindByIdService(context *gin.Context) {
 
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 
@@ -154,8 +156,8 @@ func (service *rolService) FindById(context *gin.Context) {
 		validadErrors(err, context)
 		return
 	}
-
-	rol, err := service.rolRepository.FindRolById(uint(id))
+	fmt.Println("aqui servicios")
+	rol, err := service.rolRepository.GetFindRolById(uint(id))
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -172,29 +174,27 @@ func (service *rolService) FindById(context *gin.Context) {
 
 //method private
 
-//validarRolCreate
-func validarRolCreate(r dto.RolCreateDTO, context *gin.Context) bool {
+//validarRol
+func validarRol(r dto.RolCreateDTO, context *gin.Context, option int) bool {
 	context.ShouldBind(&r)
-	if len(r.Name) == 0 || r.Name == "" {
-		msg := utilities.MessageRequired{}
-		validadRequiredMsg(msg.RequiredName(), context)
-		return true
-	}
-	return false
-}
-
-//validarRolEditar
-func validarRolEditar(r dto.RolCreateDTO, context *gin.Context) bool {
-	context.ShouldBind(&r)
-	if r.Id == 0 {
-		msg := utilities.MessageRequired{}
-		validadRequiredMsg(msg.RequiredId(), context)
-		return true
-	}
-	if len(r.Name) == 0 {
-		msg := utilities.MessageRequired{}
-		validadRequiredMsg(msg.RequiredName(), context)
-		return true
+	switch option {
+	case 1:
+		if len(r.Name) == 0 || r.Name == "" {
+			msg := utilities.MessageRequired{}
+			validadRequiredMsg(msg.RequiredName(), context)
+			return true
+		}
+	case 2:
+		if r.Id == 0 {
+			msg := utilities.MessageRequired{}
+			validadRequiredMsg(msg.RequiredId(), context)
+			return true
+		}
+		if len(r.Name) == 0 {
+			msg := utilities.MessageRequired{}
+			validadRequiredMsg(msg.RequiredName(), context)
+			return true
+		}
 	}
 	return false
 }

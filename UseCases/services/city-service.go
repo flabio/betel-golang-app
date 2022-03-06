@@ -25,7 +25,7 @@ func NewCityService() CityService {
 
 //All
 func (c *cityService) All(context *gin.Context) {
-	var cities, err = c.cityRepository.AllCity()
+	var cities, err = c.cityRepository.GetAllCity()
 	if err != nil {
 		validadErrors(err, context)
 		return

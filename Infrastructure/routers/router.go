@@ -100,7 +100,7 @@ func NewRouter() {
 		rolRoutes.GET("/rolemodule", rolController.AllRoleModule)
 		rolRoutes.POST("/create", rolController.Create)
 		rolRoutes.PUT("/", rolController.Update)
-		rolRoutes.DELETE("/:id", rolController.Delete)
+		rolRoutes.DELETE("/:id", rolController.Remove)
 		rolRoutes.GET("/:id", rolController.FindRol)
 	}
 

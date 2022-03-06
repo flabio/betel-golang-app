@@ -42,7 +42,7 @@ func NewScoutService() ScoutService {
 
 func (scoutService *scoutService) ListKingsScouts(id uint, context *gin.Context) {
 
-	users, err := scoutService.userRepository.ListKingsScouts(uint(id))
+	users, err := scoutService.userRepository.GetListKingsScouts(uint(id))
 
 	if err != nil {
 		validadErrors(err, context)
@@ -83,7 +83,7 @@ func (scoutService *scoutService) Create(SubdetachmentId uint, ChurchId uint, co
 		documentfile, _ := UploadFileDocument(context)
 		userToCreated.Image = filename
 		userToCreated.DocumentIdentification = documentfile
-		createdUser, errs := scoutService.userRepository.InsertUser(userToCreated)
+		createdUser, errs := scoutService.userRepository.SetInsertUser(userToCreated)
 		if errs != nil {
 			validadErrors(errs, context)
 			return
@@ -100,10 +100,10 @@ func (scoutService *scoutService) Create(SubdetachmentId uint, ChurchId uint, co
 		roleToCreated.RolId = 29
 		roleToCreated.UserId = uint(user_id)
 
-		err := scoutService.userRepository.InsertRole(roleToCreated)
+		err := scoutService.userRepository.SetInsertRole(roleToCreated)
 		if err != nil {
 			log.Println(err)
-			result, err := scoutService.userRepository.DeleteUser(uint(user_id))
+			result, err := scoutService.userRepository.SetRemoveUser(uint(user_id))
 			if err != nil {
 				validadErrorRemove(result, context)
 				return
@@ -142,7 +142,7 @@ func (scoutService *scoutService) Update(SubdetachmentId uint, ChurchId uint, co
 	go goRunitaUpdateScoutRole(scoutService, roleToCreated)
 	wgs.Wait()
 
-	findById, _ := scoutService.userRepository.ProfileUser(uint(userDTO.Id))
+	findById, _ := scoutService.userRepository.GetProfileUser(uint(userDTO.Id))
 	if findById.Id == 0 {
 		validadErrorById(context)
 		return
@@ -171,7 +171,7 @@ func (scoutService *scoutService) Update(SubdetachmentId uint, ChurchId uint, co
 			userToCreated.DocumentIdentification = findById.DocumentIdentification
 		}
 	}
-	u, err := scoutService.userRepository.EditUser(userToCreated)
+	u, err := scoutService.userRepository.SetEditUser(userToCreated)
 
 	if err != nil {
 		validadErrors(err, context)
@@ -187,7 +187,7 @@ func (scoutService *scoutService) Update(SubdetachmentId uint, ChurchId uint, co
 
 func goRunitaCreateScoutRole(scoutService *scoutService, roleToCreated entity.Role) {
 	wgs.Done()
-	err := scoutService.userRepository.InsertRole(roleToCreated)
+	err := scoutService.userRepository.SetInsertRole(roleToCreated)
 	if err != nil {
 		log.Println(err)
 		checkError(err)
@@ -197,14 +197,14 @@ func goRunitaCreateScoutRole(scoutService *scoutService, roleToCreated entity.Ro
 //goRunitaUpdateRole
 func goRunitaUpdateScoutRole(scoutService *scoutService, roleToCreated entity.Role) {
 	wgs.Done()
-	role, err := scoutService.userRepository.EditRole(roleToCreated)
+	role, err := scoutService.userRepository.SetEditRole(roleToCreated)
 	if err != nil {
 		log.Println(err)
 		checkError(err)
 	}
 
 	if role.Id == 0 {
-		scoutService.userRepository.InsertRole(roleToCreated)
+		scoutService.userRepository.SetInsertRole(roleToCreated)
 	}
 }
 

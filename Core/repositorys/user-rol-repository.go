@@ -2,14 +2,15 @@ package repositorys
 
 import (
 	"bete/Core/entity"
+	constantvariables "bete/Infrastructure/constantVariables"
 
 	"gorm.io/gorm"
 )
 
 //UserRepository is contract what UserRepository can do to db
 type UserRolRepository interface {
-	InsertUserRol(role entity.Role) entity.Role
-	AllUserRole() []entity.Role
+	SetInsertUserRol(role entity.Role) entity.Role
+	GetAllUserRole() []entity.Role
 }
 
 type userRolConnection struct {
@@ -25,25 +26,26 @@ func NewUserRolRepository() UserRolRepository {
 	}
 }
 
-func (db *userConnection) InsertUserRol(rol entity.Role) entity.Role {
-	var errChan = make(chan error, 1)
+var errChanUserRol = make(chan error, constantvariables.CHAN_VALUE)
+
+func (db *userConnection) SetInsertUserRol(rol entity.Role) entity.Role {
+
 	go func() {
 		err := db.connection.Save(&rol).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanUserRol <- err
 	}()
-	<-errChan
+	<-errChanUserRol
 	return rol
 }
 
-func (db *userConnection) AllUserRole() []entity.Role {
+func (db *userConnection) GetAllUserRole() []entity.Role {
 	var role []entity.Role
-	var errChan = make(chan error, 1)
 	go func() {
 		err := db.connection.Joins("User").Joins("Rol").Find(&role).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanUserRol <- err
 	}()
-	<-errChan
+	<-errChanUserRol
 	return role
 }

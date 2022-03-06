@@ -45,7 +45,7 @@ func NewUserController() UserController {
 func (c *userController) Create(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol == 1 {
-		c.user.Create(context)
+		c.user.SetCreateService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -56,7 +56,7 @@ func (c *userController) UpdateProfile(context *gin.Context) {
 
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol == 1 {
-		c.user.Update(context)
+		c.user.SetUpdateService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -67,7 +67,7 @@ func (c *userController) PasswordChange(context *gin.Context) {
 
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol == 1 {
-		c.user.UpdatePassword(context)
+		c.user.SetUpdatePasswordService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -78,7 +78,8 @@ func (c *userController) Update(context *gin.Context) {
 
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol == 1 {
-		c.user.Update(context)
+		c.user.SetUpdateService(context)
+
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -88,7 +89,7 @@ func (c *userController) Update(context *gin.Context) {
 func (c *userController) ListUser(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol == 1 {
-		c.user.ListUser(context)
+		c.user.GetListUserService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -97,7 +98,7 @@ func (c *userController) ListUser(context *gin.Context) {
 func (c *userController) FindUserNameLastName(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol > 0 {
-		c.user.FindUserNameLastName(context)
+		c.user.GetFindUserNameLastNameService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -126,7 +127,7 @@ func (c *userController) Delete(context *gin.Context) {
 
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol == 1 {
-		c.user.Delete(context)
+		c.user.SetRemoveService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -138,7 +139,7 @@ func (c *userController) Profile(context *gin.Context) {
 
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol == 1 {
-		c.user.Profile(uint(claim.Id), context)
+		c.user.GetProfileService(uint(claim.Id), context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -149,7 +150,7 @@ func (c *userController) FindUser(context *gin.Context) {
 
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol > 0 {
-		c.user.FindUser(context)
+		c.user.GetFindUserService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())

@@ -42,7 +42,7 @@ func (service *parentService) Create(context *gin.Context) {
 	parentScout := entity.ParentScout{}
 	var parentDto dto.ParentDTO
 
-	findById, _ := service.userRepository.ProfileUser(uint(id))
+	findById, _ := service.userRepository.GetProfileUser(uint(id))
 	if findById.Id == 0 {
 		validadErrorById(context)
 		return
@@ -56,7 +56,7 @@ func (service *parentService) Create(context *gin.Context) {
 		return
 	}
 	smapping.FillStruct(&parent, smapping.MapFields(&parentDto))
-	existParent, err := service.parentRepository.FindParentByIdentification(parent.Identification)
+	existParent, err := service.parentRepository.GetFindParentByIdentification(parent.Identification)
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -65,7 +65,7 @@ func (service *parentService) Create(context *gin.Context) {
 		validadExistScout(context)
 		return
 	}
-	data, err := service.parentRepository.CreateParent(parent)
+	data, err := service.parentRepository.SetCreateParent(parent)
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -74,7 +74,7 @@ func (service *parentService) Create(context *gin.Context) {
 	parentScout.ParentId = data.Id
 	parentScout.UserId = uint(id)
 
-	_, errs := service.scoutParentRepository.CreateParentScout(parentScout)
+	_, errs := service.scoutParentRepository.SetCreateParentScout(parentScout)
 	if errs != nil {
 		validadErrors(errs, context)
 		return
@@ -92,12 +92,12 @@ func (service *parentService) Update(context *gin.Context) {
 		return
 	}
 	smapping.FillStruct(&parent, smapping.MapFields(&parentDto))
-	existId, _ := service.parentRepository.FindParentById(parentDto.Id)
+	existId, _ := service.parentRepository.GetFindParentById(parentDto.Id)
 	if existId.Id == 0 {
 		validadErrorById(context)
 		return
 	}
-	data, err := service.parentRepository.CreateParent(parent)
+	data, err := service.parentRepository.SetCreateParent(parent)
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -106,7 +106,7 @@ func (service *parentService) Update(context *gin.Context) {
 }
 
 func (service *parentService) All(context *gin.Context) {
-	var parents, err = service.parentRepository.AllParent()
+	var parents, err = service.parentRepository.GetAllParent()
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -119,13 +119,13 @@ func (service *parentService) AllParentScout(context *gin.Context) {
 		validadErrors(errId, context)
 		return
 	}
-	findById, _ := service.userRepository.ProfileUser(uint(id))
+	findById, _ := service.userRepository.GetProfileUser(uint(id))
 	if findById.Id == 0 {
 		validadErrorById(context)
 		return
 	}
 
-	var parents, err = service.parentRepository.AllParentScout(uint(id))
+	var parents, err = service.parentRepository.GetAllParentScout(uint(id))
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -134,7 +134,7 @@ func (service *parentService) AllParentScout(context *gin.Context) {
 }
 
 func (service *parentService) UserByIdAll(context *gin.Context) {
-	var parents, err = service.parentRepository.AllParent()
+	var parents, err = service.parentRepository.GetAllParent()
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -144,7 +144,7 @@ func (service *parentService) UserByIdAll(context *gin.Context) {
 
 func (service *parentService) Remove(context *gin.Context) {
 	id, err := strconv.ParseInt(context.Param("id"), 0, 0)
-	findById, _ := service.parentRepository.FindParentById(uint(id))
+	findById, _ := service.parentRepository.GetFindParentById(uint(id))
 	if findById.Id == 0 {
 		validadErrorById(context)
 		return
@@ -153,7 +153,7 @@ func (service *parentService) Remove(context *gin.Context) {
 		validadErrors(err, context)
 		return
 	}
-	parent, err := service.parentRepository.RemoveParent(uint(id))
+	parent, err := service.parentRepository.SetRemoveParent(uint(id))
 	if err != nil {
 		validadErrorRemove(findById, context)
 		return

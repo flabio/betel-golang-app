@@ -59,7 +59,7 @@ func (c *churchController) Create(context *gin.Context) {
 
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol == 1 {
-		c.church.CreateChurch(context)
+		c.church.CreateChurchService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())

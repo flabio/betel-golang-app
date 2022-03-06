@@ -29,11 +29,11 @@ func NewKanbanService() KanbanService {
 
 func (kanbanService *kanbanService) GetKanbans(context *gin.Context) {
 
-	navigatores, err := kanbanService.kanbanR.ListNavigators()
-	pioneers, err := kanbanService.kanbanR.ListPioneers()
-	followers, err := kanbanService.kanbanR.ListFollowersWays()
-	scouts, err := kanbanService.kanbanR.ListScouts()
-	commanders, err := kanbanService.kanbanR.ListCommanders()
+	navigatores, err := kanbanService.kanbanR.GetListNavigators()
+	pioneers, err := kanbanService.kanbanR.GetListPioneers()
+	followers, err := kanbanService.kanbanR.GetListFollowersWays()
+	scouts, err := kanbanService.kanbanR.GetListScouts()
+	commanders, err := kanbanService.kanbanR.GetListCommanders()
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -56,7 +56,7 @@ func (kanbanService *kanbanService) GetKanbans(context *gin.Context) {
 
 func (kanbanService *kanbanService) GetCountKanbans(context *gin.Context) {
 
-	count_navigators, count_pioneers, count_followers, count_scouts, count_commanders := kanbanService.kanbanR.CounKanban()
+	count_navigators, count_pioneers, count_followers, count_scouts, count_commanders := kanbanService.kanbanR.GetCounKanban()
 
 	context.JSON(http.StatusOK, struct {
 		CountNavigators    int64 `json:"count_navigators"`

@@ -46,7 +46,7 @@ func (patrolService *patrolService) Create(context *gin.Context) {
 	filename, err := UploadFile(context)
 	patrol.Archives = filename
 
-	res, err := patrolService.patrolRepository.Create(patrol)
+	res, err := patrolService.patrolRepository.SetCreatePatrol(patrol)
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -64,7 +64,7 @@ func (patrolService *patrolService) Update(context *gin.Context) {
 	}
 	smapping.FillStruct(&patrol, smapping.MapFields(&dto))
 
-	findById, _ := patrolService.patrolRepository.FindById(uint(dto.Id))
+	findById, _ := patrolService.patrolRepository.GetFindByIdPatrol(uint(dto.Id))
 	if findById.Id == 0 {
 		validadErrorById(context)
 		return
@@ -81,7 +81,7 @@ func (patrolService *patrolService) Update(context *gin.Context) {
 		}
 	}
 
-	res, err := patrolService.patrolRepository.Update(patrol)
+	res, err := patrolService.patrolRepository.SetCreatePatrol(patrol)
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -97,12 +97,12 @@ func (patrolService *patrolService) Remove(context *gin.Context) {
 		return
 	}
 
-	findById, _ := patrolService.patrolRepository.FindById(uint(id))
+	findById, _ := patrolService.patrolRepository.GetFindByIdPatrol(uint(id))
 	if findById.Id == 0 {
 		validadErrorById(context)
 		return
 	}
-	res, err := patrolService.patrolRepository.Remove(findById.Id)
+	res, err := patrolService.patrolRepository.SetRemovePatrol(findById.Id)
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -118,7 +118,7 @@ func (patrolService *patrolService) FindById(context *gin.Context) {
 		return
 	}
 
-	findById, _ := patrolService.patrolRepository.FindById(uint(id))
+	findById, _ := patrolService.patrolRepository.GetFindByIdPatrol(uint(id))
 	if findById.Id == 0 {
 		validadErrorById(context)
 		return
@@ -128,7 +128,7 @@ func (patrolService *patrolService) FindById(context *gin.Context) {
 
 //All
 func (patrolService *patrolService) All(context *gin.Context) {
-	res, err := patrolService.patrolRepository.All()
+	res, err := patrolService.patrolRepository.GetAllPatrol()
 	if err != nil {
 		validadErrors(err, context)
 		return

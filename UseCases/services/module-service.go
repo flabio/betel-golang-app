@@ -43,7 +43,7 @@ func (service *moduleService) CreateModule(context *gin.Context) {
 	validarModuleCreate(moduledto, context)
 	smapping.FillStruct(&module, smapping.MapFields(&moduledto))
 
-	data, err := service.moduleRepository.CreateModule(module)
+	data, err := service.moduleRepository.SetCreateModule(module)
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -62,14 +62,14 @@ func (service *moduleService) UpdateModule(context *gin.Context) {
 
 	smapping.FillStruct(&module, smapping.MapFields(&moduledto))
 
-	res, err := service.moduleRepository.CreateModule(module)
+	res, err := service.moduleRepository.SetCreateModule(module)
 
 	if err != nil {
 		validadErrors(err, context)
 		return
 	}
 
-	findByModule, _ := service.moduleRepository.FindModuleById(uint(moduledto.Id))
+	findByModule, _ := service.moduleRepository.GetFindModuleById(uint(moduledto.Id))
 	if findByModule.Id == 0 {
 		validadErrorById(context)
 		return
@@ -81,7 +81,7 @@ func (service *moduleService) UpdateModule(context *gin.Context) {
 
 //lists of module
 func (service *moduleService) AllModule(context *gin.Context) {
-	var modules, err = service.moduleRepository.AllModule()
+	var modules, err = service.moduleRepository.GetAllModule()
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -98,7 +98,7 @@ func (service *moduleService) FindModuleById(context *gin.Context) {
 		validadErrors(err, context)
 		return
 	}
-	module, err := service.moduleRepository.FindModuleById(uint(id))
+	module, err := service.moduleRepository.GetFindModuleById(uint(id))
 	if err != nil {
 		validadErrorById(context)
 		return
@@ -115,7 +115,7 @@ func (service *moduleService) DeleteModule(context *gin.Context) {
 		validadErrors(err, context)
 		return
 	}
-	module, err := service.moduleRepository.FindModuleById(uint(id))
+	module, err := service.moduleRepository.GetFindModuleById(uint(id))
 
 	if (module == entity.Module{}) {
 		validadErrorById(context)
@@ -126,7 +126,7 @@ func (service *moduleService) DeleteModule(context *gin.Context) {
 		return
 	}
 
-	status, err := service.moduleRepository.DeleteModule(uint(id))
+	status, err := service.moduleRepository.SetRemoveModule(uint(id))
 	if err != nil {
 		response := utilities.BuildCanNotDeteleteResponse(module)
 		context.JSON(http.StatusBadRequest, response)
@@ -149,7 +149,7 @@ func (service *moduleService) AddModuleRole(context *gin.Context) {
 	err := smapping.FillStruct(&module, smapping.MapFields(&moduledto))
 	checkError(err)
 
-	data, err := service.moduleRepository.AddModule(module)
+	data, err := service.moduleRepository.SetCreateModuleRole(module)
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -165,7 +165,7 @@ func (service *moduleService) AllByRoleModule(context *gin.Context) {
 		validadErrors(errid, context)
 		return
 	}
-	var modules, err = service.moduleRepository.AllByRoleModule(uint(id))
+	var modules, err = service.moduleRepository.GetAllByRoleModule(uint(id))
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -181,7 +181,7 @@ func (service *moduleService) DeleteRoleModule(context *gin.Context) {
 		validadErrors(err, context)
 		return
 	}
-	module, err := service.moduleRepository.FindRoleModuleById(uint(id))
+	module, err := service.moduleRepository.GetFindRoleModuleById(uint(id))
 
 	if (module == entity.RoleModule{}) {
 		validadErrorById(context)
@@ -192,7 +192,7 @@ func (service *moduleService) DeleteRoleModule(context *gin.Context) {
 		return
 	}
 
-	status, err := service.moduleRepository.DeleteRoleModule(uint(id))
+	status, err := service.moduleRepository.SetRemoveRoleModule(uint(id))
 	if err != nil {
 		response := utilities.BuildCanNotDeteleteResponse(module)
 		context.JSON(http.StatusBadRequest, response)

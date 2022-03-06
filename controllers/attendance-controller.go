@@ -34,7 +34,7 @@ func NewAttendanceController() AttendanceController {
 func (c *attendanceController) Create(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol > 0 {
-		c.attendance.Create(claim.Subdetachmentid, context)
+		c.attendance.CreateAttendanceService(claim.Subdetachmentid, context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -44,7 +44,7 @@ func (c *attendanceController) Create(context *gin.Context) {
 func (c *attendanceController) Update(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol > 0 {
-		c.attendance.Update(context)
+		c.attendance.UpdateAttendanceService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -54,7 +54,7 @@ func (c *attendanceController) Update(context *gin.Context) {
 func (c *attendanceController) Remove(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol > 0 {
-		c.attendance.Remove(context)
+		c.attendance.RemoveAttendanceService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -64,7 +64,7 @@ func (c *attendanceController) Remove(context *gin.Context) {
 func (c *attendanceController) All(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol == 1 {
-		c.attendance.All(context)
+		c.attendance.AllAttendanceService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -74,7 +74,7 @@ func (c *attendanceController) All(context *gin.Context) {
 func (c *attendanceController) AttendancesSubdetachment(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol > 0 {
-		c.attendance.AttendancesSubdetachment(claim.Subdetachmentid, context)
+		c.attendance.AttendancesSubdetachmentService(claim.Subdetachmentid, context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
@@ -84,7 +84,7 @@ func (c *attendanceController) AttendancesSubdetachment(context *gin.Context) {
 func (c *attendanceController) WeeksbySubDetachments(context *gin.Context) {
 	claim := middleware.GetRol(c.jwt, context)
 	if claim.Rol > 0 {
-		c.attendance.WeeksbySubDetachments(claim.Subdetachmentid, context)
+		c.attendance.WeeksbySubDetachmentsAttendanceService(claim.Subdetachmentid, context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())

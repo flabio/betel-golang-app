@@ -52,13 +52,13 @@ func (authService *authService) CreateUser(user dto.UserDTO) entity.User {
 	err := smapping.FillStruct(&userToCreate, smapping.MapFields(&user))
 	checkError(err)
 
-	res, err := authService.userRepository.InsertUser(userToCreate)
+	res, err := authService.userRepository.SetInsertUser(userToCreate)
 
 	return res
 }
 
 func (authService *authService) FindByEmail(email string) (entity.User, error) {
-	return authService.userRepository.FindByEmail(email)
+	return authService.userRepository.GetFindByEmail(email)
 }
 
 func (authService *authService) IsDuplicateEmail(email string) (bool, error) {
@@ -68,7 +68,7 @@ func (authService *authService) IsDuplicateEmail(email string) (bool, error) {
 
 func (authService *authService) GetIdRol(id uint) uint {
 
-	user, _ := authService.userRepository.ProfileUser(id)
+	user, _ := authService.userRepository.GetProfileUser(id)
 	return user.Roles.RolId
 }
 func comparePassword(hashedPwd string, plainPassword []byte) bool {

@@ -2,16 +2,17 @@ package repositorys
 
 import (
 	"bete/Core/entity"
+	constantvariables "bete/Infrastructure/constantVariables"
 
 	"gorm.io/gorm"
 )
 
 type VisitRepository interface {
-	Create(visit entity.Visit) (entity.Visit, error)
-	All() ([]entity.Visit, error)
-	FindById(Id uint) (entity.Visit, error)
-	AllVisitByUser(userId uint, subDetachmentId uint) ([]entity.Visit, error)
-	Remove(Id uint) (bool, error)
+	SetCreateVisit(visit entity.Visit) (entity.Visit, error)
+	GetAllVisit() ([]entity.Visit, error)
+	GetFindByIdVisit(Id uint) (entity.Visit, error)
+	GetAllVisitByUserVisit(userId uint, subDetachmentId uint) ([]entity.Visit, error)
+	SetRemoveVisit(Id uint) (bool, error)
 }
 type visitConnection struct {
 	connection *gorm.DB
@@ -22,61 +23,62 @@ func NewVisitConnection() VisitRepository {
 		connection: entity.DatabaseConnection(),
 	}
 }
-func (db *visitConnection) Create(visit entity.Visit) (entity.Visit, error) {
-	errChan := make(chan error, 1)
+
+var errChanVisit = make(chan error, constantvariables.CHAN_VALUE)
+
+func (db *visitConnection) SetCreateVisit(visit entity.Visit) (entity.Visit, error) {
+
 	go func() {
 		err := db.connection.Save(&visit).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanVisit <- err
 	}()
-	err := <-errChan
+	err := <-errChanVisit
 	return visit, err
 }
-func (db *visitConnection) All() ([]entity.Visit, error) {
+func (db *visitConnection) GetAllVisit() ([]entity.Visit, error) {
 	var visit []entity.Visit
-	errChan := make(chan error, 1)
 	go func() {
 		err := db.connection.Find(&visit).Error
-		errChan <- err
+		errChanVisit <- err
 		defer entity.Closedb()
 	}()
-	err := <-errChan
+	err := <-errChanVisit
 	return visit, err
 }
 
-func (db *visitConnection) AllVisitByUser(userId uint, subDetachmentId uint) ([]entity.Visit, error) {
+func (db *visitConnection) GetAllVisitByUserVisit(userId uint, subDetachmentId uint) ([]entity.Visit, error) {
 	var visit []entity.Visit
-	errChan := make(chan error, 1)
 	go func() {
-		err := db.connection.Where("userid=?", userId).Where("subdetachmentid=?", subDetachmentId).Find(&visit).Error
-		errChan <- err
+		err := db.connection.Where("userid=?", userId).
+			Where("subdetachmentid=?", subDetachmentId).
+			Find(&visit).Error
+		errChanVisit <- err
 		defer entity.Closedb()
 	}()
 
-	err := <-errChan
+	err := <-errChanVisit
 	return visit, err
 }
-func (db *visitConnection) FindById(Id uint) (entity.Visit, error) {
+func (db *visitConnection) GetFindByIdVisit(Id uint) (entity.Visit, error) {
 	var visit entity.Visit
-	errChan := make(chan error, 1)
 	go func() {
 		err := db.connection.Find(&visit, Id).Error
-		errChan <- err
+		errChanVisit <- err
 		defer entity.Closedb()
 	}()
 
-	err := <-errChan
+	err := <-errChanVisit
 	return visit, err
 }
 
-func (db *visitConnection) Remove(Id uint) (bool, error) {
-	errChan := make(chan error, 1)
+func (db *visitConnection) SetRemoveVisit(Id uint) (bool, error) {
 	go func() {
 		err := db.connection.Delete(&entity.Visit{}, Id).Error
-		errChan <- err
+		errChanVisit <- err
 		defer entity.Closedb()
 	}()
-	err := <-errChan
+	err := <-errChanVisit
 	if err != nil {
 		return true, err
 	}

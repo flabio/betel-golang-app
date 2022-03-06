@@ -2,16 +2,16 @@ package repositorys
 
 import (
 	"bete/Core/entity"
+	constantvariables "bete/Infrastructure/constantVariables"
 
 	"gorm.io/gorm"
 )
 
 type ChurchRepository interface {
-	CreateChurch(church entity.Church) (entity.Church, error)
-	UpdateChurch(church entity.Church) (entity.Church, error)
-	DeleteChurch(church entity.Church) (bool, error)
-	FindChurchById(Id uint) (entity.Church, error)
-	AllChurch() ([]entity.Church, error)
+	SetCreateChurch(church entity.Church) (entity.Church, error)
+	SetRemoveChurch(church entity.Church) (bool, error)
+	GetFindChurchById(Id uint) (entity.Church, error)
+	GetAllChurch() ([]entity.Church, error)
 }
 
 type churchConnection struct {
@@ -25,57 +25,49 @@ func NewChurchRepository() ChurchRepository {
 	}
 }
 
-func (db *churchConnection) CreateChurch(church entity.Church) (entity.Church, error) {
-	var errChan = make(chan error, 1)
+var errChanChurch = make(chan error, constantvariables.CHAN_VALUE)
+
+func (db *churchConnection) SetCreateChurch(church entity.Church) (entity.Church, error) {
+
 	go func() {
 		err := db.connection.Save(&church).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanChurch <- err
 	}()
-	err := <-errChan
+	err := <-errChanChurch
 	return church, err
 }
-func (db *churchConnection) UpdateChurch(church entity.Church) (entity.Church, error) {
-	var errChan = make(chan error, 1)
-	go func() {
-		err := db.connection.Save(&church).Error
-		defer entity.Closedb()
-		errChan <- err
-	}()
-	err := <-errChan
-	return church, err
-}
-func (db *churchConnection) FindChurchById(Id uint) (entity.Church, error) {
+
+func (db *churchConnection) GetFindChurchById(Id uint) (entity.Church, error) {
 	var church entity.Church
-	var errChan = make(chan error, 1)
+
 	go func() {
 		err := db.connection.Find(&church, Id).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanChurch <- err
 	}()
-	err := <-errChan
+	err := <-errChanChurch
 	return church, err
 }
-func (db *churchConnection) AllChurch() ([]entity.Church, error) {
+func (db *churchConnection) GetAllChurch() ([]entity.Church, error) {
 	var churchs []entity.Church
-	var errChan = make(chan error, 1)
+
 	go func() {
 		err := db.connection.Find(&churchs).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanChurch <- err
 	}()
-	err := <-errChan
+	err := <-errChanChurch
 	return churchs, err
 }
-func (db *churchConnection) DeleteChurch(church entity.Church) (bool, error) {
+func (db *churchConnection) SetRemoveChurch(church entity.Church) (bool, error) {
 
-	var errChan = make(chan error, 1)
 	go func() {
 		err := db.connection.Delete(&church).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanChurch <- err
 	}()
-	err := <-errChan
+	err := <-errChanChurch
 	if err == nil {
 		return true, err
 	}

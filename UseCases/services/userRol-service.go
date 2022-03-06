@@ -10,8 +10,8 @@ import (
 
 //UserService is a contract.....
 type UserRolService interface {
-	CreateUserRol(role dto.RoleDTO) entity.Role
-	AllUserRole() []entity.Role
+	SetCreateUserRolService(role dto.RoleDTO) entity.Role
+	GetAllUserRoleService() []entity.Role
 }
 
 type userRolService struct {
@@ -20,24 +20,24 @@ type userRolService struct {
 
 //NewUserService creates a new instance of UserService
 func NewUserRolService() UserRolService {
-	userRepo:= repositorys.NewUserRolRepository()
+	userRepo := repositorys.NewUserRolRepository()
 	return &userRolService{
 		userRolRepository: userRepo,
 	}
 }
 
-func (userService *userRolService) AllUserRole() []entity.Role {
-	return userService.userRolRepository.AllUserRole()
+func (userService *userRolService) GetAllUserRoleService() []entity.Role {
+	return userService.userRolRepository.GetAllUserRole()
 }
 
 // user and rol
-func (userService *userRolService) CreateUserRol(roleDTO dto.RoleDTO) entity.Role {
+func (userService *userRolService) SetCreateUserRolService(roleDTO dto.RoleDTO) entity.Role {
 	role := entity.Role{}
 
 	err := smapping.FillStruct(&role, smapping.MapFields(&roleDTO))
 	if err != nil {
 		checkError(err)
 	}
-	res := userService.userRolRepository.InsertUserRol(role)
+	res := userService.userRolRepository.SetInsertUserRol(role)
 	return res
 }

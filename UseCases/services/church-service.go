@@ -13,7 +13,7 @@ import (
 )
 
 type ChurchService interface {
-	CreateChurch(context *gin.Context)
+	CreateChurchService(context *gin.Context)
 	UpdateChurch(context *gin.Context)
 	DeleteChurch(context *gin.Context)
 	FindChurchById(context *gin.Context)
@@ -32,9 +32,8 @@ func NewChurchService() ChurchService {
 	}
 }
 
-
 //create Service
-func (churchService *churchService) CreateChurch(context *gin.Context) {
+func (churchService *churchService) CreateChurchService(context *gin.Context) {
 	church := entity.Church{}
 	var churchDTO dto.ChurchDTO
 
@@ -47,7 +46,7 @@ func (churchService *churchService) CreateChurch(context *gin.Context) {
 	err := smapping.FillStruct(&church, smapping.MapFields(&churchDTO))
 	checkError(err)
 
-	data, err := churchService.churchRepository.CreateChurch(church)
+	data, err := churchService.churchRepository.SetCreateChurch(church)
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -69,12 +68,12 @@ func (churchService *churchService) UpdateChurch(context *gin.Context) {
 	err := smapping.FillStruct(&church, smapping.MapFields(&churchDTO))
 	checkError(err)
 
-	findById, _ := churchService.churchRepository.FindChurchById(uint(churchDTO.Id))
+	findById, _ := churchService.churchRepository.GetFindChurchById(uint(churchDTO.Id))
 	if findById.Id == 0 {
 		validadErrorById(context)
 		return
 	}
-	data, err := churchService.churchRepository.UpdateChurch(church)
+	data, err := churchService.churchRepository.SetCreateChurch(church)
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -89,7 +88,7 @@ func (churchService *churchService) FindChurchById(context *gin.Context) {
 		validadErrors(err, context)
 		return
 	}
-	church, err := churchService.churchRepository.FindChurchById(uint(id))
+	church, err := churchService.churchRepository.GetFindChurchById(uint(id))
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -100,7 +99,7 @@ func (churchService *churchService) FindChurchById(context *gin.Context) {
 
 //list of chuch
 func (churchService *churchService) AllChurch(context *gin.Context) {
-	churchs, err := churchService.churchRepository.AllChurch()
+	churchs, err := churchService.churchRepository.GetAllChurch()
 	if err != nil {
 		validadErrors(err, context)
 		return
@@ -120,12 +119,12 @@ func (churchService *churchService) DeleteChurch(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response)
 		return
 	}
-	findById, _ := churchService.churchRepository.FindChurchById(uint(id))
+	findById, _ := churchService.churchRepository.GetFindChurchById(uint(id))
 	if findById.Id == 0 {
 		validadErrorById(context)
 		return
 	}
-	status, err := churchService.churchRepository.DeleteChurch(findById)
+	status, err := churchService.churchRepository.SetRemoveChurch(findById)
 	if err != nil {
 		validadErrorRemove(church, context)
 		return

@@ -9,10 +9,10 @@ import (
 )
 
 type StudyCarriedService interface {
-	Create(studycarried dto.StudyCarriedDTO) entity.StudyCarried
-	AllStudyCarried() []entity.StudyCarried
-	FindStudyCarriedById(Id uint) entity.StudyCarried
-	DeleteStudyCarried(Id uint) bool
+	SetCreateStudyCarriedService(studycarried dto.StudyCarriedDTO) entity.StudyCarried
+	GetAllStudyCarriedService() []entity.StudyCarried
+	GetFindStudyCarriedByIdService(Id uint) entity.StudyCarried
+	SetRemoveStudyCarriedService(Id uint) bool
 }
 type studyCarriedService struct {
 	repository repositorys.StudyCarriedRepository
@@ -20,26 +20,29 @@ type studyCarriedService struct {
 
 //NewStudyCarriedService creates a new instance of StudyCarriedService
 func NewStudyCarriedService() StudyCarriedService {
-	var repository =repositorys.NewStudyCarriedRepository()
+	var repository = repositorys.NewStudyCarriedRepository()
 	return &studyCarriedService{
 		repository: repository,
 	}
 }
 
-func (service *studyCarriedService) Create(studyCarriedDto dto.StudyCarriedDTO) entity.StudyCarried {
+func (service *studyCarriedService) SetCreateStudyCarriedService(studyCarriedDto dto.StudyCarriedDTO) entity.StudyCarried {
 	studycarriedToCreate := entity.StudyCarried{}
 	err := smapping.FillStruct(&studycarriedToCreate, smapping.MapFields(&studyCarriedDto))
-	result := service.repository.CreateStudyCarried(studycarriedToCreate)
+	result, err := service.repository.SetCreateStudyCarried(studycarriedToCreate)
 	checkError(err)
 	return result
 }
 
-func (service *studyCarriedService) AllStudyCarried() []entity.StudyCarried {
-	return service.repository.AllStudyCarried()
+func (service *studyCarriedService) GetAllStudyCarriedService() []entity.StudyCarried {
+	result, _ := service.repository.GetAllStudyCarried()
+	return result
 }
-func (service *studyCarriedService) FindStudyCarriedById(Id uint) entity.StudyCarried {
-	return service.repository.FindStudyCarriedById(Id)
+func (service *studyCarriedService) GetFindStudyCarriedByIdService(Id uint) entity.StudyCarried {
+	result, _ := service.repository.GetFindStudyCarriedById(Id)
+	return result
 }
-func (service *studyCarriedService) DeleteStudyCarried(Id uint) bool {
-	return service.repository.DeleteStudyCarried(Id)
+func (service *studyCarriedService) SetRemoveStudyCarriedService(Id uint) bool {
+	result, _ := service.repository.SetRemoveStudyCarried(Id)
+	return result
 }

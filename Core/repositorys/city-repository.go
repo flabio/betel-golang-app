@@ -2,12 +2,13 @@ package repositorys
 
 import (
 	"bete/Core/entity"
+	constantvariables "bete/Infrastructure/constantVariables"
 
 	"gorm.io/gorm"
 )
 
 type CityRepository interface {
-	AllCity() ([]entity.City, error)
+	GetAllCity() ([]entity.City, error)
 }
 
 type cityConnection struct {
@@ -19,14 +20,17 @@ func NewCityRepository() CityRepository {
 		connection: entity.DatabaseConnection(),
 	}
 }
-func (db *cityConnection) AllCity() ([]entity.City, error) {
-	var errChan = make(chan error, 1)
+
+var errChanCity = make(chan error, constantvariables.CHAN_VALUE)
+
+func (db *cityConnection) GetAllCity() ([]entity.City, error) {
+
 	var citys []entity.City
 	go func() {
 		err := db.connection.Find(&citys).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanCity <- err
 	}()
-	err := <-errChan
+	err := <-errChanCity
 	return citys, err
 }

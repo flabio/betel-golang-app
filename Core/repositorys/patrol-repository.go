@@ -2,16 +2,16 @@ package repositorys
 
 import (
 	"bete/Core/entity"
+	constantvariables "bete/Infrastructure/constantVariables"
 
 	"gorm.io/gorm"
 )
 
 type PatrolRepository interface {
-	Create(patrol entity.Patrol) (entity.Patrol, error)
-	Update(patrol entity.Patrol) (entity.Patrol, error)
-	Remove(Id uint) (bool, error)
-	All() ([]entity.Patrol, error)
-	FindById(Id uint) (entity.Patrol, error)
+	SetCreatePatrol(patrol entity.Patrol) (entity.Patrol, error)
+	SetRemovePatrol(Id uint) (bool, error)
+	GetAllPatrol() ([]entity.Patrol, error)
+	GetFindByIdPatrol(Id uint) (entity.Patrol, error)
 }
 
 type patrolConnection struct {
@@ -25,62 +25,49 @@ func NewPatrolRepository() PatrolRepository {
 	}
 }
 
-func (db *patrolConnection) Create(patrol entity.Patrol) (entity.Patrol, error) {
-	var errChan = make(chan error, 1)
+var errChanPatrol = make(chan error, constantvariables.CHAN_VALUE)
+
+func (db *patrolConnection) SetCreatePatrol(patrol entity.Patrol) (entity.Patrol, error) {
 	go func() {
 		err := db.connection.Save(&patrol).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanPatrol <- err
 	}()
-	err := <-errChan
+	err := <-errChanPatrol
 	return patrol, err
 }
 
-func (db *patrolConnection) Update(patrol entity.Patrol) (entity.Patrol, error) {
-	var errChan = make(chan error, 1)
-	go func() {
-		err := db.connection.Save(&patrol).Error
-		defer entity.Closedb()
-		errChan <- err
-	}()
-	err := <-errChan
-	return patrol, err
-}
-
-func (db *patrolConnection) Remove(Id uint) (bool, error) {
-	var errChan = make(chan error, 1)
+func (db *patrolConnection) SetRemovePatrol(Id uint) (bool, error) {
 	go func() {
 		err := db.connection.Delete(&entity.Patrol{}, Id).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanPatrol <- err
 	}()
-	err := <-errChan
+	err := <-errChanPatrol
 	if err != nil {
 		return false, err
 	} else {
 		return true, err
 	}
 }
-func (db *patrolConnection) FindById(Id uint) (entity.Patrol, error) {
+func (db *patrolConnection) GetFindByIdPatrol(Id uint) (entity.Patrol, error) {
 	var patrol entity.Patrol
-	var errChan = make(chan error, 1)
 	go func() {
 		err := db.connection.Find(&patrol, Id).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanPatrol <- err
 	}()
-	err := <-errChan
+	err := <-errChanPatrol
 	return patrol, err
 }
 
-func (db *patrolConnection) All() ([]entity.Patrol, error) {
+func (db *patrolConnection) GetAllPatrol() ([]entity.Patrol, error) {
 	var patrol []entity.Patrol
-	var errChan = make(chan error, 1)
 	go func() {
 		err := db.connection.Order("id desc").Preload("SubDetachment").Find(&patrol).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanPatrol <- err
 	}()
-	err := <-errChan
+	err := <-errChanPatrol
 	return patrol, err
 }

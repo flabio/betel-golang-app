@@ -2,15 +2,16 @@ package repositorys
 
 import (
 	"bete/Core/entity"
+	constantvariables "bete/Infrastructure/constantVariables"
 
 	"gorm.io/gorm"
 )
 
 type StudyCarriedRepository interface {
-	CreateStudyCarried(studycarried entity.StudyCarried) entity.StudyCarried
-	FindStudyCarriedById(Id uint) entity.StudyCarried
-	AllStudyCarried() []entity.StudyCarried
-	DeleteStudyCarried(Id uint) bool
+	SetCreateStudyCarried(studycarried entity.StudyCarried) (entity.StudyCarried, error)
+	GetFindStudyCarriedById(Id uint) (entity.StudyCarried, error)
+	GetAllStudyCarried() ([]entity.StudyCarried, error)
+	SetRemoveStudyCarried(Id uint) (bool, error)
 }
 
 type studycarriedConnection struct {
@@ -24,50 +25,50 @@ func NewStudyCarriedRepository() StudyCarriedRepository {
 	}
 }
 
-func (db *studycarriedConnection) CreateStudyCarried(studycarried entity.StudyCarried) entity.StudyCarried {
-	var errChan = make(chan error, 1)
+var errChanStudyCarried = make(chan error, constantvariables.CHAN_VALUE)
+
+func (db *studycarriedConnection) SetCreateStudyCarried(studycarried entity.StudyCarried) (entity.StudyCarried, error) {
+
 	go func() {
 		err := db.connection.Save(&studycarried).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanStudyCarried <- err
 	}()
-	<-errChan
-	return studycarried
+	err := <-errChanStudyCarried
+	return studycarried, err
 }
 
-func (db *studycarriedConnection) AllStudyCarried() []entity.StudyCarried {
+func (db *studycarriedConnection) GetAllStudyCarried() ([]entity.StudyCarried, error) {
 	var result []entity.StudyCarried
-	var errChan = make(chan error, 1)
 	go func() {
 		err := db.connection.Find(&result).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanStudyCarried <- err
 	}()
-	<-errChan
-	return result
+	err := <-errChanStudyCarried
+	return result, err
 }
-func (db *studycarriedConnection) FindStudyCarriedById(Id uint) entity.StudyCarried {
+func (db *studycarriedConnection) GetFindStudyCarriedById(Id uint) (entity.StudyCarried, error) {
 	var result entity.StudyCarried
-	var errChan = make(chan error, 1)
+
 	go func() {
 		err := db.connection.Find(&result, Id).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanStudyCarried <- err
 	}()
-	<-errChan
-	return result
+	err := <-errChanStudyCarried
+	return result, err
 }
-func (db *studycarriedConnection) DeleteStudyCarried(Id uint) bool {
+func (db *studycarriedConnection) SetRemoveStudyCarried(Id uint) (bool, error) {
 
-	var errChan = make(chan error, 1)
 	go func() {
 		err := db.connection.Delete(Id).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanStudyCarried <- err
 	}()
-	<-errChan
-	if <-errChan != nil {
-		return true
+	err := <-errChanStudyCarried
+	if <-errChanStudyCarried != nil {
+		return true, err
 	}
-	return false
+	return false, err
 }

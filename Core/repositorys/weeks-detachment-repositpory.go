@@ -2,12 +2,13 @@ package repositorys
 
 import (
 	"bete/Core/entity"
+	constantvariables "bete/Infrastructure/constantVariables"
 
 	"gorm.io/gorm"
 )
 
 type WeeksDetachmentRepository interface {
-	FindByIdWeeksDetachment(Id uint) ([]entity.WeeksDetachment, error)
+	GetFindByIdWeeksDetachment(Id uint) ([]entity.WeeksDetachment, error)
 }
 
 type weeksConnection struct {
@@ -21,14 +22,18 @@ func NewWeeksDetachmentRepository() WeeksDetachmentRepository {
 	}
 }
 
-func (db *weeksConnection) FindByIdWeeksDetachment(Id uint) ([]entity.WeeksDetachment, error) {
+var errChanWeeksDetachment = make(chan error, constantvariables.CHAN_VALUE)
+
+func (db *weeksConnection) GetFindByIdWeeksDetachment(Id uint) ([]entity.WeeksDetachment, error) {
 	var weeksdetachment []entity.WeeksDetachment
-	var errChan = make(chan error, 1)
+
 	go func() {
-		err := db.connection.Order("id asc").Where("sub_detachment_id", Id).Find(&weeksdetachment).Error
+		err := db.connection.Order("id asc").
+			Where("sub_detachment_id", Id).
+			Find(&weeksdetachment).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanWeeksDetachment <- err
 	}()
-	err := <-errChan
+	err := <-errChanWeeksDetachment
 	return weeksdetachment, err
 }

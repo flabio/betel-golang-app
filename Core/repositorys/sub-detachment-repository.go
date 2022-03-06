@@ -2,17 +2,17 @@ package repositorys
 
 import (
 	"bete/Core/entity"
+	constantvariables "bete/Infrastructure/constantVariables"
 
 	"gorm.io/gorm"
 )
 
 type SubDetachmentRepository interface {
-	Create(subdetachment entity.SubDetachment) (entity.SubDetachment, error)
-	Update(subdetachment entity.SubDetachment) (entity.SubDetachment, error)
-	Remove(Id uint) (bool, error)
-	FindById(Id uint) (entity.SubDetachment, error)
-	FindByIdDetachment(Id uint) ([]entity.SubDetachment, error)
-	All() ([]entity.SubDetachment, error)
+	SetCreateSubDetachment(subdetachment entity.SubDetachment) (entity.SubDetachment, error)
+	SetRemoveSubDetachment(Id uint) (bool, error)
+	GetFindByIdSubDetachment(Id uint) (entity.SubDetachment, error)
+	GetFindByIdDetachmentSubDetachment(Id uint) ([]entity.SubDetachment, error)
+	GetAllSubDetachment() ([]entity.SubDetachment, error)
 }
 
 type subConnection struct {
@@ -26,70 +26,57 @@ func NewSubDetachmentRepository() SubDetachmentRepository {
 	}
 }
 
-func (db *subConnection) Create(subdetachment entity.SubDetachment) (entity.SubDetachment, error) {
-	var errChan = make(chan error, 1)
+var errChanSubdetachment = make(chan error, constantvariables.CHAN_VALUE)
+
+func (db *subConnection) SetCreateSubDetachment(subdetachment entity.SubDetachment) (entity.SubDetachment, error) {
 	go func() {
 		err := db.connection.Save(&subdetachment).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanSubdetachment <- err
 	}()
 	return subdetachment, <-errChan
 }
 
-func (db *subConnection) Update(subdetachment entity.SubDetachment) (entity.SubDetachment, error) {
-	var errChan = make(chan error, 1)
-	go func() {
-		err := db.connection.Save(&subdetachment).Error
-		defer entity.Closedb()
-		errChan <- err
-	}()
-	return subdetachment, <-errChan
-}
-
-func (db *subConnection) Remove(Id uint) (bool, error) {
-	var errChan = make(chan error, 1)
+func (db *subConnection) SetRemoveSubDetachment(Id uint) (bool, error) {
 	go func() {
 		err := db.connection.Delete(&entity.SubDetachment{}, Id).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanSubdetachment <- err
 	}()
-	err := <-errChan
+	err := <-errChanSubdetachment
 	if err != nil {
 		return false, err
 	} else {
 		return true, err
 	}
 }
-func (db *subConnection) FindById(Id uint) (entity.SubDetachment, error) {
+func (db *subConnection) GetFindByIdSubDetachment(Id uint) (entity.SubDetachment, error) {
 	var subdetachment entity.SubDetachment
-	var errChan = make(chan error, 1)
 	go func() {
 		err := db.connection.Find(&subdetachment, Id).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanSubdetachment <- err
 	}()
-	err := <-errChan
+	err := <-errChanSubdetachment
 	return subdetachment, err
 }
-func (db *subConnection) All() ([]entity.SubDetachment, error) {
+func (db *subConnection) GetAllSubDetachment() ([]entity.SubDetachment, error) {
 	var subdetachment []entity.SubDetachment
-	var errChan = make(chan error, 1)
 	go func() {
 		err := db.connection.Order("id desc").Preload("Detachment").Find(&subdetachment).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanSubdetachment <- err
 	}()
-	err := <-errChan
+	err := <-errChanSubdetachment
 	return subdetachment, err
 }
-func (db *subConnection) FindByIdDetachment(Id uint) ([]entity.SubDetachment, error) {
+func (db *subConnection) GetFindByIdDetachmentSubDetachment(Id uint) ([]entity.SubDetachment, error) {
 	var subdetachment []entity.SubDetachment
-	var errChan = make(chan error, 1)
 	go func() {
 		err := db.connection.Order("id desc").Preload("Detachment").Where("detachment_id", Id).Find(&subdetachment).Error
 		defer entity.Closedb()
-		errChan <- err
+		errChanSubdetachment <- err
 	}()
-	err := <-errChan
+	err := <-errChanSubdetachment
 	return subdetachment, err
 }

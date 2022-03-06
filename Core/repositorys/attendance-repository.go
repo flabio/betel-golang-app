@@ -2,18 +2,18 @@ package repositorys
 
 import (
 	"bete/Core/entity"
+	constantvariables "bete/Infrastructure/constantVariables"
 
 	"gorm.io/gorm"
 )
 
 type AttendanceRepository interface {
-	Create(attendance entity.Attendance) (entity.Attendance, error)
-	Update(attendance entity.Attendance) (entity.Attendance, error)
-	Remove(Id uint) (bool, error)
-	FindByIdAttendance(Id uint) (entity.Attendance, error)
-	FindByIdWeeksDetachment(week string, userid uint) (entity.Attendance, error)
-	All() ([]entity.Attendance, error)
-	AttendancesSubdetachment(IdUser uint, IdSubDetachment uint) ([]entity.Attendance, error)
+	SetCreateAttendance(attendance entity.Attendance) (entity.Attendance, error)
+	SetRemoveAttendance(Id uint) (bool, error)
+	GetFindByIdAttendance(Id uint) (entity.Attendance, error)
+	GetFindByIdWeeksDetachment(week string, userid uint) (entity.Attendance, error)
+	GetAllAttendance() ([]entity.Attendance, error)
+	GetAttendancesSubdetachment(IdUser uint, IdSubDetachment uint) ([]entity.Attendance, error)
 }
 
 type attendanceConnection struct {
@@ -25,56 +25,87 @@ func NewAttendanceRepository() AttendanceRepository {
 	return &attendanceConnection{
 		connection: db,
 	}
-
 }
-func (db *attendanceConnection) Create(attendance entity.Attendance) (entity.Attendance, error) {
 
-	var errChan = make(chan error, 1)
+//NewAttendanceRepository()
+
+var errChan = make(chan error, constantvariables.CHAN_VALUE)
+
+func (db *attendanceConnection) SetCreateAttendance(attendance entity.Attendance) (entity.Attendance, error) {
+
 	go func() {
 		err := db.connection.Save(&attendance).Error
 		defer entity.Closedb()
 		errChan <- err
 	}()
+	//go
 	err := <-errChan
 
 	return attendance, err
 }
-func (db *attendanceConnection) Update(attendance entity.Attendance) (entity.Attendance, error) {
-	err := db.connection.Save(&attendance).Error
-	defer entity.Closedb()
-	return attendance, err
-}
-func (db *attendanceConnection) Remove(Id uint) (bool, error) {
+
+//SetCreateAttendance
+
+/*
+@param Id is Attendace ,of type uint
+*/
+func (db *attendanceConnection) SetRemoveAttendance(Id uint) (bool, error) {
 	var attendance entity.Attendance
-	err := db.connection.Delete(&attendance, Id).Error
-	defer entity.Closedb()
+	go func() {
+		err := db.connection.Delete(&attendance, Id).Error
+		defer entity.Closedb()
+		errChan <- err
+	}()
+	err := <-errChan
 	if err != nil {
 		return false, err
 	}
 	return true, err
 }
-func (db *attendanceConnection) All() ([]entity.Attendance, error) {
+func (db *attendanceConnection) GetAllAttendance() ([]entity.Attendance, error) {
 	var attendance []entity.Attendance
-	err := db.connection.Preload("User").Preload("SubDetachment").Find(&attendance).Error
-	defer entity.Closedb()
+	go func() {
+		err := db.connection.Preload("User").Preload("SubDetachment").Find(&attendance).Error
+		defer entity.Closedb()
+		errChan <- err
+	}()
+	err := <-errChan
 	return attendance, err
 }
-func (db *attendanceConnection) AttendancesSubdetachment(IdUser uint, IdSubDetachment uint) ([]entity.Attendance, error) {
+func (db *attendanceConnection) GetAttendancesSubdetachment(IdUser uint, IdSubDetachment uint) ([]entity.Attendance, error) {
 	var attendance []entity.Attendance
-	err := db.connection.Preload("User").Preload("SubDetachment").Where("user_id=?", IdUser).Where("sub_detachment_id=?", IdSubDetachment).Find(&attendance).Error
-	defer entity.Closedb()
+	go func() {
+		err := db.connection.Preload("User").
+			Preload("SubDetachment").
+			Where("user_id=?", IdUser).
+			Where("sub_detachment_id=?", IdSubDetachment).
+			Find(&attendance).Error
+		defer entity.Closedb()
+		errChan <- err
+	}()
+	err := <-errChan
 	return attendance, err
 }
-func (db *attendanceConnection) FindByIdAttendance(Id uint) (entity.Attendance, error) {
+func (db *attendanceConnection) GetFindByIdAttendance(Id uint) (entity.Attendance, error) {
 	var attendance entity.Attendance
-	err := db.connection.Find(&attendance, Id).Error
-	defer entity.Closedb()
+	go func() {
+		err := db.connection.Find(&attendance, Id).Error
+		defer entity.Closedb()
+		errChan <- err
+	}()
+	err := <-errChan
 	return attendance, err
 }
 
-func (db *attendanceConnection) FindByIdWeeksDetachment(week string, userid uint) (entity.Attendance, error) {
+func (db *attendanceConnection) GetFindByIdWeeksDetachment(week string, userid uint) (entity.Attendance, error) {
 	var attendance entity.Attendance
-	err := db.connection.Where("user_id=?", userid).Where("week_sub_detachment=?", week).Find(&attendance).Error
-	defer entity.Closedb()
+	go func() {
+		err := db.connection.Where("user_id=?", userid).
+			Where("week_sub_detachment=?", week).
+			Find(&attendance).Error
+		defer entity.Closedb()
+		errChan <- err
+	}()
+	err := <-errChan
 	return attendance, err
 }
