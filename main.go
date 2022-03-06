@@ -6,18 +6,6 @@ import (
 
 func main() {
 
-	// 	- Input: "{[]()}"
-	// 	Output: true
-	//   - Input: "{[(])}"
-	// 	Output: false
-	//   - Input: "{[}"
-	// 	Output: false
-	//   - Input: "[{}"
-	// 	Output: false
-
-	// text := "{[]()}"
-	// result := cadena(text)
-
 	routers.NewRouter()
 
 }
