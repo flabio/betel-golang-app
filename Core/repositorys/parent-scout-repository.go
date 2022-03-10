@@ -25,6 +25,9 @@ func NewParentScoutRepository() ParentScoutRepository {
 
 var errChanParentScout = make(chan error, constantvariables.CHAN_VALUE)
 
+/*
+@param parent, is a struct of ParentScout
+*/
 func (db *parentScoutConnection) SetCreateParentScout(parent entity.ParentScout) (entity.ParentScout, error) {
 
 	go func() {
@@ -36,6 +39,9 @@ func (db *parentScoutConnection) SetCreateParentScout(parent entity.ParentScout)
 	return parent, err
 }
 
+/*
+@param Id, is a uint of ParentScout
+*/
 func (db *parentScoutConnection) SetRemoveParentScout(id int) (bool, error) {
 
 	go func() {

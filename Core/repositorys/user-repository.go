@@ -57,6 +57,9 @@ func NewUserRepository() UserRepository {
 
 var errChanUser = make(chan error, constantvariables.CHAN_VALUE)
 
+/*
+@param user, is a struct of User
+*/
 func (db *userConnection) SetInsertUser(user entity.User) (entity.User, error) {
 
 	go func() {
@@ -69,6 +72,9 @@ func (db *userConnection) SetInsertUser(user entity.User) (entity.User, error) {
 	return user, err
 }
 
+/*
+@param user, is a struct of User
+*/
 func (db *userConnection) SetEditUser(user entity.User) (entity.User, error) {
 	go func() {
 		err := db.connection.Save(&user).Error
@@ -79,6 +85,9 @@ func (db *userConnection) SetEditUser(user entity.User) (entity.User, error) {
 	return user, err
 }
 
+/*
+@param role, is a struct of Role
+*/
 func (db *userConnection) SetInsertRole(role entity.Role) error {
 
 	go func() {
@@ -89,6 +98,10 @@ func (db *userConnection) SetInsertRole(role entity.Role) error {
 	err := <-errChanUser
 	return err
 }
+
+/*
+@param group, is a struct of UserSubdetachement
+*/
 func (db *userConnection) SetInsertGroup(group entity.UserSubdetachement) error {
 
 	go func() {
@@ -100,6 +113,9 @@ func (db *userConnection) SetInsertGroup(group entity.UserSubdetachement) error 
 	return err
 }
 
+/*
+@param role, is a struct of Role
+*/
 func (db *userConnection) SetEditRole(role entity.Role) (entity.Role, error) {
 	var rol entity.Role
 
@@ -112,6 +128,9 @@ func (db *userConnection) SetEditRole(role entity.Role) (entity.Role, error) {
 	return rol, err
 }
 
+/*
+@param gruop, is a struct of UserSubdetachement
+*/
 func (db *userConnection) SetEditGroup(gruop entity.UserSubdetachement) (entity.UserSubdetachement, error) {
 	var gruo entity.UserSubdetachement
 
@@ -123,6 +142,11 @@ func (db *userConnection) SetEditGroup(gruop entity.UserSubdetachement) (entity.
 	err := <-errChanUser
 	return gruo, err
 }
+
+/*
+@param email, is a string of user
+@param password, is a string of user
+*/
 
 func (db *userConnection) VerifyCredential(email string, password string) interface{} {
 	var user entity.User
@@ -144,6 +168,9 @@ func (db *userConnection) VerifyCredential(email string, password string) interf
 	return nil
 }
 
+/*
+@param email, is a string of user
+*/
 func (db *userConnection) IsDuplicateEmail(email string) (bool, error) {
 	var user entity.User
 
@@ -158,6 +185,10 @@ func (db *userConnection) IsDuplicateEmail(email string) (bool, error) {
 	}
 	return false, err
 }
+
+/*
+@param identification, is a string of user
+*/
 func (db *userConnection) IsDuplicateIdentificatio(identification string) bool {
 	var user entity.User
 
@@ -174,6 +205,9 @@ func (db *userConnection) IsDuplicateIdentificatio(identification string) bool {
 	return false
 }
 
+/*
+@param id, is a uint of user
+*/
 func (db *userConnection) SetRemoveUser(id uint) (bool, error) {
 	var user entity.User
 
@@ -202,6 +236,9 @@ func (db *userConnection) GetAllUser() ([]entity.User, error) {
 	return user, err
 }
 
+/*
+@param email, is a string of user
+*/
 func (db *userConnection) GetFindByEmail(email string) (entity.User, error) {
 	var user entity.User
 
@@ -217,6 +254,9 @@ func (db *userConnection) GetFindByEmail(email string) (entity.User, error) {
 	return user, err
 }
 
+/*
+@param userID, is a uint of user
+*/
 func (db *userConnection) GetProfileUser(userID uint) (entity.User, error) {
 	var user entity.User
 
@@ -238,6 +278,9 @@ func (db *userConnection) GetProfileUser(userID uint) (entity.User, error) {
 	return user, err
 }
 
+/*
+@param id, is a uint of user
+*/
 func (db *userConnection) SetRemoveRoleUser(id uint) error {
 	var role entity.Role
 
@@ -261,6 +304,11 @@ func (db *userConnection) GetCountUser() int64 {
 	<-errChanUser
 	return count
 }
+
+/*
+@param begin
+@param limit is a int
+*/
 func (db *userConnection) GetPaginationUsers(begin, limit int) ([]entity.User, error) {
 	var user []entity.User
 
@@ -279,6 +327,10 @@ func (db *userConnection) GetPaginationUsers(begin, limit int) ([]entity.User, e
 	return user, err
 
 }
+
+/*
+@param user, is a struct of user
+*/
 func (db *userConnection) SetChangePassword(user entity.User) error {
 
 	go func() {
@@ -313,6 +365,7 @@ func (db *userConnection) GetListNavigators() ([]entity.User, error) {
 }
 
 //fin ListNavigators
+
 //ListPioneers
 func (db *userConnection) GetListPioneers() ([]entity.User, error) {
 	var user []entity.User
@@ -334,6 +387,7 @@ func (db *userConnection) GetListPioneers() ([]entity.User, error) {
 }
 
 //fin ListPioneers
+
 //ListFollowersWays
 func (db *userConnection) GetListFollowersWays() ([]entity.User, error) {
 	var user []entity.User
@@ -355,6 +409,7 @@ func (db *userConnection) GetListFollowersWays() ([]entity.User, error) {
 }
 
 //fin ListFollowersWays
+
 //ListScouts
 func (db *userConnection) GetListScouts() ([]entity.User, error) {
 	var user []entity.User
@@ -376,6 +431,7 @@ func (db *userConnection) GetListScouts() ([]entity.User, error) {
 }
 
 //fin ListScouts
+
 //ListCommanders
 func (db *userConnection) GetListCommanders() ([]entity.User, error) {
 	var user []entity.User
@@ -395,6 +451,7 @@ func (db *userConnection) GetListCommanders() ([]entity.User, error) {
 }
 
 //fin ListCommanders
+
 //ListMajors
 func (db *userConnection) GetListMajors() ([]entity.User, error) {
 	var user []entity.User
@@ -414,7 +471,9 @@ func (db *userConnection) GetListMajors() ([]entity.User, error) {
 }
 
 // fin ListMajors
-
+/*
+@param Id, is a uint of user
+*/
 func (db *userConnection) GetListKingsScouts(Id uint) ([]entity.User, error) {
 	var user []entity.User
 
@@ -478,6 +537,9 @@ func (db *userConnection) GetCounKanban() (int64, int64, int64, int64, int64) {
 }
 
 //FindUserNameLastName
+/*
+@param data, is a string
+*/
 func (db *userConnection) GetFindUserNameLastName(data string) ([]entity.User, error) {
 
 	var user []entity.User

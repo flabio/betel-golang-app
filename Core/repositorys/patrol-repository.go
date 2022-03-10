@@ -27,6 +27,9 @@ func NewPatrolRepository() PatrolRepository {
 
 var errChanPatrol = make(chan error, constantvariables.CHAN_VALUE)
 
+/*
+@param patrol, is a struct of Patrol
+*/
 func (db *patrolConnection) SetCreatePatrol(patrol entity.Patrol) (entity.Patrol, error) {
 	go func() {
 		err := db.connection.Save(&patrol).Error
@@ -37,6 +40,9 @@ func (db *patrolConnection) SetCreatePatrol(patrol entity.Patrol) (entity.Patrol
 	return patrol, err
 }
 
+/*
+@param Id, is a uint of Patrol
+*/
 func (db *patrolConnection) SetRemovePatrol(Id uint) (bool, error) {
 	go func() {
 		err := db.connection.Delete(&entity.Patrol{}, Id).Error
@@ -50,6 +56,10 @@ func (db *patrolConnection) SetRemovePatrol(Id uint) (bool, error) {
 		return true, err
 	}
 }
+
+/*
+@param Id, is a uint of Patrol
+*/
 func (db *patrolConnection) GetFindByIdPatrol(Id uint) (entity.Patrol, error) {
 	var patrol entity.Patrol
 	go func() {

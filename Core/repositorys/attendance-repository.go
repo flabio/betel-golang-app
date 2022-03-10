@@ -11,7 +11,7 @@ type AttendanceRepository interface {
 	SetCreateAttendance(attendance entity.Attendance) (entity.Attendance, error)
 	SetRemoveAttendance(Id uint) (bool, error)
 	GetFindByIdAttendance(Id uint) (entity.Attendance, error)
-	GetFindByIdWeeksDetachment(week string, userid uint) (entity.Attendance, error)
+	GetFindByIdWeeksDetachment(Week string, IdUser uint) (entity.Attendance, error)
 	GetAllAttendance() ([]entity.Attendance, error)
 	GetAttendancesSubdetachment(IdUser uint, IdSubDetachment uint) ([]entity.Attendance, error)
 }
@@ -72,6 +72,11 @@ func (db *attendanceConnection) GetAllAttendance() ([]entity.Attendance, error) 
 	err := <-errChan
 	return attendance, err
 }
+
+/*
+@param IdUser is the user, of type uint
+@param IdSubDetachment is the Subdetachment, of type uint
+*/
 func (db *attendanceConnection) GetAttendancesSubdetachment(IdUser uint, IdSubDetachment uint) ([]entity.Attendance, error) {
 	var attendance []entity.Attendance
 	go func() {
@@ -86,6 +91,10 @@ func (db *attendanceConnection) GetAttendancesSubdetachment(IdUser uint, IdSubDe
 	err := <-errChan
 	return attendance, err
 }
+
+/*
+@param Id is the attendance, of type uint
+*/
 func (db *attendanceConnection) GetFindByIdAttendance(Id uint) (entity.Attendance, error) {
 	var attendance entity.Attendance
 	go func() {
@@ -97,11 +106,16 @@ func (db *attendanceConnection) GetFindByIdAttendance(Id uint) (entity.Attendanc
 	return attendance, err
 }
 
-func (db *attendanceConnection) GetFindByIdWeeksDetachment(week string, userid uint) (entity.Attendance, error) {
+/*
+@param Week is the attendance, of type uint
+@param IdUser is the attendance, of type uint
+
+*/
+func (db *attendanceConnection) GetFindByIdWeeksDetachment(Week string, IdUser uint) (entity.Attendance, error) {
 	var attendance entity.Attendance
 	go func() {
-		err := db.connection.Where("user_id=?", userid).
-			Where("week_sub_detachment=?", week).
+		err := db.connection.Where("user_id=?", IdUser).
+			Where("week_sub_detachment=?", Week).
 			Find(&attendance).Error
 		defer entity.Closedb()
 		errChan <- err

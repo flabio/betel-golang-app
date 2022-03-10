@@ -24,6 +24,9 @@ func NewWeeksDetachmentRepository() WeeksDetachmentRepository {
 
 var errChanWeeksDetachment = make(chan error, constantvariables.CHAN_VALUE)
 
+/*
+@param Id, is a uint
+*/
 func (db *weeksConnection) GetFindByIdWeeksDetachment(Id uint) ([]entity.WeeksDetachment, error) {
 	var weeksdetachment []entity.WeeksDetachment
 

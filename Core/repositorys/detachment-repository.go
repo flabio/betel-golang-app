@@ -27,25 +27,36 @@ func NewDetachmentRepository() DetachmentRepository {
 
 var errChanDetachment = make(chan error, constantvariables.CHAN_VALUE)
 
-func (db *detachmentConnection) SetCreateDetachment(res entity.Detachment) (entity.Detachment, error) {
+/*
+@param detachment,is a struct of Detachment
+*/
+
+func (db *detachmentConnection) SetCreateDetachment(detachment entity.Detachment) (entity.Detachment, error) {
 	go func() {
-		err := db.connection.Save(&res).Error
+		err := db.connection.Save(&detachment).Error
 		defer entity.Closedb()
 		errChanDetachment <- err
 	}()
 	err := <-errChanDetachment
-	return res, err
-}
-func (db *detachmentConnection) SetRemoveDetachment(res entity.Detachment) (entity.Detachment, error) {
-	go func() {
-		err := db.connection.Delete(&res).Error
-		defer entity.Closedb()
-		errChanDetachment <- err
-	}()
-	err := <-errChanDetachment
-	return res, err
+	return detachment, err
 }
 
+/*
+@param detachment,is a struct of Detachment
+*/
+func (db *detachmentConnection) SetRemoveDetachment(detachment entity.Detachment) (entity.Detachment, error) {
+	go func() {
+		err := db.connection.Delete(&detachment).Error
+		defer entity.Closedb()
+		errChanDetachment <- err
+	}()
+	err := <-errChanDetachment
+	return detachment, err
+}
+
+/*
+@param Id,is a uint of Detachment
+*/
 func (db *detachmentConnection) GetFindDetachmentById(Id uint) (entity.Detachment, error) {
 	var result entity.Detachment
 	go func() {

@@ -37,8 +37,8 @@ type User struct {
 	Password               string                `gorm:"->;<-;null" json:"-"`
 	Token                  string                `gorm:"-" json:"token,omitempty"`
 	Active                 bool                  `gorm:"type:TINYINT" json:"active"`
-	CreatedAt              *time.Time            `gorm:"type:TIMESTAMP(6)" json:"created_at"`
-	UpdatedAt              time.Time             `gorm:"type:TIMESTAMP(6)" json:"updated_at"`
+	CreatedAt              time.Time             `gorm:"<-:created_at" json:"created_at"`
+	UpdatedAt              *time.Time            `gorm:"type:TIMESTAMP(6)" json:"updated_at"`
 	Roles                  *Role                 `json:"rolid,omitempty"`
 	UserSubdetachements    *UserSubdetachement   `json:"usersubdetachement,omitempty"`
 	MinisterialAcademys    *[]MinisterialAcademy `json:"ministerialacademy,omitempty"`

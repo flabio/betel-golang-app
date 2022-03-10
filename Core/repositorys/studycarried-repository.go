@@ -27,6 +27,9 @@ func NewStudyCarriedRepository() StudyCarriedRepository {
 
 var errChanStudyCarried = make(chan error, constantvariables.CHAN_VALUE)
 
+/*
+@param studycarried, is a struct of StudyCarried
+*/
 func (db *studycarriedConnection) SetCreateStudyCarried(studycarried entity.StudyCarried) (entity.StudyCarried, error) {
 
 	go func() {
@@ -48,6 +51,10 @@ func (db *studycarriedConnection) GetAllStudyCarried() ([]entity.StudyCarried, e
 	err := <-errChanStudyCarried
 	return result, err
 }
+
+/*
+@param Id, is a uint of StudyCarried
+*/
 func (db *studycarriedConnection) GetFindStudyCarriedById(Id uint) (entity.StudyCarried, error) {
 	var result entity.StudyCarried
 
@@ -59,6 +66,10 @@ func (db *studycarriedConnection) GetFindStudyCarriedById(Id uint) (entity.Study
 	err := <-errChanStudyCarried
 	return result, err
 }
+
+/*
+@param Id, is a struct of StudyCarried
+*/
 func (db *studycarriedConnection) SetRemoveStudyCarried(Id uint) (bool, error) {
 
 	go func() {

@@ -28,6 +28,9 @@ func NewUserRolRepository() UserRolRepository {
 
 var errChanUserRol = make(chan error, constantvariables.CHAN_VALUE)
 
+/*
+@param rol, is a struct of Role
+*/
 func (db *userConnection) SetInsertUserRol(rol entity.Role) entity.Role {
 
 	go func() {
