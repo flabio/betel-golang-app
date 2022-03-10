@@ -28,6 +28,9 @@ func NewParentRepository() ParentRepository {
 
 var errChanParent = make(chan error, constantvariables.CHAN_VALUE)
 
+/*
+@param parent, is a struct of Parent
+*/
 func (db *parentConnection) SetCreateParent(parent entity.Parent) (entity.Parent, error) {
 
 	go func() {
@@ -38,6 +41,10 @@ func (db *parentConnection) SetCreateParent(parent entity.Parent) (entity.Parent
 	err := <-errChanParent
 	return parent, err
 }
+
+/*
+@param Id, is a uint of Parent
+*/
 func (db *parentConnection) SetRemoveParent(Id uint) (bool, error) {
 	go func() {
 		err := db.connection.Delete(&entity.Parent{}, Id).Error
@@ -50,6 +57,10 @@ func (db *parentConnection) SetRemoveParent(Id uint) (bool, error) {
 	}
 	return false, err
 }
+
+/*
+@param Id, is a uint of Parent
+*/
 func (db *parentConnection) GetFindParentById(Id uint) (entity.Parent, error) {
 	var parent entity.Parent
 	go func() {
@@ -60,6 +71,10 @@ func (db *parentConnection) GetFindParentById(Id uint) (entity.Parent, error) {
 	err := <-errChanParent
 	return parent, err
 }
+
+/*
+@param Identification, is a uint of Parent
+*/
 func (db *parentConnection) GetFindParentByIdentification(Identification string) (entity.Parent, error) {
 
 	var parent entity.Parent
@@ -83,6 +98,10 @@ func (db *parentConnection) GetAllParent() ([]entity.Parent, error) {
 	err := <-errChanParent
 	return parents, err
 }
+
+/*
+@param Id, is a uint of Parent
+*/
 func (db *parentConnection) GetAllParentScout(Id uint) ([]entity.Parent, error) {
 
 	var parents []entity.Parent

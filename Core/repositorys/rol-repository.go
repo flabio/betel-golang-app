@@ -28,6 +28,9 @@ func NewRolRepository() RolRepository {
 
 var errChanRol = make(chan error, constantvariables.CHAN_VALUE)
 
+/*
+@param rol, is a struct of Rol
+*/
 func (db *rolConnection) SetCreateRol(rol entity.Rol) (entity.Rol, error) {
 
 	go func() {
@@ -39,6 +42,10 @@ func (db *rolConnection) SetCreateRol(rol entity.Rol) (entity.Rol, error) {
 
 	return rol, err
 }
+
+/*
+@param rol, is a struct of Rol
+*/
 func (db *rolConnection) SetRemoveRol(rol entity.Rol) (bool, error) {
 
 	go func() {
@@ -52,6 +59,10 @@ func (db *rolConnection) SetRemoveRol(rol entity.Rol) (bool, error) {
 	}
 	return false, err
 }
+
+/*
+@param Id, is a uint of Rol
+*/
 func (db *rolConnection) GetFindRolById(Id uint) (entity.Rol, error) {
 
 	var rol entity.Rol

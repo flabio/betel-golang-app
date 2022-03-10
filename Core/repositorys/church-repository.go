@@ -27,6 +27,9 @@ func NewChurchRepository() ChurchRepository {
 
 var errChanChurch = make(chan error, constantvariables.CHAN_VALUE)
 
+/*
+@param church is the Church, of type struct
+*/
 func (db *churchConnection) SetCreateChurch(church entity.Church) (entity.Church, error) {
 
 	go func() {
@@ -38,6 +41,9 @@ func (db *churchConnection) SetCreateChurch(church entity.Church) (entity.Church
 	return church, err
 }
 
+/*
+@param Id is the of Church, is of type uint
+*/
 func (db *churchConnection) GetFindChurchById(Id uint) (entity.Church, error) {
 	var church entity.Church
 
@@ -60,6 +66,10 @@ func (db *churchConnection) GetAllChurch() ([]entity.Church, error) {
 	err := <-errChanChurch
 	return churchs, err
 }
+
+/*
+@param church is the of Church, is of type struct
+*/
 func (db *churchConnection) SetRemoveChurch(church entity.Church) (bool, error) {
 
 	go func() {

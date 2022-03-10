@@ -26,6 +26,9 @@ func NewVisitConnection() VisitRepository {
 
 var errChanVisit = make(chan error, constantvariables.CHAN_VALUE)
 
+/*
+@param visit, is a struct of Visit
+*/
 func (db *visitConnection) SetCreateVisit(visit entity.Visit) (entity.Visit, error) {
 
 	go func() {
@@ -47,6 +50,10 @@ func (db *visitConnection) GetAllVisit() ([]entity.Visit, error) {
 	return visit, err
 }
 
+/*
+@param userId, is a uint
+@param subDetachmentId, is a uint
+*/
 func (db *visitConnection) GetAllVisitByUserVisit(userId uint, subDetachmentId uint) ([]entity.Visit, error) {
 	var visit []entity.Visit
 	go func() {
@@ -60,6 +67,10 @@ func (db *visitConnection) GetAllVisitByUserVisit(userId uint, subDetachmentId u
 	err := <-errChanVisit
 	return visit, err
 }
+
+/*
+@param Id, is a uint
+*/
 func (db *visitConnection) GetFindByIdVisit(Id uint) (entity.Visit, error) {
 	var visit entity.Visit
 	go func() {
@@ -72,6 +83,9 @@ func (db *visitConnection) GetFindByIdVisit(Id uint) (entity.Visit, error) {
 	return visit, err
 }
 
+/*
+@param Id, is a uint
+*/
 func (db *visitConnection) SetRemoveVisit(Id uint) (bool, error) {
 	go func() {
 		err := db.connection.Delete(&entity.Visit{}, Id).Error

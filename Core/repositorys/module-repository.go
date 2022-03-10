@@ -31,6 +31,9 @@ func NewModuleRepository() ModuleRepository {
 
 var errChanModule = make(chan error, constantvariables.CHAN_VALUE)
 
+/*
+@param module,is a struct of Module
+*/
 func (db *moduleConnection) SetCreateModule(module entity.Module) (entity.Module, error) {
 	go func() {
 		err := db.connection.Save(&module).Error
@@ -41,6 +44,9 @@ func (db *moduleConnection) SetCreateModule(module entity.Module) (entity.Module
 	return module, err
 }
 
+/*
+@param rolemodule, is a struct of RoleModule
+*/
 func (db *moduleConnection) SetCreateModuleRole(rolemodule entity.RoleModule) (entity.RoleModule, error) {
 
 	go func() {
@@ -61,6 +67,10 @@ func (db *moduleConnection) GetAllModule() ([]entity.Module, error) {
 	err := <-errChanModule
 	return modules, err
 }
+
+/*
+@param Id, is a uint of RoleModule
+*/
 func (db *moduleConnection) GetAllByRoleModule(Id uint) ([]entity.RoleModule, error) {
 	var modules []entity.RoleModule
 	go func() {
@@ -73,6 +83,9 @@ func (db *moduleConnection) GetAllByRoleModule(Id uint) ([]entity.RoleModule, er
 	return modules, err
 }
 
+/*
+@param Id, is a uint of Module
+*/
 func (db *moduleConnection) GetFindModuleById(Id uint) (entity.Module, error) {
 	var module entity.Module
 	go func() {
@@ -84,6 +97,9 @@ func (db *moduleConnection) GetFindModuleById(Id uint) (entity.Module, error) {
 	return module, err
 }
 
+/*
+@param Id, is a uint of RoleModule
+*/
 func (db *moduleConnection) GetFindRoleModuleById(Id uint) (entity.RoleModule, error) {
 	var module entity.RoleModule
 	go func() {
@@ -94,6 +110,10 @@ func (db *moduleConnection) GetFindRoleModuleById(Id uint) (entity.RoleModule, e
 	err := <-errChanModule
 	return module, err
 }
+
+/*
+@param Id, is a uint of Module
+*/
 func (db *moduleConnection) SetRemoveModule(Id uint) (bool, error) {
 	go func() {
 		err := db.connection.Delete(&entity.Module{}, Id).Error
@@ -106,6 +126,10 @@ func (db *moduleConnection) SetRemoveModule(Id uint) (bool, error) {
 	}
 	return false, err
 }
+
+/*
+@param Id, is a uint of RoleModule
+*/
 func (db *moduleConnection) SetRemoveRoleModule(Id uint) (bool, error) {
 	go func() {
 		err := db.connection.Delete(&entity.RoleModule{}, Id).Error

@@ -25,6 +25,9 @@ func NewRoleModuleRepository() RoleModule {
 
 var errChanRoleModule = make(chan error, constantvariables.CHAN_VALUE)
 
+/*
+@param roleModule, is a struct of RoleModule
+*/
 func (db *roleModuleConnection) SetCreateRoleModule(roleModule entity.RoleModule) (entity.RoleModule, error) {
 	go func() {
 		err := db.connection.Save(&roleModule).Error
@@ -34,6 +37,10 @@ func (db *roleModuleConnection) SetCreateRoleModule(roleModule entity.RoleModule
 	err := <-errChanRoleModule
 	return roleModule, err
 }
+
+/*
+@param Id, is a struct of RoleModule
+*/
 func (db *roleModuleConnection) SetRemoveRoleModule(Id uint) (bool, error) {
 	go func() {
 		err := db.connection.Delete(&entity.RoleModule{}, Id).Error

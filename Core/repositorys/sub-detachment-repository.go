@@ -28,6 +28,9 @@ func NewSubDetachmentRepository() SubDetachmentRepository {
 
 var errChanSubdetachment = make(chan error, constantvariables.CHAN_VALUE)
 
+/*
+@param subdetachment, is a struct of SubDetachment
+*/
 func (db *subConnection) SetCreateSubDetachment(subdetachment entity.SubDetachment) (entity.SubDetachment, error) {
 	go func() {
 		err := db.connection.Save(&subdetachment).Error
@@ -37,6 +40,9 @@ func (db *subConnection) SetCreateSubDetachment(subdetachment entity.SubDetachme
 	return subdetachment, <-errChan
 }
 
+/*
+@param Id, is a uint of SubDetachment
+*/
 func (db *subConnection) SetRemoveSubDetachment(Id uint) (bool, error) {
 	go func() {
 		err := db.connection.Delete(&entity.SubDetachment{}, Id).Error
@@ -50,6 +56,10 @@ func (db *subConnection) SetRemoveSubDetachment(Id uint) (bool, error) {
 		return true, err
 	}
 }
+
+/*
+@param Id, is a uint of SubDetachment
+*/
 func (db *subConnection) GetFindByIdSubDetachment(Id uint) (entity.SubDetachment, error) {
 	var subdetachment entity.SubDetachment
 	go func() {
@@ -70,6 +80,10 @@ func (db *subConnection) GetAllSubDetachment() ([]entity.SubDetachment, error) {
 	err := <-errChanSubdetachment
 	return subdetachment, err
 }
+
+/*
+@param Id, is a uint of SubDetachment
+*/
 func (db *subConnection) GetFindByIdDetachmentSubDetachment(Id uint) ([]entity.SubDetachment, error) {
 	var subdetachment []entity.SubDetachment
 	go func() {
