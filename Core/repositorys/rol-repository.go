@@ -26,20 +26,13 @@ func NewRolRepository() RolRepository {
 	}
 }
 
-var errChanRol = make(chan error, constantvariables.CHAN_VALUE)
-
 /*
 @param rol, is a struct of Rol
 */
 func (db *rolConnection) SetCreateRol(rol entity.Rol) (entity.Rol, error) {
 
-	go func() {
-		err := db.connection.Save(&rol).Error
-		defer entity.Closedb()
-		errChanRol <- err
-	}()
-	err := <-errChanRol
-
+	err := db.connection.Save(&rol).Error
+	defer entity.Closedb()
 	return rol, err
 }
 
@@ -48,12 +41,8 @@ func (db *rolConnection) SetCreateRol(rol entity.Rol) (entity.Rol, error) {
 */
 func (db *rolConnection) SetRemoveRol(rol entity.Rol) (bool, error) {
 
-	go func() {
-		err := db.connection.Delete(&rol).Error
-		defer entity.Closedb()
-		errChanRol <- err
-	}()
-	err := <-errChanRol
+	err := db.connection.Delete(&rol).Error
+	defer entity.Closedb()
 	if err == nil {
 		return true, err
 	}
@@ -66,55 +55,39 @@ func (db *rolConnection) SetRemoveRol(rol entity.Rol) (bool, error) {
 func (db *rolConnection) GetFindRolById(Id uint) (entity.Rol, error) {
 
 	var rol entity.Rol
-	go func() {
-		err := db.connection.Find(&rol, Id).Error
-		defer entity.Closedb()
-		errChanRol <- err
-	}()
-	err := <-errChanRol
+	err := db.connection.Find(&rol, Id).Error
+	defer entity.Closedb()
 	return rol, err
 }
 
 func (db *rolConnection) GetAllRol() ([]entity.Rol, error) {
 
 	var rols []entity.Rol
-	go func() {
-		err := db.connection.Find(&rols).Error
-		defer entity.Closedb()
-		errChanRol <- err
-	}()
-	err := <-errChanRol
+	err := db.connection.Find(&rols).Error
+	defer entity.Closedb()
 	return rols, err
 }
 
 func (db *rolConnection) GetAllGroupRol() ([]entity.Rol, error) {
 	var rols []entity.Rol
 
-	go func() {
-		err := db.connection.Where("id IN ?", []int{
-			constantvariables.NAVIGANTORS_ROL,
-			constantvariables.PIONEERS_ROL,
-			constantvariables.PATH_FOLLOWERS_ROL,
-			constantvariables.SCOUTS_ROL}).
-			Find(&rols).Error
-		defer entity.Closedb()
-		errChanRol <- err
-
-	}()
-	err := <-errChanRol
+	err := db.connection.Where("id IN ?", []int{
+		constantvariables.NAVIGANTORS_ROL,
+		constantvariables.PIONEERS_ROL,
+		constantvariables.PATH_FOLLOWERS_ROL,
+		constantvariables.SCOUTS_ROL}).
+		Find(&rols).Error
+	defer entity.Closedb()
 	return rols, err
 }
 func (db *rolConnection) GetRolsModule() ([]entity.RoleModule, error) {
 
 	var roleModule []entity.RoleModule
 
-	go func() {
-		err := db.connection.Preload("Role.Rol").
-			Preload("Module").
-			Find(&roleModule).Error
-		defer entity.Closedb()
-		errChanRol <- err
-	}()
-	err := <-errChanRol
+	err := db.connection.Preload("Role.Rol").
+		Preload("Module").
+		Find(&roleModule).Error
+	defer entity.Closedb()
+
 	return roleModule, err
 }

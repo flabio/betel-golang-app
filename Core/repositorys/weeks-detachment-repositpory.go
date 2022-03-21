@@ -2,7 +2,6 @@ package repositorys
 
 import (
 	"bete/Core/entity"
-	constantvariables "bete/Infrastructure/constantVariables"
 
 	"gorm.io/gorm"
 )
@@ -22,21 +21,15 @@ func NewWeeksDetachmentRepository() WeeksDetachmentRepository {
 	}
 }
 
-var errChanWeeksDetachment = make(chan error, constantvariables.CHAN_VALUE)
-
 /*
 @param Id, is a uint
 */
 func (db *weeksConnection) GetFindByIdWeeksDetachment(Id uint) ([]entity.WeeksDetachment, error) {
 	var weeksdetachment []entity.WeeksDetachment
 
-	go func() {
-		err := db.connection.Order("id asc").
-			Where("sub_detachment_id", Id).
-			Find(&weeksdetachment).Error
-		defer entity.Closedb()
-		errChanWeeksDetachment <- err
-	}()
-	err := <-errChanWeeksDetachment
+	err := db.connection.Order("id asc").
+		Where("sub_detachment_id", Id).
+		Find(&weeksdetachment).Error
+	defer entity.Closedb()
 	return weeksdetachment, err
 }

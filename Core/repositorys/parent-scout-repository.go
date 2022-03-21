@@ -2,7 +2,6 @@ package repositorys
 
 import (
 	"bete/Core/entity"
-	constantvariables "bete/Infrastructure/constantVariables"
 
 	"gorm.io/gorm"
 )
@@ -23,19 +22,14 @@ func NewParentScoutRepository() ParentScoutRepository {
 	}
 }
 
-var errChanParentScout = make(chan error, constantvariables.CHAN_VALUE)
-
 /*
 @param parent, is a struct of ParentScout
 */
 func (db *parentScoutConnection) SetCreateParentScout(parent entity.ParentScout) (entity.ParentScout, error) {
 
-	go func() {
-		err := db.connection.Save(&parent).Error
-		defer entity.Closedb()
-		errChanParentScout <- err
-	}()
-	err := <-errChanParentScout
+	err := db.connection.Save(&parent).Error
+	defer entity.Closedb()
+
 	return parent, err
 }
 
@@ -44,12 +38,9 @@ func (db *parentScoutConnection) SetCreateParentScout(parent entity.ParentScout)
 */
 func (db *parentScoutConnection) SetRemoveParentScout(id int) (bool, error) {
 
-	go func() {
-		err := db.connection.Delete(&id).Error
-		defer entity.Closedb()
-		errChanParentScout <- err
-	}()
-	err := <-errChanParentScout
+	err := db.connection.Delete(&id).Error
+	defer entity.Closedb()
+
 	if err == nil {
 		return true, err
 	}

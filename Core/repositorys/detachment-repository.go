@@ -2,7 +2,6 @@ package repositorys
 
 import (
 	"bete/Core/entity"
-	constantvariables "bete/Infrastructure/constantVariables"
 
 	"gorm.io/gorm"
 )
@@ -25,19 +24,14 @@ func NewDetachmentRepository() DetachmentRepository {
 	}
 }
 
-var errChanDetachment = make(chan error, constantvariables.CHAN_VALUE)
-
 /*
 @param detachment,is a struct of Detachment
 */
 
 func (db *detachmentConnection) SetCreateDetachment(detachment entity.Detachment) (entity.Detachment, error) {
-	go func() {
-		err := db.connection.Save(&detachment).Error
-		defer entity.Closedb()
-		errChanDetachment <- err
-	}()
-	err := <-errChanDetachment
+
+	err := db.connection.Save(&detachment).Error
+	defer entity.Closedb()
 	return detachment, err
 }
 
@@ -45,12 +39,8 @@ func (db *detachmentConnection) SetCreateDetachment(detachment entity.Detachment
 @param detachment,is a struct of Detachment
 */
 func (db *detachmentConnection) SetRemoveDetachment(detachment entity.Detachment) (entity.Detachment, error) {
-	go func() {
-		err := db.connection.Delete(&detachment).Error
-		defer entity.Closedb()
-		errChanDetachment <- err
-	}()
-	err := <-errChanDetachment
+	err := db.connection.Delete(&detachment).Error
+	defer entity.Closedb()
 	return detachment, err
 }
 
@@ -59,22 +49,13 @@ func (db *detachmentConnection) SetRemoveDetachment(detachment entity.Detachment
 */
 func (db *detachmentConnection) GetFindDetachmentById(Id uint) (entity.Detachment, error) {
 	var result entity.Detachment
-	go func() {
-		err := db.connection.Find(&result, Id).Error
-		defer entity.Closedb()
-		errChanDetachment <- err
-	}()
-	err := <-errChanDetachment
+	err := db.connection.Find(&result, Id).Error
+	defer entity.Closedb()
 	return result, err
 }
 func (db *detachmentConnection) GetAllDetachment() ([]entity.Detachment, error) {
 	var results []entity.Detachment
-
-	go func() {
-		err := db.connection.Find(&results).Error
-		defer entity.Closedb()
-		errChanDetachment <- err
-	}()
-	err := <-errChanDetachment
+	err := db.connection.Find(&results).Error
+	defer entity.Closedb()
 	return results, err
 }
