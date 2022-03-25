@@ -8,9 +8,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func checkError(err error) bool {
-	if err != nil {
-		log.Fatalf("Failed map %v", err)
+/*
+@param Err is of type error
+*/
+func checkError(Err error) bool {
+	if Err != nil {
+		log.Fatalf("Failed map %v", Err)
 		return false
 
 	}
@@ -18,9 +21,13 @@ func checkError(err error) bool {
 }
 
 //func of validation
-func validadErrors(errDTO error, context *gin.Context) {
 
-	res := utilities.BuildErrorAllResponse(errDTO.Error())
+/*
+@param ErrDTO is of type error
+*/
+func validadErrors(ErrDTO error, context *gin.Context) {
+
+	res := utilities.BuildErrorAllResponse(ErrDTO.Error())
 	context.AbortWithStatusJSON(http.StatusBadRequest, res)
 }
 
@@ -30,9 +37,12 @@ func validadExistScout(context *gin.Context) {
 }
 
 //validadRequiredMsg
-func validadRequiredMsg(message string, context *gin.Context) {
+/*
+@param ErrDTO is of type error
+*/
+func validadRequiredMsg(Message string, context *gin.Context) {
 
-	context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrorAllResponseMessage(message))
+	context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrorAllResponseMessage(Message))
 }
 func validadBirdateRequiredMsg(message string, context *gin.Context) {
 

@@ -32,6 +32,7 @@ type UserDTO struct {
 	SubDetachmentId        uint   `json:"subdetachmentid" form:"subdetachmentid" `
 	ChurchId               uint   `json:"churchid" form:"churchid" `
 	RolId                  uint   `json:"rolid" form:"rolid"`
+	CityId                 uint   `json:"cityid" form:"cityid"`
 }
 
 type ScoutDTO struct {

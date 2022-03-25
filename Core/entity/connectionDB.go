@@ -26,8 +26,8 @@ func DatabaseConnection() *gorm.DB {
 		panic("Failed to create a connection to database")
 	}
 	db.AutoMigrate(
-		&User{},
-	/*&Rol{},
+	/*&User{},
+	&Rol{},
 	&Role{},
 	&Church{},
 	&Detachment{},

@@ -2,7 +2,6 @@ package repositorys
 
 import (
 	"bete/Core/entity"
-	constantvariables "bete/Infrastructure/constantVariables"
 
 	"gorm.io/gorm"
 )
@@ -25,30 +24,20 @@ func NewStudyCarriedRepository() StudyCarriedRepository {
 	}
 }
 
-var errChanStudyCarried = make(chan error, constantvariables.CHAN_VALUE)
-
 /*
 @param studycarried, is a struct of StudyCarried
 */
 func (db *studycarriedConnection) SetCreateStudyCarried(studycarried entity.StudyCarried) (entity.StudyCarried, error) {
 
-	go func() {
-		err := db.connection.Save(&studycarried).Error
-		defer entity.Closedb()
-		errChanStudyCarried <- err
-	}()
-	err := <-errChanStudyCarried
+	err := db.connection.Save(&studycarried).Error
+	defer entity.Closedb()
 	return studycarried, err
 }
 
 func (db *studycarriedConnection) GetAllStudyCarried() ([]entity.StudyCarried, error) {
 	var result []entity.StudyCarried
-	go func() {
-		err := db.connection.Find(&result).Error
-		defer entity.Closedb()
-		errChanStudyCarried <- err
-	}()
-	err := <-errChanStudyCarried
+	err := db.connection.Find(&result).Error
+	defer entity.Closedb()
 	return result, err
 }
 
@@ -58,12 +47,8 @@ func (db *studycarriedConnection) GetAllStudyCarried() ([]entity.StudyCarried, e
 func (db *studycarriedConnection) GetFindStudyCarriedById(Id uint) (entity.StudyCarried, error) {
 	var result entity.StudyCarried
 
-	go func() {
-		err := db.connection.Find(&result, Id).Error
-		defer entity.Closedb()
-		errChanStudyCarried <- err
-	}()
-	err := <-errChanStudyCarried
+	err := db.connection.Find(&result, Id).Error
+	defer entity.Closedb()
 	return result, err
 }
 
@@ -72,13 +57,9 @@ func (db *studycarriedConnection) GetFindStudyCarriedById(Id uint) (entity.Study
 */
 func (db *studycarriedConnection) SetRemoveStudyCarried(Id uint) (bool, error) {
 
-	go func() {
-		err := db.connection.Delete(Id).Error
-		defer entity.Closedb()
-		errChanStudyCarried <- err
-	}()
-	err := <-errChanStudyCarried
-	if <-errChanStudyCarried != nil {
+	err := db.connection.Delete(Id).Error
+	defer entity.Closedb()
+	if err != nil {
 		return true, err
 	}
 	return false, err

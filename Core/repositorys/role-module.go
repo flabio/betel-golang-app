@@ -2,7 +2,6 @@ package repositorys
 
 import (
 	"bete/Core/entity"
-	constantvariables "bete/Infrastructure/constantVariables"
 
 	"gorm.io/gorm"
 )
@@ -23,18 +22,12 @@ func NewRoleModuleRepository() RoleModule {
 	}
 }
 
-var errChanRoleModule = make(chan error, constantvariables.CHAN_VALUE)
-
 /*
 @param roleModule, is a struct of RoleModule
 */
 func (db *roleModuleConnection) SetCreateRoleModule(roleModule entity.RoleModule) (entity.RoleModule, error) {
-	go func() {
-		err := db.connection.Save(&roleModule).Error
-		defer entity.Closedb()
-		errChanRoleModule <- err
-	}()
-	err := <-errChanRoleModule
+	err := db.connection.Save(&roleModule).Error
+	defer entity.Closedb()
 	return roleModule, err
 }
 
@@ -42,12 +35,8 @@ func (db *roleModuleConnection) SetCreateRoleModule(roleModule entity.RoleModule
 @param Id, is a struct of RoleModule
 */
 func (db *roleModuleConnection) SetRemoveRoleModule(Id uint) (bool, error) {
-	go func() {
-		err := db.connection.Delete(&entity.RoleModule{}, Id).Error
-		defer entity.Closedb()
-		errChanRoleModule <- err
-	}()
-	err := <-errChanRoleModule
+	err := db.connection.Delete(&entity.RoleModule{}, Id).Error
+	defer entity.Closedb()
 	if err == nil {
 		return true, err
 	}

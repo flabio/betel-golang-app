@@ -47,9 +47,9 @@ type User struct {
 	ChurchId               uint                  `gorm:"NULL" json:"churchid"`
 	Church                 Church                `gorm:"foreignkey:ChurchId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"church"`
 	CityId                 uint                  `gorm:"NULL" json:"cityid"`
-	City                   City                  `gorm:"foreignkey:CityId;constraint:onUpdate:CASCADE,onDelete:SET NULL" json:"city"`
-	ParentId               uint                  `gorm:"NULL" json:"parentid"`
-	Parent                 Parent                `gorm:"foreignkey:ParentId;constraint:onUpdate:CASCADE,onDelete:SET NULL" json:"parent"`
+	City                   City                  `gorm:"foreignkey:CityId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"city"`
+	//ParentId               uint                  `gorm:"NULL" json:"parentid"`
+	//Parent                 Parent                `gorm:"foreignkey:ParentId;constraint:onUpdate:SET NULL,onDelete:SET NULL" json:"parent"`
 	// DetachmentId uint       `gorm:"NULL" json:"detachmentid"`
 	// Detachment   Detachment `gorm:"foreignkey:DetachmentId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"detachment"`
 

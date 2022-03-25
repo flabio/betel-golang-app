@@ -11,11 +11,11 @@ import (
 
 //authService is a contract about something that this service can do
 type AuthService interface {
-	VerifyCredential(email string, password string) interface{}
-	CreateUser(user dto.UserDTO) entity.User
-	FindByEmail(email string) (entity.User, error)
-	IsDuplicateEmail(email string) (bool, error)
-	GetIdRol(id uint) uint
+	VerifyCredential(Emmail string, Password string) interface{}
+	CreateUser(User dto.UserDTO) entity.User
+	FindByEmail(Email string) (entity.User, error)
+	IsDuplicateEmail(Email string) (bool, error)
+	GetIdRol(Id uint) uint
 }
 
 type authService struct {
@@ -31,25 +31,35 @@ func NewAuthService() AuthService {
 	}
 }
 
-func (authService *authService) VerifyCredential(email string, password string) interface{} {
-	res := authService.userRepository.VerifyCredential(email, password)
+/*
+@param Email is of type string
+@param Password is of type string
+*/
+func (authService *authService) VerifyCredential(Email string, Password string) interface{} {
+	res := authService.userRepository.VerifyCredential(Email, Password)
 
 	if v, ok := res.(entity.User); ok {
-
-		comparedPassword := comparePassword(v.Password, []byte(password))
-		if comparedPassword {
-			if v.Email == email && comparedPassword {
+		if v.Email == Email {
+			return res
+		}
+		//comparedPassword := comparePassword(v.Password, []byte(Password))
+		/*if comparedPassword {
+			if v.Email == Email && comparedPassword {
 				return res
 			}
-		}
+		}*/
 		return nil
 	}
 	return nil
 }
 
-func (authService *authService) CreateUser(user dto.UserDTO) entity.User {
+/*
+@param User is of type struct
+
+*/
+func (authService *authService) CreateUser(User dto.UserDTO) entity.User {
 	userToCreate := entity.User{}
-	err := smapping.FillStruct(&userToCreate, smapping.MapFields(&user))
+	err := smapping.FillStruct(&userToCreate, smapping.MapFields(&User))
 	checkError(err)
 
 	res, err := authService.userRepository.SetInsertUser(userToCreate)
@@ -57,23 +67,32 @@ func (authService *authService) CreateUser(user dto.UserDTO) entity.User {
 	return res
 }
 
-func (authService *authService) FindByEmail(email string) (entity.User, error) {
-	return authService.userRepository.GetFindByEmail(email)
+/*
+@param Email is of type string
+*/
+func (authService *authService) FindByEmail(Email string) (entity.User, error) {
+	return authService.userRepository.GetFindByEmail(Email)
 }
 
-func (authService *authService) IsDuplicateEmail(email string) (bool, error) {
-	return authService.userRepository.IsDuplicateEmail(email)
+/*
+@param Email is of type string
+*/
+func (authService *authService) IsDuplicateEmail(Email string) (bool, error) {
+	return authService.userRepository.IsDuplicateEmail(Email)
 
 }
 
-func (authService *authService) GetIdRol(id uint) uint {
+/*
+@param Id is of type uint
+*/
+func (authService *authService) GetIdRol(Id uint) uint {
 
-	user, _ := authService.userRepository.GetProfileUser(id)
+	user, _ := authService.userRepository.GetProfileUser(Id)
 	return user.Roles.RolId
 }
-func comparePassword(hashedPwd string, plainPassword []byte) bool {
-	byteHash := []byte(hashedPwd)
-	bcrypt.CompareHashAndPassword(byteHash, plainPassword)
+func comparePassword(HashedPwd string, PlainPassword []byte) bool {
+	byteHash := []byte(HashedPwd)
+	bcrypt.CompareHashAndPassword(byteHash, PlainPassword)
 
 	return true
 }
