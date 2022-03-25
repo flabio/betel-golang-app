@@ -413,13 +413,13 @@ func validarUserField(u dto.UserDTO, context *gin.Context) bool {
 		validadRequiredMsg(msg.RequiredDetachment(), context)
 		return true
 	}
-	if u.Password == "" {
+	/*if u.Password == "" {
 		validadRequiredMsg(msg.RequiredPassword(), context)
 		return true
 	}
 	if u.Password != u.ConfirmPassword {
 		validadRequiredMsg(msg.RequiredPasswordConfirm(), context)
 		return true
-	}
+	}*/
 	return false
 }

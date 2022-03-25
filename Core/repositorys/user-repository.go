@@ -202,8 +202,7 @@ func (db *userConnection) GetFindByEmail(email string) (entity.User, error) {
 */
 func (db *userConnection) GetProfileUser(userID uint) (entity.User, error) {
 	var user entity.User
-	err := db.connection.Preload("City").
-		Preload("SubDetachment").
+	err := db.connection.Preload("SubDetachment").
 		Preload("Roles.Rol").
 		Preload("Roles.StudyCarried").
 		Preload("MinisterialAcademys").
