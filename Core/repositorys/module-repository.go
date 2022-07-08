@@ -1,104 +1,101 @@
 package repositorys
 
 import (
+	"bete/Core/Interfaces"
 	"bete/Core/entity"
-
-	"gorm.io/gorm"
+	constantvariables "bete/Infrastructure/constantVariables"
+	"sync"
 )
 
-type ModuleRepository interface {
-	SetCreateModule(module entity.Module) (entity.Module, error)
-	SetCreateModuleRole(rolemodule entity.RoleModule) (entity.RoleModule, error)
-	GetAllModule() ([]entity.Module, error)
-	GetAllByRoleModule(Id uint) ([]entity.RoleModule, error)
-	GetFindModuleById(Id uint) (entity.Module, error)
-	SetRemoveModule(Id uint) (bool, error)
-	SetRemoveRoleModule(Id uint) (bool, error)
-	GetFindRoleModuleById(Id uint) (entity.RoleModule, error)
-}
+func NewModuleRepository() Interfaces.IModule {
+	var (
+		_OPEN *OpenConnections
+		_ONCE sync.Once
+	)
+	_ONCE.Do(func() {
+		_OPEN = &OpenConnections{
 
-type moduleConnection struct {
-	connection *gorm.DB
-}
-
-func NewModuleRepository() ModuleRepository {
-	var db *gorm.DB = entity.DatabaseConnection()
-	return &moduleConnection{
-		connection: db,
-	}
+			connection: entity.Factory(constantvariables.OPTION_FACTORY_DB),
+		}
+	})
+	return _OPEN
 }
 
 /*
 @param module,is a struct of Module
 */
-func (db *moduleConnection) SetCreateModule(module entity.Module) (entity.Module, error) {
-
+func (db *OpenConnections) SetCreateModule(module entity.Module) (entity.Module, error) {
+	db.mux.Lock()
 	err := db.connection.Save(&module).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return module, err
 }
 
 /*
 @param rolemodule, is a struct of RoleModule
 */
-func (db *moduleConnection) SetCreateModuleRole(rolemodule entity.RoleModule) (entity.RoleModule, error) {
-
+func (db *OpenConnections) SetCreateModuleRole(rolemodule entity.RoleModule) (entity.RoleModule, error) {
+	db.mux.Lock()
 	err := db.connection.Save(&rolemodule).Error
 	defer entity.Closedb()
-
+	defer db.mux.Unlock()
 	return rolemodule, err
 }
-func (db *moduleConnection) GetAllModule() ([]entity.Module, error) {
+func (db *OpenConnections) GetAllModule() ([]entity.Module, error) {
 	var modules []entity.Module
-
+	db.mux.Lock()
 	err := db.connection.Preload("RoleModule").Find(&modules).Error
 	defer entity.Closedb()
-
+	defer db.mux.Unlock()
 	return modules, err
 }
 
 /*
 @param Id, is a uint of RoleModule
 */
-func (db *moduleConnection) GetAllByRoleModule(Id uint) ([]entity.RoleModule, error) {
+func (db *OpenConnections) GetAllByRoleModule(Id uint) ([]entity.RoleModule, error) {
 	var modules []entity.RoleModule
+	db.mux.Lock()
 	//err := db.connection.Preload("RoleModule").Joins("left join role_modules on role_modules.module_id = modules.id").Where("role_modules.rol_id", Id).Find(&modules).Error
 	err := db.connection.Preload("Module").Where("rol_id", Id).Find(&modules).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return modules, err
 }
 
 /*
 @param Id, is a uint of Module
 */
-func (db *moduleConnection) GetFindModuleById(Id uint) (entity.Module, error) {
+func (db *OpenConnections) GetFindModuleById(Id uint) (entity.Module, error) {
 	var module entity.Module
-
+	db.mux.Lock()
 	err := db.connection.Find(&module, Id).Error
 	defer entity.Closedb()
-
+	defer db.mux.Unlock()
 	return module, err
 }
 
 /*
 @param Id, is a uint of RoleModule
 */
-func (db *moduleConnection) GetFindRoleModuleById(Id uint) (entity.RoleModule, error) {
+func (db *OpenConnections) GetFindRoleModuleById(Id uint) (entity.RoleModule, error) {
 	var module entity.RoleModule
-
+	db.mux.Lock()
 	err := db.connection.Find(&module, Id).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return module, err
 }
 
 /*
 @param Id, is a uint of Module
 */
-func (db *moduleConnection) SetRemoveModule(Id uint) (bool, error) {
-
+func (db *OpenConnections) SetRemoveModule(Id uint) (bool, error) {
+	db.mux.Lock()
 	err := db.connection.Delete(&entity.Module{}, Id).Error
 	defer entity.Closedb()
-
+	defer db.mux.Unlock()
 	if err == nil {
 		return true, err
 	}
@@ -108,11 +105,11 @@ func (db *moduleConnection) SetRemoveModule(Id uint) (bool, error) {
 /*
 @param Id, is a uint of RoleModule
 */
-func (db *moduleConnection) SetRemoveRoleModule(Id uint) (bool, error) {
-
+func (db *OpenConnections) SetRemoveRoleModule(Id uint) (bool, error) {
+	db.mux.Lock()
 	err := db.connection.Delete(&entity.RoleModule{}, Id).Error
 	defer entity.Closedb()
-
+	defer db.mux.Unlock()
 	if err == nil {
 		return true, err
 	}

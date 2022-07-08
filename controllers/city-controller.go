@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	constantvariables "bete/Infrastructure/constantVariables"
 	"bete/Infrastructure/middleware"
+	"bete/UseCases/InterfacesService"
 	"bete/UseCases/services"
 	"bete/UseCases/utilities"
 	"net/http"
@@ -13,8 +15,8 @@ type CityController interface {
 	All(context *gin.Context)
 }
 type cityController struct {
-	city services.CityService
-	jwt  services.JWTService
+	city InterfacesService.ICityService
+	jwt  InterfacesService.IJWTService
 }
 
 func NewCityController() CityController {
@@ -26,10 +28,10 @@ func NewCityController() CityController {
 
 //All is method GET
 func (c *cityController) All(context *gin.Context) {
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol > 0 {
 		c.city.All(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }

@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	constantvariables "bete/Infrastructure/constantVariables"
 	"bete/Infrastructure/middleware"
+	"bete/UseCases/InterfacesService"
 	"bete/UseCases/services"
 	"bete/UseCases/utilities"
 	"net/http"
@@ -18,8 +20,8 @@ type ParentController interface {
 }
 
 type parentController struct {
-	parent services.ParentService
-	jwt    services.JWTService
+	parent InterfacesService.IParentService
+	jwt    InterfacesService.IJWTService
 }
 
 func NewParentController() ParentController {
@@ -31,50 +33,50 @@ func NewParentController() ParentController {
 
 //All the parent
 func (c *parentController) All(context *gin.Context) {
-	rol := middleware.GetRol(c.jwt, context)
+	rol := middleware.ValidadToken(c.jwt, context)
 	if rol.Rol > 0 {
 		c.parent.All(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }
 
 //All the parent
 func (c *parentController) AllParentScout(context *gin.Context) {
-	rol := middleware.GetRol(c.jwt, context)
+	rol := middleware.ValidadToken(c.jwt, context)
 	if rol.Rol > 0 {
 		c.parent.AllParentScout(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }
 
 //Create parent
 func (c *parentController) Create(context *gin.Context) {
-	rol := middleware.GetRol(c.jwt, context)
+	rol := middleware.ValidadToken(c.jwt, context)
 	if rol.Rol > 0 {
 		c.parent.Create(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }
 
 //Update parent
 func (c *parentController) Update(context *gin.Context) {
-	rol := middleware.GetRol(c.jwt, context)
+	rol := middleware.ValidadToken(c.jwt, context)
 	if rol.Rol > 0 {
 		c.parent.Update(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }
 
 //Remove parent
 func (c *parentController) Remove(context *gin.Context) {
-	rol := middleware.GetRol(c.jwt, context)
+	rol := middleware.ValidadToken(c.jwt, context)
 	if rol.Rol > 0 {
 		c.parent.Remove(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }

@@ -1,11 +1,13 @@
 package services
 
 import (
+	"bete/Core/Interfaces"
 	"bete/Core/entity"
 	"bete/Core/repositorys"
+	constantvariables "bete/Infrastructure/constantVariables"
+	"bete/UseCases/InterfacesService"
 	"bete/UseCases/dto"
 	"bete/UseCases/utilities"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -13,201 +15,211 @@ import (
 	"github.com/mashingan/smapping"
 )
 
-type ModuleService interface {
-	CreateModule(context *gin.Context)
-	AddModuleRole(context *gin.Context)
-	AllByRoleModule(context *gin.Context)
-	UpdateModule(context *gin.Context)
-	AllModule(context *gin.Context)
-	FindModuleById(context *gin.Context)
-	DeleteModule(context *gin.Context)
-	DeleteRoleModule(context *gin.Context)
-}
-
 type moduleService struct {
-	moduleRepository repositorys.ModuleRepository
+	IModule Interfaces.IModule
 }
 
-func NewModuleService() ModuleService {
-	var moduleRepository = repositorys.NewModuleRepository()
+func NewModuleService() InterfacesService.IModuleService {
+	moduleRepository := repositorys.NewModuleRepository()
 	return &moduleService{
-		moduleRepository: moduleRepository,
+		IModule: moduleRepository,
 	}
 }
 
 //create module
-func (service *moduleService) CreateModule(context *gin.Context) {
+func (moduleService *moduleService) CreateModule(context *gin.Context) {
 	module := entity.Module{}
 	var moduledto dto.ModuleDTO
 	context.ShouldBind(&moduledto)
 	validarModuleCreate(moduledto, context)
 	smapping.FillStruct(&module, smapping.MapFields(&moduledto))
 
-	data, err := service.moduleRepository.SetCreateModule(module)
+	data, err := moduleService.IModule.SetCreateModule(module)
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	res := utilities.BuildCreateResponse(data)
+	res := utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_CREATE, data)
 	context.JSON(http.StatusOK, res)
 }
 
 //update module
-func (service *moduleService) UpdateModule(context *gin.Context) {
+func (moduleService *moduleService) UpdateModule(context *gin.Context) {
 	module := entity.Module{}
 	var moduledto dto.ModuleDTO
 	context.ShouldBind(&moduledto)
-	fmt.Println(moduledto)
 	validarModuleEditar(moduledto, context)
 
 	smapping.FillStruct(&module, smapping.MapFields(&moduledto))
 
-	res, err := service.moduleRepository.SetCreateModule(module)
+	res, err := moduleService.IModule.SetCreateModule(module)
 
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 
-	findByModule, _ := service.moduleRepository.GetFindModuleById(uint(moduledto.Id))
+	findByModule, _ := moduleService.IModule.GetFindModuleById(uint(moduledto.Id))
 	if findByModule.Id == 0 {
-		validadErrorById(context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	data := utilities.BuildUpdateResponse(res)
+	data := utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_UPDATE, res)
 	context.JSON(http.StatusOK, data)
 
 }
 
 //lists of module
-func (service *moduleService) AllModule(context *gin.Context) {
-	var modules, err = service.moduleRepository.GetAllModule()
+func (moduleService *moduleService) AllModule(context *gin.Context) {
+	var modules, err = moduleService.IModule.GetAllModule()
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	res := utilities.BuildResponse(true, "OK", modules)
+	res := utilities.BuildResponse(http.StatusOK, "", modules)
 	context.JSON(http.StatusOK, res)
 
 }
 
 //find by id module
-func (service *moduleService) FindModuleById(context *gin.Context) {
+func (moduleService *moduleService) FindModuleById(context *gin.Context) {
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	module, err := service.moduleRepository.GetFindModuleById(uint(id))
+	module, err := moduleService.IModule.GetFindModuleById(uint(id))
 	if err != nil {
-		validadErrorById(context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	res := utilities.BuildResponse(true, "OK", module)
+	res := utilities.BuildResponse(http.StatusOK, "OK", module)
 	context.JSON(http.StatusOK, res)
 
 }
 
 //delete module
-func (service *moduleService) DeleteModule(context *gin.Context) {
+func (moduleService *moduleService) DeleteModule(context *gin.Context) {
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	module, err := service.moduleRepository.GetFindModuleById(uint(id))
+	module, err := moduleService.IModule.GetFindModuleById(uint(id))
 
 	if (module == entity.Module{}) {
-		validadErrorById(context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 
-	status, err := service.moduleRepository.SetRemoveModule(uint(id))
+	status, err := moduleService.IModule.SetRemoveModule(uint(id))
 	if err != nil {
-		response := utilities.BuildCanNotDeteleteResponse(module)
+		response := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.NOT_DELETED)
 		context.JSON(http.StatusBadRequest, response)
 		return
 	}
-	res := utilities.BuildDeteleteResponse(status, module)
-	context.JSON(http.StatusOK, res)
+	if status {
+		res := utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_IT_WAS_REMOVED, module)
+		context.JSON(http.StatusOK, res)
+	}
+
 }
 
 //add role module
-func (service *moduleService) AddModuleRole(context *gin.Context) {
+func (moduleService *moduleService) AddModuleRole(context *gin.Context) {
 	module := entity.RoleModule{}
 	var moduledto dto.ModuleRoleDTO
 	errDTO := context.ShouldBind(&moduledto)
 
 	if errDTO != nil {
-		validadErrors(errDTO, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, errDTO.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 	err := smapping.FillStruct(&module, smapping.MapFields(&moduledto))
 	checkError(err)
 
-	data, err := service.moduleRepository.SetCreateModuleRole(module)
+	data, err := moduleService.IModule.SetCreateModuleRole(module)
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	res := utilities.BuildCreateResponse(data)
+	res := utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_CREATE, data)
 	context.JSON(http.StatusOK, res)
 }
 
 //AllByRoleModule
-func (service *moduleService) AllByRoleModule(context *gin.Context) {
+func (moduleService *moduleService) AllByRoleModule(context *gin.Context) {
 	id, errid := strconv.ParseUint(context.Param("id"), 0, 0)
 	if errid != nil {
-		validadErrors(errid, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	var modules, err = service.moduleRepository.GetAllByRoleModule(uint(id))
+	var modules, err = moduleService.IModule.GetAllByRoleModule(uint(id))
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	res := utilities.BuildResponse(true, "OK", modules)
+	res := utilities.BuildResponse(http.StatusOK, "OK", modules)
 	context.JSON(http.StatusOK, res)
 }
 
 //delete rolemodule
-func (service *moduleService) DeleteRoleModule(context *gin.Context) {
+func (moduleService *moduleService) DeleteRoleModule(context *gin.Context) {
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	module, err := service.moduleRepository.GetFindRoleModuleById(uint(id))
+	module, err := moduleService.IModule.GetFindRoleModuleById(uint(id))
 
 	if (module == entity.RoleModule{}) {
-		validadErrorById(context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 
-	status, err := service.moduleRepository.SetRemoveRoleModule(uint(id))
+	status, err := moduleService.IModule.SetRemoveRoleModule(uint(id))
 	if err != nil {
-		response := utilities.BuildCanNotDeteleteResponse(module)
+		response := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.NOT_DELETED)
 		context.JSON(http.StatusBadRequest, response)
 		return
 	}
-	res := utilities.BuildDeteleteResponse(status, module)
-	context.JSON(http.StatusOK, res)
+	if status {
+
+		res := utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_IT_WAS_REMOVED, module)
+		context.JSON(http.StatusOK, res)
+	}
 }
 
 //validarModuleCreate
 func validarModuleCreate(m dto.ModuleDTO, context *gin.Context) bool {
 	context.ShouldBind(&m)
 	if len(m.Name) == 0 {
-		msg := utilities.MessageRequired{}
-		validadRequiredMsg(msg.RequiredName(), context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return true
 	}
 	return false
@@ -217,13 +229,13 @@ func validarModuleCreate(m dto.ModuleDTO, context *gin.Context) bool {
 func validarModuleEditar(m dto.ModuleDTO, context *gin.Context) bool {
 	context.ShouldBind(&m)
 	if m.Id == 0 {
-		msg := utilities.MessageRequired{}
-		validadRequiredMsg(msg.RequiredId(), context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return true
 	}
 	if len(m.Name) == 0 {
-		msg := utilities.MessageRequired{}
-		validadRequiredMsg(msg.RequiredName(), context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.NAME)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return true
 	}
 	return false

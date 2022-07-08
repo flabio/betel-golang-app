@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	constantvariables "bete/Infrastructure/constantVariables"
 	"bete/Infrastructure/middleware"
+	"bete/UseCases/InterfacesService"
 	"bete/UseCases/services"
 	"bete/UseCases/utilities"
 	"net/http"
@@ -16,8 +18,8 @@ type KanbanController interface {
 }
 
 type kanbanController struct {
-	kanban services.KanbanService
-	jwt    services.JWTService
+	kanban InterfacesService.IKanbanService
+	jwt    InterfacesService.IJWTService
 }
 
 //NewKanbanController is creating anew instance of UserControlller
@@ -31,21 +33,21 @@ func NewKanbanController() KanbanController {
 
 func (c *kanbanController) GetKanban(context *gin.Context) {
 
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol > 0 {
 		c.kanban.GetKanbans(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }
 
 func (c *kanbanController) CountKanban(context *gin.Context) {
 
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol > 0 {
 		c.kanban.GetCountKanbans(context)
 
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }

@@ -1,54 +1,44 @@
 package repositorys
 
 import (
+	"bete/Core/Interfaces"
 	"bete/Core/entity"
 	constantvariables "bete/Infrastructure/constantVariables"
-
-	"gorm.io/gorm"
+	"sync"
 )
-
-//UserRepository is contract what UserRepository can do to db
-type UserRolRepository interface {
-	SetInsertUserRol(role entity.Role) entity.Role
-	GetAllUserRole() []entity.Role
-}
-
-type userRolConnection struct {
-	connection *gorm.DB
-}
 
 //NewUserRepository is creates a new instance of UserRepository
 
-func NewUserRolRepository() UserRolRepository {
-	var db *gorm.DB = entity.DatabaseConnection()
-	return &userConnection{
-		connection: db,
-	}
-}
+func NewUserRolRepository() Interfaces.IUserRol {
+	var (
+		_OPEN *OpenConnections
+		_ONCE sync.Once
+	)
+	_ONCE.Do(func() {
+		_OPEN = &OpenConnections{
 
-var errChanUserRol = make(chan error, constantvariables.CHAN_VALUE)
+			connection: entity.Factory(constantvariables.OPTION_FACTORY_DB),
+		}
+	})
+	return _OPEN
+}
 
 /*
 @param rol, is a struct of Role
 */
-func (db *userConnection) SetInsertUserRol(rol entity.Role) entity.Role {
-
-	go func() {
-		err := db.connection.Save(&rol).Error
-		defer entity.Closedb()
-		errChanUserRol <- err
-	}()
-	<-errChanUserRol
+func (db *OpenConnections) SetInsertUserRol(rol entity.Role) entity.Role {
+	db.mux.Lock()
+	db.connection.Save(&rol)
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return rol
 }
 
-func (db *userConnection) GetAllUserRole() []entity.Role {
+func (db *OpenConnections) GetAllUserRole() []entity.Role {
 	var role []entity.Role
-	go func() {
-		err := db.connection.Joins("User").Joins("Rol").Find(&role).Error
-		defer entity.Closedb()
-		errChanUserRol <- err
-	}()
-	<-errChanUserRol
+	db.mux.Lock()
+	db.connection.Joins("User").Joins("Rol").Find(&role)
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return role
 }

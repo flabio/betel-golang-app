@@ -1,9 +1,11 @@
 package services
 
 import (
+	"bete/Core/Interfaces"
 	"bete/Core/entity"
 	"bete/Core/repositorys"
 	constantvariables "bete/Infrastructure/constantVariables"
+	"bete/UseCases/InterfacesService"
 	"bete/UseCases/dto"
 	"bete/UseCases/utilities"
 	"net/http"
@@ -13,26 +15,18 @@ import (
 	"github.com/mashingan/smapping"
 )
 
-type VisitService interface {
-	SetCreateVisitService(context *gin.Context)
-	SetUpdateVisitService(context *gin.Context)
-	GetAllVisitService(context *gin.Context)
-	GetAllVisitByUserVisitService(subDetachmentId uint, context *gin.Context)
-	SetRemoveVisitService(context *gin.Context)
-}
-
 type visitService struct {
-	visitRepository repositorys.VisitRepository
+	IVisit Interfaces.IVisit
 }
 
-func NewVisitService() VisitService {
+func NewVisitService() InterfacesService.IVisitService {
 	return &visitService{
-		visitRepository: repositorys.NewVisitConnection(),
+		IVisit: repositorys.GetVisitInstance(),
 	}
 }
 
 //Create visit
-func (service *visitService) SetCreateVisitService(context *gin.Context) {
+func (visitService *visitService) SetCreateVisitService(context *gin.Context) {
 	var visitDto dto.VisitDTO
 	var visit entity.Visit
 	context.ShouldBind(&visitDto)
@@ -40,17 +34,18 @@ func (service *visitService) SetCreateVisitService(context *gin.Context) {
 		return
 	}
 	smapping.FillStruct(&visit, smapping.MapFields(&visitDto))
-	data, err := service.visitRepository.SetCreateVisit(visit)
+	data, err := visitService.IVisit.SetCreateVisit(visit)
 
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildCreateResponse(data))
+	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_CREATE, data))
 }
 
 //Update
-func (service *visitService) SetUpdateVisitService(context *gin.Context) {
+func (visitService *visitService) SetUpdateVisitService(context *gin.Context) {
 	var visitDto dto.VisitDTO
 	var visit entity.Visit
 	context.ShouldBind(&visitDto)
@@ -58,72 +53,82 @@ func (service *visitService) SetUpdateVisitService(context *gin.Context) {
 		return
 	}
 	smapping.FillStruct(&visit, smapping.MapFields(&visitDto))
-	existVisit, _ := service.visitRepository.GetFindByIdVisit(visitDto.Id)
+	existVisit, _ := visitService.IVisit.GetFindByIdVisit(visitDto.Id)
 	if existVisit.Id == 0 {
-		validadErrorById(context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.GIVEN_ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	data, err := service.visitRepository.SetCreateVisit(visit)
+	data, err := visitService.IVisit.SetCreateVisit(visit)
 
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildCreateResponse(data))
+	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_UPDATE, data))
 }
 
 //All visit
-func (service *visitService) GetAllVisitService(context *gin.Context) {
-	data, err := service.visitRepository.GetAllVisit()
+func (visitService *visitService) GetAllVisitService(context *gin.Context) {
+	data, err := visitService.IVisit.GetAllVisit()
 
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(true, "ok", data))
+	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, "ok", data))
 }
 
 //AllVisitByUser by iduser and idsubdetachment
-func (service *visitService) GetAllVisitByUserVisitService(subDetachmentId uint, context *gin.Context) {
+func (visitService *visitService) GetAllVisitByUserVisitService(subDetachmentId uint, context *gin.Context) {
 	id, errId := strconv.ParseInt(context.Param("id"), 0, 0)
 	if errId != nil {
-		validadErrors(errId, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, errId.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	data, err := service.visitRepository.GetAllVisitByUserVisit(uint(id), uint(subDetachmentId))
+	data, err := visitService.IVisit.GetAllVisitByUserVisit(uint(id), uint(subDetachmentId))
 
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(true, "ok", data))
+	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, "ok", data))
 
 }
 
-func (service *visitService) SetRemoveVisitService(context *gin.Context) {
+func (visitService *visitService) SetRemoveVisitService(context *gin.Context) {
 	id, err := strconv.ParseInt(context.Param("id"), 0, 0)
 
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	existVisit, _ := service.visitRepository.GetFindByIdVisit(uint(id))
+	existVisit, _ := visitService.IVisit.GetFindByIdVisit(uint(id))
 	if existVisit.Id == 0 {
-		validadErrorById(context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.GIVEN_ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	parent, err := service.visitRepository.SetRemoveVisit(uint(id))
+	parent, err := visitService.IVisit.SetRemoveVisit(uint(id))
 	if err != nil {
-		validadErrorRemove(id, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.NOT_DELETED)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildDeteleteResponse(parent, existVisit))
+	if parent {
+		context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_IT_WAS_REMOVED, existVisit))
+
+	}
 }
 
 //validarVisiCreate
 func validarVisit(visit dto.VisitDTO, context *gin.Context, option int) bool {
 	context.ShouldBind(&visit)
-	msg := utilities.MessageRequired{}
 	switch option {
 	case 1:
 		if validarVisitField(visit, context) {
@@ -132,7 +137,8 @@ func validarVisit(visit dto.VisitDTO, context *gin.Context, option int) bool {
 	case 2:
 
 		if visit.Id == 0 {
-			validadRequiredMsg(msg.RequiredId(), context)
+			res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
+			context.AbortWithStatusJSON(http.StatusBadRequest, res)
 			return true
 		}
 		if validarVisitField(visit, context) {
@@ -146,21 +152,25 @@ func validarVisit(visit dto.VisitDTO, context *gin.Context, option int) bool {
 //validarVisiEdit
 func validarVisitField(visit dto.VisitDTO, context *gin.Context) bool {
 	context.ShouldBind(&visit)
-	msg := utilities.MessageRequired{}
 	if len(visit.State) == 0 || visit.State == "" {
-		validadRequiredMsg(msg.RequiredState(), context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.STATE)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return true
 	}
 	if len(visit.Description) == 0 || visit.Description == "" {
-		validadRequiredMsg(msg.RequiredDescription(), context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.DESCRIPTION)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return true
 	}
 	if visit.UserId == 0 {
-		validadRequiredMsg(msg.RequiredId(), context)
+
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.USER_ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return true
 	}
 	if visit.SubDetachmentId == 0 {
-		validadRequiredMsg(msg.RequiredSubDetachmentId(), context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.SUB_DETACHMENT_ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return true
 	}
 	return false

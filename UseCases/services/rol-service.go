@@ -1,12 +1,13 @@
 package services
 
 import (
+	"bete/Core/Interfaces"
 	"bete/Core/entity"
 	"bete/Core/repositorys"
 	constantvariables "bete/Infrastructure/constantVariables"
+	"bete/UseCases/InterfacesService"
 	"bete/UseCases/dto"
 	"bete/UseCases/utilities"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -14,160 +15,161 @@ import (
 	"github.com/mashingan/smapping"
 )
 
-//rolService is a contract.....
-type RolService interface {
-	SetCreateService(context *gin.Context)
-	SetUpdateService(context *gin.Context)
-	GetFindByIdService(context *gin.Context)
-	SetRemoveService(context *gin.Context)
-	GetAllService(context *gin.Context)
-	GetAllGroupRolService(context *gin.Context)
-	GetAllRoleModuleService(context *gin.Context)
-}
-
 type rolService struct {
-	rolRepository repositorys.RolRepository
+	Irol Interfaces.IRol
 }
 
 //27270673- jasinta tello guerrero sds
 //NewrolService creates a new instance of rolServicess
-func NewRolService() RolService {
+func NewRolService() InterfacesService.IRolService {
 
-	rolRepository := repositorys.NewRolRepository()
 	return &rolService{
-		rolRepository: rolRepository,
+		Irol: repositorys.GetRolInstance(),
 	}
 }
 
 //service of create
-func (service *rolService) SetCreateService(context *gin.Context) {
+func (rolService *rolService) SetCreateService(context *gin.Context) {
 
-	rol := entity.Rol{}
+	rolEntity := entity.Rol{}
 	var rolDto dto.RolCreateDTO
 	context.ShouldBind(&rolDto)
 	if validarRol(rolDto, context, constantvariables.OPTION_CREATE) {
 		return
 	}
-	smapping.FillStruct(&rol, smapping.MapFields(&rolDto))
+	smapping.FillStruct(&rolEntity, smapping.MapFields(&rolDto))
 
-	data, err := service.rolRepository.SetCreateRol(rol)
+	data, err := rolService.Irol.SetCreateRol(rolEntity)
 
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	res := utilities.BuildCreateResponse(data)
+	res := utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_CREATE, data)
 	context.JSON(http.StatusOK, res)
 }
 
 //service of update
-func (service *rolService) SetUpdateService(context *gin.Context) {
+func (rolService *rolService) SetUpdateService(context *gin.Context) {
 
-	rolToUpdate := entity.Rol{}
+	rolEntity := entity.Rol{}
 	var rolDto dto.RolCreateDTO
 
 	context.ShouldBind(&rolDto)
 	if validarRol(rolDto, context, constantvariables.OPTION_EDIT) {
 		return
 	}
-	err := smapping.FillStruct(&rolToUpdate, smapping.MapFields(&rolDto))
+	err := smapping.FillStruct(&rolEntity, smapping.MapFields(&rolDto))
 	checkError(err)
 
-	findById, _ := service.rolRepository.GetFindRolById(uint(rolDto.Id))
+	findById, _ := rolService.Irol.GetFindRolById(uint(rolDto.Id))
 	if findById.Id == 0 {
-		validadErrorById(context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.GIVEN_ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 
-	data, err := service.rolRepository.SetCreateRol(rolToUpdate)
+	data, err := rolService.Irol.SetCreateRol(rolEntity)
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	res := utilities.BuildUpdateResponse(data)
+	res := utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_UPDATE, data)
 	context.JSON(http.StatusOK, res)
 
 }
 
 //service of all
-func (service *rolService) GetAllService(context *gin.Context) {
+func (rolService *rolService) GetAllService(context *gin.Context) {
 
-	var rols, err = service.rolRepository.GetAllRol()
+	var rols, err = rolService.Irol.GetAllRol()
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	res := utilities.BuildResponse(true, "OK", rols)
+	res := utilities.BuildResponse(http.StatusOK, "OK", rols)
 	context.JSON(http.StatusOK, res)
 }
 
 // service of group AllGroupRol
-func (service *rolService) GetAllGroupRolService(context *gin.Context) {
-	var rols, err = service.rolRepository.GetAllGroupRol()
+func (rolService *rolService) GetAllGroupRolService(context *gin.Context) {
+	var rols, err = rolService.Irol.GetAllGroupRol()
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	res := utilities.BuildResponse(true, "OK", rols)
+	res := utilities.BuildResponse(http.StatusOK, "OK", rols)
 	context.JSON(http.StatusOK, res)
 }
 
 //service of all
-func (service *rolService) GetAllRoleModuleService(context *gin.Context) {
+func (rolService *rolService) GetAllRoleModuleService(context *gin.Context) {
 
-	var roleModule, err = service.rolRepository.GetRolsModule()
+	var roleModule, err = rolService.Irol.GetRolsModule()
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	res := utilities.BuildResponse(true, "OK", roleModule)
+	res := utilities.BuildResponse(http.StatusOK, "OK", roleModule)
 	context.JSON(http.StatusOK, res)
 
 }
-func (service *rolService) SetRemoveService(context *gin.Context) {
+func (rolService *rolService) SetRemoveService(context *gin.Context) {
 
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 
-	findById, _ := service.rolRepository.GetFindRolById(uint(id))
+	findById, _ := rolService.Irol.GetFindRolById(uint(id))
 	if findById.Id == 0 {
-		validadErrorById(context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.GIVEN_ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	status, err := service.rolRepository.SetRemoveRol(findById)
+	status, err := rolService.Irol.SetRemoveRol(findById)
 
 	if err != nil {
-		validadErrorRemove(findById, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.NOT_DELETED)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	res := utilities.BuildDeteleteResponse(status, findById)
-	context.JSON(http.StatusOK, res)
+	if status {
+		res := utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_IT_WAS_REMOVED, findById)
+		context.JSON(http.StatusOK, res)
+	}
 
 }
 
-func (service *rolService) GetFindByIdService(context *gin.Context) {
+func (rolService *rolService) GetFindByIdService(context *gin.Context) {
 
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	fmt.Println("aqui servicios")
-	rol, err := service.rolRepository.GetFindRolById(uint(id))
+	rolById, err := rolService.Irol.GetFindRolById(uint(id))
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 
-	if (rol == entity.Rol{}) {
-		validadErrorById(context)
+	if (rolById == entity.Rol{}) {
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.GIVEN_ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	res := utilities.BuildResponse(true, "OK", rol)
+	res := utilities.BuildResponse(http.StatusOK, "OK", rolById)
 	context.JSON(http.StatusOK, res)
 
 }
@@ -180,19 +182,23 @@ func validarRol(r dto.RolCreateDTO, context *gin.Context, option int) bool {
 	switch option {
 	case 1:
 		if len(r.Name) == 0 || r.Name == "" {
-			msg := utilities.MessageRequired{}
-			validadRequiredMsg(msg.RequiredName(), context)
+			// msg := utilities.MessageRequired{}
+			// validadRequiredMsg(msg.RequiredName(), context)
+			res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.NAME)
+			context.JSON(http.StatusBadRequest, res)
 			return true
 		}
 	case 2:
 		if r.Id == 0 {
-			msg := utilities.MessageRequired{}
-			validadRequiredMsg(msg.RequiredId(), context)
+			// msg := constantvariables._ID
+			// validadRequiredMsg(constantvariables._ID, context)
+			res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
+			context.JSON(http.StatusBadRequest, res)
 			return true
 		}
 		if len(r.Name) == 0 {
-			msg := utilities.MessageRequired{}
-			validadRequiredMsg(msg.RequiredName(), context)
+			res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.NAME)
+			context.JSON(http.StatusBadRequest, res)
 			return true
 		}
 	}

@@ -1,33 +1,28 @@
 package services
 
 import (
+	"bete/Core/Interfaces"
 	"bete/Core/entity"
 	"bete/Core/repositorys"
+	"bete/UseCases/InterfacesService"
 	"bete/UseCases/dto"
 
 	"github.com/mashingan/smapping"
 )
 
-//UserService is a contract.....
-type UserRolService interface {
-	SetCreateUserRolService(role dto.RoleDTO) entity.Role
-	GetAllUserRoleService() []entity.Role
-}
-
 type userRolService struct {
-	userRolRepository repositorys.UserRolRepository
+	IUserRol Interfaces.IUserRol
 }
 
 //NewUserService creates a new instance of UserService
-func NewUserRolService() UserRolService {
-	userRepo := repositorys.NewUserRolRepository()
+func NewUserRolService() InterfacesService.IUserRolService {
 	return &userRolService{
-		userRolRepository: userRepo,
+		IUserRol: repositorys.NewUserRolRepository(),
 	}
 }
 
 func (userService *userRolService) GetAllUserRoleService() []entity.Role {
-	return userService.userRolRepository.GetAllUserRole()
+	return userService.IUserRol.GetAllUserRole()
 }
 
 // user and rol
@@ -38,6 +33,6 @@ func (userService *userRolService) SetCreateUserRolService(roleDTO dto.RoleDTO) 
 	if err != nil {
 		checkError(err)
 	}
-	res := userService.userRolRepository.SetInsertUserRol(role)
+	res := userService.IUserRol.SetInsertUserRol(role)
 	return res
 }

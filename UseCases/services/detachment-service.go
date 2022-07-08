@@ -1,8 +1,11 @@
 package services
 
 import (
+	"bete/Core/Interfaces"
 	"bete/Core/entity"
 	"bete/Core/repositorys"
+	constantvariables "bete/Infrastructure/constantVariables"
+	"bete/UseCases/InterfacesService"
 	"bete/UseCases/dto"
 	"bete/UseCases/utilities"
 	"net/http"
@@ -12,24 +15,14 @@ import (
 	"github.com/mashingan/smapping"
 )
 
-//DetachmentService is a contract......
-type DetachmentService interface {
-	Create(context *gin.Context)
-	Update(context *gin.Context)
-	Delete(context *gin.Context)
-	FindById(context *gin.Context)
-	All(context *gin.Context)
-}
-
 type detachmentService struct {
-	detachmentRepository repositorys.DetachmentRepository
+	IDetachment Interfaces.IDetachment
 }
 
 //NewDetachmentService creates a new instance of RolService
-func NewDetachmentService() DetachmentService {
-	detachmentRepository := repositorys.NewDetachmentRepository()
+func NewDetachmentService() InterfacesService.IDetachmentService {
 	return &detachmentService{
-		detachmentRepository: detachmentRepository,
+		IDetachment: repositorys.GetDetachmentInstance(),
 	}
 }
 
@@ -38,7 +31,8 @@ func (detachmentService *detachmentService) Create(context *gin.Context) {
 	var detachmentDTO dto.DetachmentDTO
 	errDTO := context.ShouldBind(&detachmentDTO)
 	if errDTO != nil {
-		validadErrors(errDTO, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, errDTO.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 
@@ -49,12 +43,13 @@ func (detachmentService *detachmentService) Create(context *gin.Context) {
 
 	detachment.Archives = filename
 
-	data, err := detachmentService.detachmentRepository.SetCreateDetachment(detachment)
+	data, err := detachmentService.IDetachment.SetCreateDetachment(detachment)
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildCreateResponse(data))
+	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_CREATE, data))
 
 }
 func (detachmentService *detachmentService) Update(context *gin.Context) {
@@ -63,23 +58,27 @@ func (detachmentService *detachmentService) Update(context *gin.Context) {
 
 	errDTO := context.ShouldBind(&detachmentDTO)
 	if errDTO != nil {
-		validadErrors(errDTO, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, errDTO.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+
 		return
 	}
 	err := smapping.FillStruct(&detachment, smapping.MapFields(&detachmentDTO))
 	checkError(err)
 
-	findId, err := detachmentService.detachmentRepository.GetFindDetachmentById(detachmentDTO.Id)
+	findId, err := detachmentService.IDetachment.GetFindDetachmentById(detachmentDTO.Id)
 
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 	if findId.Id == 0 {
-		validadErrorById(context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	filename, err := UploadFile(context)
+	filename, _ := UploadFile(context)
 
 	if len(findId.Archives) == 0 {
 
@@ -91,38 +90,43 @@ func (detachmentService *detachmentService) Update(context *gin.Context) {
 			detachment.Archives = findId.Archives
 		}
 	}
-	data, err := detachmentService.detachmentRepository.SetCreateDetachment(detachment)
+	data, err := detachmentService.IDetachment.SetCreateDetachment(detachment)
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildUpdateResponse(data))
+	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_UPDATE, data))
 }
 
 //Service of delete detachment
 func (detachmentService *detachmentService) Delete(context *gin.Context) {
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 	if err != nil {
-		validadErrorById(context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	findId, err := detachmentService.detachmentRepository.GetFindDetachmentById(uint(id))
+	findId, err := detachmentService.IDetachment.GetFindDetachmentById(uint(id))
 
 	if findId.Id == 0 {
-		validadErrorById(context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 
-	detachment, err := detachmentService.detachmentRepository.SetRemoveDetachment(findId)
+	detachment, err := detachmentService.IDetachment.SetRemoveDetachment(findId)
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	res := utilities.BuildCanNotDeteleteResponse(detachment)
+	res := utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_IT_WAS_REMOVED, detachment)
 	context.JSON(http.StatusOK, res)
 }
 
@@ -130,26 +134,29 @@ func (detachmentService *detachmentService) Delete(context *gin.Context) {
 func (detachmentService *detachmentService) FindById(context *gin.Context) {
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 
-	detachment, err := detachmentService.detachmentRepository.GetFindDetachmentById(uint(id))
+	detachment, err := detachmentService.IDetachment.GetFindDetachmentById(uint(id))
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	res := utilities.BuildResponse(true, "OK", detachment)
+	res := utilities.BuildResponse(http.StatusOK, "OK", detachment)
 	context.JSON(http.StatusOK, res)
 }
 
 //all od detachment
 func (detachmentService *detachmentService) All(context *gin.Context) {
-	detachment, err := detachmentService.detachmentRepository.GetAllDetachment()
+	detachment, err := detachmentService.IDetachment.GetAllDetachment()
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	results := utilities.BuildResponse(true, "OK!", detachment)
+	results := utilities.BuildResponse(http.StatusOK, "OK!", detachment)
 	context.JSON(http.StatusOK, results)
 }

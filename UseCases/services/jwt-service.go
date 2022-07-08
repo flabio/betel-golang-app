@@ -1,6 +1,8 @@
 package services
 
 import (
+	"bete/UseCases/InterfacesService"
+	"bete/UseCases/dto"
 	"fmt"
 	"os"
 	"time"
@@ -8,29 +10,15 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-//JWTService is a contract of what jwtService can do
-type JWTService interface {
-	GenerateToken(userId string, RolId string, SubDetachmentId string, ChurchId string) string
-	ValidateToken(token string) (*jwt.Token, error)
-}
-
-type jwtCustomClaim struct {
-	UserId          string `json:"id"`
-	RolId           string `json:"rol"`
-	SubDetachmentId string `json:"subdetachmentid"`
-	ChurchId        string `json:"churchid"`
-	jwt.StandardClaims
-}
 type jwtService struct {
 	secretKey string
 	issuer    string
 }
 
 //NewJWTService method is creates a new instance of JWTService
-func NewJWTService() JWTService {
+func NewJWTService() InterfacesService.IJWTService {
 	return &jwtService{
-		issuer: "test",
-
+		issuer:    "test",
 		secretKey: getSecretKey(),
 	}
 }
@@ -42,11 +30,11 @@ func getSecretKey() string {
 	}
 	return secretKey
 }
-func (j *jwtService) GenerateToken(UserId string, RolId string, SubDetachmentId string, ChurchId string) string {
-	claims := &jwtCustomClaim{
+func (j *jwtService) GenerateToken(UserId string, RolId string, ChurchId string) string {
+	//var jwtCustomClaim = dto.JwtCustomClaimDTO
+	claims := &dto.JwtCustomClaimDTO{
 		UserId,
 		RolId,
-		SubDetachmentId,
 		ChurchId,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Minute * 15).Unix(),

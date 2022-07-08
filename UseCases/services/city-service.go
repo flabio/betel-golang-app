@@ -1,34 +1,33 @@
 package services
 
 import (
+	"bete/Core/Interfaces"
 	"bete/Core/repositorys"
+	"bete/UseCases/InterfacesService"
 	"bete/UseCases/utilities"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-type CityService interface {
-	All(context *gin.Context)
-}
-
 type cityService struct {
-	cityRepository repositorys.CityRepository
+	ICity Interfaces.ICity
 }
 
 //NewCityService
-func NewCityService() CityService {
+func NewCityService() InterfacesService.ICityService {
 	return &cityService{
-		cityRepository: repositorys.NewCityRepository(),
+		ICity: repositorys.GetCityInstance(),
 	}
 }
 
 //All
-func (c *cityService) All(context *gin.Context) {
-	var cities, err = c.cityRepository.GetAllCity()
+func (cityService *cityService) All(context *gin.Context) {
+	var cities, err = cityService.ICity.GetAllCity()
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(true, "ok", cities))
+	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, "ok", cities))
 }

@@ -1,35 +1,36 @@
 package repositorys
 
 import (
+	"bete/Core/Interfaces"
 	"bete/Core/entity"
-
-	"gorm.io/gorm"
+	constantvariables "bete/Infrastructure/constantVariables"
+	"sync"
 )
 
-type WeeksDetachmentRepository interface {
-	GetFindByIdWeeksDetachment(Id uint) ([]entity.WeeksDetachment, error)
-}
+func NewWeeksDetachmentRepository() Interfaces.IWeeksDetachment {
+	var (
+		_OPEN *OpenConnections
+		_ONCE sync.Once
+	)
+	_ONCE.Do(func() {
+		_OPEN = &OpenConnections{
 
-type weeksConnection struct {
-	connection *gorm.DB
-}
-
-func NewWeeksDetachmentRepository() WeeksDetachmentRepository {
-	var db *gorm.DB = entity.DatabaseConnection()
-	return &weeksConnection{
-		connection: db,
-	}
+			connection: entity.Factory(constantvariables.OPTION_FACTORY_DB),
+		}
+	})
+	return _OPEN
 }
 
 /*
 @param Id, is a uint
 */
-func (db *weeksConnection) GetFindByIdWeeksDetachment(Id uint) ([]entity.WeeksDetachment, error) {
+func (db *OpenConnections) GetFindByIdWeeks(Id uint) ([]entity.WeeksDetachment, error) {
 	var weeksdetachment []entity.WeeksDetachment
-
+	db.mux.Lock()
 	err := db.connection.Order("id asc").
 		Where("sub_detachment_id", Id).
 		Find(&weeksdetachment).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return weeksdetachment, err
 }

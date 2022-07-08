@@ -1,8 +1,10 @@
 package controllers
 
 import (
+	constantvariables "bete/Infrastructure/constantVariables"
 	"bete/Infrastructure/middleware"
 
+	"bete/UseCases/InterfacesService"
 	"bete/UseCases/services"
 	"bete/UseCases/utilities"
 	"net/http"
@@ -27,9 +29,9 @@ type UserController interface {
 }
 
 type userController struct {
-	user services.UserService
-	role services.UserRolService
-	jwt  services.JWTService
+	user InterfacesService.IUserService
+	role InterfacesService.IUserRolService
+	jwt  InterfacesService.IJWTService
 }
 
 //NewUserController is creating anew instance of UserControlller
@@ -43,75 +45,77 @@ func NewUserController() UserController {
 
 //create user method post
 func (c *userController) Create(context *gin.Context) {
-	claim := middleware.GetRol(c.jwt, context)
+
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol == 1 {
 		c.user.SetCreateService(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }
 
 //update profile method pust
 func (c *userController) UpdateProfile(context *gin.Context) {
 
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol == 1 {
 		c.user.SetUpdateService(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }
 
 //update password
 func (c *userController) PasswordChange(context *gin.Context) {
 
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol == 1 {
 		c.user.SetUpdatePasswordService(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }
 
 //update user method push
 func (c *userController) Update(context *gin.Context) {
 
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol == 1 {
 		c.user.SetUpdateService(context)
 
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 
 }
 
 func (c *userController) ListUser(context *gin.Context) {
-	claim := middleware.GetRol(c.jwt, context)
+
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol == 1 {
 		c.user.GetListUserService(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }
 
 func (c *userController) FindUserNameLastName(context *gin.Context) {
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol > 0 {
 		c.user.GetFindUserNameLastNameService(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }
 
 // func (c *userController) All(context *gin.Context) {
 
-// 	rol := middleware.GetRol(c.jwt, context)
+// 	rol := middleware.ValidadToken(c.jwt, context)
 // 	if rol == 1 {
 // 		c.user.All(context)
 // 		return
 // 	}
-// 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+// 	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest,constantvariables.PERMISSION_DANIED))
 // 	c.user.All(context)
 // }
 
@@ -125,34 +129,34 @@ func (c *userController) FindUserNameLastName(context *gin.Context) {
 //delete user
 func (c *userController) Delete(context *gin.Context) {
 
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol == 1 {
 		c.user.SetRemoveService(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 
 }
 
 //profile user
 func (c *userController) Profile(context *gin.Context) {
 
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol == 1 {
 		c.user.GetProfileService(uint(claim.Id), context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }
 
 //profile user
 func (c *userController) FindUser(context *gin.Context) {
 
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol > 0 {
 		c.user.GetFindUserService(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 
 }

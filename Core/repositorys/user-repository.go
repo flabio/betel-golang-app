@@ -1,114 +1,93 @@
 package repositorys
 
 import (
+	"bete/Core/Interfaces"
 	"bete/Core/entity"
 	constantvariables "bete/Infrastructure/constantVariables"
-
-	"gorm.io/gorm"
+	"sync"
 )
-
-//UserRepository is contract what UserRepository can do to db
-type UserRepository interface {
-	SetInsertUser(user entity.User) (entity.User, error)
-
-	SetEditUser(user entity.User) (entity.User, error)
-	SetInsertRole(role entity.Role) error
-	SetEditRole(role entity.Role) (entity.Role, error)
-	SetInsertGroup(group entity.UserSubdetachement) error
-
-	SetEditGroup(group entity.UserSubdetachement) (entity.UserSubdetachement, error)
-
-	GetAllUser() ([]entity.User, error)
-
-	GetPaginationUsers(begin, limit int) ([]entity.User, error)
-	SetRemoveUser(id uint) (bool, error)
-	VerifyCredential(email string, password string) interface{}
-	IsDuplicateEmail(email string) (bool, error)
-	GetFindUserNameLastName(data string) ([]entity.User, error)
-	GetFindByEmail(email string) (entity.User, error)
-	IsDuplicateIdentificatio(identification string) bool
-	GetProfileUser(userId uint) (entity.User, error)
-	SetChangePassword(user entity.User) error
-	SetRemoveRoleUser(id uint) error
-
-	GetCountUser() int64
-	GetListNavigators() ([]entity.User, error)
-	GetListPioneers() ([]entity.User, error)
-	GetListFollowersWays() ([]entity.User, error)
-	GetListScouts() ([]entity.User, error)
-	GetListKingsScouts(Id uint) ([]entity.User, error)
-	GetListCommanders() ([]entity.User, error)
-	GetListMajors() ([]entity.User, error)
-	GetCounKanban() (int64, int64, int64, int64, int64)
-}
-
-type userConnection struct {
-	connection *gorm.DB
-}
 
 //NewUserRepository is creates a new instance of UserRepository
 
-func NewUserRepository() UserRepository {
-	var db *gorm.DB = entity.DatabaseConnection()
-	return &userConnection{
-		connection: db,
-	}
+func NewUserRepository() Interfaces.IUser {
+	var (
+		_OPEN *OpenConnections
+		_ONCE sync.Once
+	)
+	_ONCE.Do(func() {
+		_OPEN = &OpenConnections{
+
+			connection: entity.Factory(constantvariables.OPTION_FACTORY_DB),
+		}
+	})
+	return _OPEN
 }
 
 /*
 @param user, is a struct of User
 */
-func (db *userConnection) SetInsertUser(user entity.User) (entity.User, error) {
-
+func (db *OpenConnections) SetInsertUser(user entity.User) (entity.User, error) {
+	db.mux.Lock()
 	err := db.connection.Save(&user).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return user, err
 }
 
 /*
 @param user, is a struct of User
 */
-func (db *userConnection) SetEditUser(user entity.User) (entity.User, error) {
+func (db *OpenConnections) SetEditUser(user entity.User) (entity.User, error) {
+	db.mux.Lock()
 	err := db.connection.Save(&user).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return user, err
 }
 
 /*
 @param role, is a struct of Role
 */
-func (db *userConnection) SetInsertRole(role entity.Role) error {
+func (db *OpenConnections) SetInsertRole(role entity.Role) error {
+	db.mux.Lock()
 	err := db.connection.Save(&role).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return err
 }
 
 /*
 @param group, is a struct of UserSubdetachement
 */
-func (db *userConnection) SetInsertGroup(group entity.UserSubdetachement) error {
+func (db *OpenConnections) SetInsertGroup(group entity.UserSubdetachement) error {
+	db.mux.Lock()
 	err := db.connection.Save(&group).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return err
 }
 
 /*
 @param role, is a struct of Role
 */
-func (db *userConnection) SetEditRole(role entity.Role) (entity.Role, error) {
+func (db *OpenConnections) SetEditRole(role entity.Role) (entity.Role, error) {
 	var rol entity.Role
+	db.mux.Lock()
 	err := db.connection.Where("user_id =?", role.UserId).Updates(&role).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return rol, err
 }
 
 /*
 @param gruop, is a struct of UserSubdetachement
 */
-func (db *userConnection) SetEditGroup(gruop entity.UserSubdetachement) (entity.UserSubdetachement, error) {
+func (db *OpenConnections) SetEditGroup(gruop entity.UserSubdetachement) (entity.UserSubdetachement, error) {
 	var gruo entity.UserSubdetachement
+	db.mux.Lock()
 	err := db.connection.Where("user_id =?", gruop.UserId).Updates(&gruop).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return gruo, err
 }
 
@@ -117,15 +96,14 @@ func (db *userConnection) SetEditGroup(gruop entity.UserSubdetachement) (entity.
 @param password, is a string of user
 */
 
-func (db *userConnection) VerifyCredential(email string, password string) interface{} {
+func (db *OpenConnections) VerifyCredential(email string, password string) interface{} {
 	var user entity.User
-	err := db.connection.Preload("SubDetachment").
-		Preload("Roles.Rol.RoleModule.Module").
-		Select("users.id,users.name,users.last_name,users.email,users.image,users.sub_detachment_id,users.church_id,roles.id as idrol").
-		Joins("left join roles on roles.user_id = users.id").
-		Where("email = ?", email).
+	db.mux.Lock()
+	err := db.connection.Preload("Roles.Rol").Where("email = ?", email).
 		Find(&user).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
+
 	if err == nil {
 		return user
 	}
@@ -135,11 +113,13 @@ func (db *userConnection) VerifyCredential(email string, password string) interf
 /*
 @param email, is a string of user
 */
-func (db *userConnection) IsDuplicateEmail(email string) (bool, error) {
+func (db *OpenConnections) IsDuplicateEmail(email string) (bool, error) {
 	var user entity.User
-
+	db.mux.Lock()
 	err := db.connection.Where("email = ?", email).Take(&user).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
+
 	if err == nil {
 		return true, err
 	}
@@ -149,12 +129,12 @@ func (db *userConnection) IsDuplicateEmail(email string) (bool, error) {
 /*
 @param identification, is a string of user
 */
-func (db *userConnection) IsDuplicateIdentificatio(identification string) bool {
+func (db *OpenConnections) IsDuplicateIdentificatio(identification string) bool {
 	var user entity.User
-
+	db.mux.Lock()
 	err := db.connection.Where("identification = ?", identification).Take(&user).Error
 	defer entity.Closedb()
-
+	defer db.mux.Unlock()
 	if err == nil {
 		return true
 	}
@@ -164,33 +144,37 @@ func (db *userConnection) IsDuplicateIdentificatio(identification string) bool {
 /*
 @param id, is a uint of user
 */
-func (db *userConnection) SetRemoveUser(id uint) (bool, error) {
+func (db *OpenConnections) SetRemoveUser(id uint) (bool, error) {
 	var user entity.User
-
+	db.mux.Lock()
 	err := db.connection.Where("id=?", id).Delete(&user).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	if err == nil {
 		return true, err
 	}
 	return false, err
 }
-func (db *userConnection) GetAllUser() ([]entity.User, error) {
+func (db *OpenConnections) GetAllUser() ([]entity.User, error) {
 	var user []entity.User
+	db.mux.Lock()
 	err := db.connection.Preload("Roles.Rol").
 		Preload("Church").
-		Preload("SubDetachment").
 		Find(&user).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return user, err
 }
 
 /*
 @param email, is a string of user
 */
-func (db *userConnection) GetFindByEmail(email string) (entity.User, error) {
+func (db *OpenConnections) GetFindByEmail(email string) (entity.User, error) {
 	var user entity.User
+	db.mux.Lock()
 	err := db.connection.Preload("Roles.Rol").Where("email = ?", email).Take(&user).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	if err == nil {
 		return user, err
 	}
@@ -200,15 +184,20 @@ func (db *userConnection) GetFindByEmail(email string) (entity.User, error) {
 /*
 @param userID, is a uint of user
 */
-func (db *userConnection) GetProfileUser(userID uint) (entity.User, error) {
+func (db *OpenConnections) GetProfileUser(userID uint) (entity.User, error) {
 	var user entity.User
-	err := db.connection.Preload("SubDetachment").
-		Preload("Roles.Rol").
-		Preload("Roles.StudyCarried").
-		Preload("MinisterialAcademys").
+	db.mux.Lock()
+	err := db.connection.Preload("Roles.Rol").
 		Preload("Church").
 		Find(&user, userID).Error
+	// err := db.connection.Preload("City").
+	// 	Preload("Roles.Rol").
+	// 	Preload("Roles.StudyCarried").
+	// 	Preload("MinisterialAcademys").
+	// 	Preload("Church").
+	// 	Find(&user, userID).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	if err == nil {
 		return user, err
 	}
@@ -218,17 +207,21 @@ func (db *userConnection) GetProfileUser(userID uint) (entity.User, error) {
 /*
 @param id, is a uint of user
 */
-func (db *userConnection) SetRemoveRoleUser(id uint) error {
+func (db *OpenConnections) SetRemoveRoleUser(id uint) error {
 	var role entity.Role
+	db.mux.Lock()
 	err := db.connection.Where("user_id=?", id).Delete(&role).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return err
 }
 
-func (db *userConnection) GetCountUser() int64 {
+func (db *OpenConnections) GetCountUser() int64 {
 	var count int64
+	db.mux.Lock()
 	db.connection.Table("users").Count(&count)
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return count
 }
 
@@ -236,17 +229,17 @@ func (db *userConnection) GetCountUser() int64 {
 @param begin
 @param limit is a int
 */
-func (db *userConnection) GetPaginationUsers(begin, limit int) ([]entity.User, error) {
+func (db *OpenConnections) GetPaginationUsers(begin, limit int) ([]entity.User, error) {
 	var user []entity.User
-
+	db.mux.Lock()
 	err := db.connection.Offset(begin).
 		Limit(limit).
 		Order("id desc").
 		Preload("Roles.Rol").
 		Preload("Church").
-		Preload("SubDetachment").
 		Find(&user).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return user, err
 
 }
@@ -254,25 +247,26 @@ func (db *userConnection) GetPaginationUsers(begin, limit int) ([]entity.User, e
 /*
 @param user, is a struct of user
 */
-func (db *userConnection) SetChangePassword(user entity.User) error {
+func (db *OpenConnections) SetChangePassword(user entity.User) error {
+	db.mux.Lock()
 	err := db.connection.Where("id =?", user.Id).Update("password", user.Password).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return err
 }
 
 //ListNavigators
-func (db *userConnection) GetListNavigators() ([]entity.User, error) {
+func (db *OpenConnections) GetListNavigators() ([]entity.User, error) {
 	var user []entity.User
-
+	db.mux.Lock()
 	err := db.connection.Joins("left join roles on roles.user_id = users.id").
-		Joins("left join sub_detachments on users.sub_detachment_id=sub_detachments.id").
-		Where("sub_detachments.id", constantvariables.NAVIGANTORS_SUB_DETACHMENT).
 		Where("roles.rol_id", constantvariables.KING_SCOUTS).
 		Order("users.id desc").
 		Group("users.id").
 		Preload("Roles.Rol").
 		Find(&user).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 
 	return user, err
 }
@@ -280,61 +274,61 @@ func (db *userConnection) GetListNavigators() ([]entity.User, error) {
 //fin ListNavigators
 
 //ListPioneers
-func (db *userConnection) GetListPioneers() ([]entity.User, error) {
+func (db *OpenConnections) GetListPioneers() ([]entity.User, error) {
 	var user []entity.User
-
+	db.mux.Lock()
 	err := db.connection.Joins("left join roles on roles.user_id = users.id").
-		Joins("left join sub_detachments on users.sub_detachment_id=sub_detachments.id").
-		Where("sub_detachments.id", constantvariables.PIONEERS_SUB_DETACHMENT).
 		Where("roles.rol_id", constantvariables.KING_SCOUTS).
 		Order("users.id desc").
 		Group("users.id").
 		Preload("Roles.Rol").
 		Find(&user).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return user, err
 }
 
 //fin ListPioneers
 
 //ListFollowersWays
-func (db *userConnection) GetListFollowersWays() ([]entity.User, error) {
+func (db *OpenConnections) GetListFollowersWays() ([]entity.User, error) {
 	var user []entity.User
-
+	db.mux.Lock()
 	err := db.connection.Joins("left join roles on roles.user_id = users.id").
-		Joins("left join sub_detachments on users.sub_detachment_id=sub_detachments.id").
-		Where("sub_detachments.id", constantvariables.PATH_FOLLOWERS_SUB_DETACHMENT).
 		Where("roles.rol_id", constantvariables.KING_SCOUTS).
 		Order("users.id desc").
 		Group("users.id").
 		Preload("Roles.Rol").
 		Find(&user).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
+
 	return user, err
 }
 
 //fin ListFollowersWays
 
 //ListScouts
-func (db *userConnection) GetListScouts() ([]entity.User, error) {
+func (db *OpenConnections) GetListScouts() ([]entity.User, error) {
 	var user []entity.User
+	db.mux.Lock()
 	err := db.connection.Joins("left join roles on roles.user_id = users.id").
-		Joins("left join sub_detachments on users.sub_detachment_id=sub_detachments.id").
-		Where("sub_detachments.id", constantvariables.SCOUTS_SUB_DETACHMENT).
 		Where("roles.rol_id", constantvariables.KING_SCOUTS).
 		Order("users.id desc").
 		Group("users.id").
 		Preload("Roles.Rol").
 		Find(&user).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return user, err
 }
 
 //fin ListScouts
 
 //ListCommanders
-func (db *userConnection) GetListCommanders() ([]entity.User, error) {
+func (db *OpenConnections) GetListCommanders() ([]entity.User, error) {
 	var user []entity.User
+	db.mux.Lock()
 	err := db.connection.Joins("left join roles on roles.user_id = users.id").
 		Order("users.id desc").
 		Where("roles.rol_id IN ?", []int{constantvariables.FIRST_MAJOR_ROL, constantvariables.SECOND_MAJOR_ROL, constantvariables.SECOND_COMMANDERS_ROL, constantvariables.SECOND_COMMANDERS_ROL}).
@@ -342,14 +336,16 @@ func (db *userConnection) GetListCommanders() ([]entity.User, error) {
 		Preload("Roles.Rol").
 		Find(&user).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return user, err
 }
 
 //fin ListCommanders
 
 //ListMajors
-func (db *userConnection) GetListMajors() ([]entity.User, error) {
+func (db *OpenConnections) GetListMajors() ([]entity.User, error) {
 	var user []entity.User
+	db.mux.Lock()
 	err := db.connection.Joins("left join roles on roles.user_id = users.id").
 		Distinct("users.id").
 		Order("users.id desc").
@@ -357,6 +353,7 @@ func (db *userConnection) GetListMajors() ([]entity.User, error) {
 		Preload("Roles.Rol").Preload("Church").Preload("SubDetachment").
 		Find(&user).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return user, err
 }
 
@@ -364,50 +361,42 @@ func (db *userConnection) GetListMajors() ([]entity.User, error) {
 /*
 @param Id, is a uint of user
 */
-func (db *userConnection) GetListKingsScouts(Id uint) ([]entity.User, error) {
+func (db *OpenConnections) GetListKingsScouts(Id uint) ([]entity.User, error) {
 	var user []entity.User
+	db.mux.Lock()
 	err := db.connection.Preload("Roles.Rol").
 		Joins("left join roles on roles.user_id = users.id").
-		Joins("left join sub_detachments on users.sub_detachment_id=sub_detachments.id").
-		Where("sub_detachments.id", Id).
 		Where("roles.rol_id", constantvariables.KING_SCOUTS).
 		Group("users.id").Find(&user).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return user, err
 }
 
 //count scouts of king
 
-func (db *userConnection) GetCounKanban() (int64, int64, int64, int64, int64) {
+func (db *OpenConnections) GetCounKanban() (int64, int64, int64, int64, int64) {
 	var count_navigators int64
 	var count_pioneers int64
 	var count_followers int64
 	var count_scouts int64
 	var count_commanders int64
-
+	db.mux.Lock()
 	db.connection.Joins("left join roles on roles.user_id = users.id").
-		Joins("left join sub_detachments on users.sub_detachment_id=sub_detachments.id").
-		Where("sub_detachments.id", constantvariables.NAVIGANTORS_SUB_DETACHMENT).Where("roles.rol_id", constantvariables.KING_SCOUTS).
 		Group("users.id").
 		Table("users").Count(&count_navigators)
 
 	db.connection.Joins("left join roles on roles.user_id = users.id").
-		Joins("left join sub_detachments on users.sub_detachment_id=sub_detachments.id").
-		Where("sub_detachments.id", constantvariables.PIONEERS_SUB_DETACHMENT).
 		Where("roles.rol_id", constantvariables.KING_SCOUTS).
 		Group("users.id").
 		Table("users").Count(&count_pioneers)
 
 	db.connection.Joins("left join roles on roles.user_id = users.id").
-		Joins("left join sub_detachments on users.sub_detachment_id=sub_detachments.id").
-		Where("sub_detachments.id", constantvariables.PATH_FOLLOWERS_SUB_DETACHMENT).
 		Where("roles.rol_id", constantvariables.KING_SCOUTS).
 		Group("users.id").
 		Table("users").Count(&count_followers)
 
 	db.connection.Joins("left join roles on roles.user_id = users.id").
-		Joins("left join sub_detachments on users.sub_detachment_id=sub_detachments.id").
-		Where("sub_detachments.id", constantvariables.SCOUTS_SUB_DETACHMENT).
 		Where("roles.rol_id", constantvariables.KING_SCOUTS).
 		Group("users.id").
 		Table("users").Count(&count_scouts)
@@ -418,6 +407,7 @@ func (db *userConnection) GetCounKanban() (int64, int64, int64, int64, int64) {
 		Group("users.id").
 		Table("users").Count(&count_commanders)
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return count_navigators, count_pioneers, count_followers, count_scouts, count_commanders
 }
 
@@ -425,16 +415,16 @@ func (db *userConnection) GetCounKanban() (int64, int64, int64, int64, int64) {
 /*
 @param data, is a string
 */
-func (db *userConnection) GetFindUserNameLastName(data string) ([]entity.User, error) {
+func (db *OpenConnections) GetFindUserNameLastName(data string) ([]entity.User, error) {
 
 	var user []entity.User
+	db.mux.Lock()
 	err := db.connection.Preload("Roles.Rol").
 		Preload("Church").
-		Preload("SubDetachment").
 		Where("concat(name,' ',last_name) LIKE ?", "%"+string(data)+"%").
 		Find(&user).Error
 	defer entity.Closedb()
-
+	defer db.mux.Unlock()
 	if err == nil {
 		return user, err
 	}

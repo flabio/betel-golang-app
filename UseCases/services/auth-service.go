@@ -1,8 +1,10 @@
 package services
 
 import (
+	"bete/Core/Interfaces"
 	"bete/Core/entity"
 	"bete/Core/repositorys"
+	"bete/UseCases/InterfacesService"
 	"bete/UseCases/dto"
 
 	"github.com/mashingan/smapping"
@@ -10,36 +12,24 @@ import (
 )
 
 //authService is a contract about something that this service can do
-type AuthService interface {
-	VerifyCredential(Emmail string, Password string) interface{}
-	CreateUser(User dto.UserDTO) entity.User
-	FindByEmail(Email string) (entity.User, error)
-	IsDuplicateEmail(Email string) (bool, error)
-	GetIdRol(Id uint) uint
-}
 
 type authService struct {
-	userRepository repositorys.UserRepository
+	IUser Interfaces.IUser
 }
 
 //NewauthService creates a new instance of authService
-func NewAuthService() AuthService {
+func NewAuthService() InterfacesService.IAuthService {
 
-	var userRepo repositorys.UserRepository = repositorys.NewUserRepository()
 	return &authService{
-		userRepository: userRepo,
+		IUser: repositorys.NewUserRepository(),
 	}
 }
 
-/*
-@param Email is of type string
-@param Password is of type string
-*/
-func (authService *authService) VerifyCredential(Email string, Password string) interface{} {
-	res := authService.userRepository.VerifyCredential(Email, Password)
+func (authService *authService) VerifyCredential(email string, password string) interface{} {
+	res := authService.IUser.VerifyCredential(email, password)
 
 	if v, ok := res.(entity.User); ok {
-		if v.Email == Email {
+		if v.Email == email {
 			return res
 		}
 		//comparedPassword := comparePassword(v.Password, []byte(Password))
@@ -62,23 +52,17 @@ func (authService *authService) CreateUser(User dto.UserDTO) entity.User {
 	err := smapping.FillStruct(&userToCreate, smapping.MapFields(&User))
 	checkError(err)
 
-	res, err := authService.userRepository.SetInsertUser(userToCreate)
+	res, err := authService.IUser.SetInsertUser(userToCreate)
 
 	return res
 }
 
-/*
-@param Email is of type string
-*/
-func (authService *authService) FindByEmail(Email string) (entity.User, error) {
-	return authService.userRepository.GetFindByEmail(Email)
+func (authService *authService) FindByEmail(email string) (entity.User, error) {
+	return authService.IUser.GetFindByEmail(email)
 }
 
-/*
-@param Email is of type string
-*/
-func (authService *authService) IsDuplicateEmail(Email string) (bool, error) {
-	return authService.userRepository.IsDuplicateEmail(Email)
+func (authService *authService) IsDuplicateEmail(email string) (bool, error) {
+	return authService.IUser.IsDuplicateEmail(email)
 
 }
 
@@ -87,7 +71,11 @@ func (authService *authService) IsDuplicateEmail(Email string) (bool, error) {
 */
 func (authService *authService) GetIdRol(Id uint) uint {
 
-	user, _ := authService.userRepository.GetProfileUser(Id)
+	user, err := authService.IUser.GetProfileUser(Id)
+	if err != nil {
+
+		return 0
+	}
 	return user.Roles.RolId
 }
 func comparePassword(HashedPwd string, PlainPassword []byte) bool {

@@ -1,61 +1,65 @@
 package repositorys
 
 import (
+	"bete/Core/Interfaces"
 	"bete/Core/entity"
-
-	"gorm.io/gorm"
+	constantvariables "bete/Infrastructure/constantVariables"
+	"sync"
 )
 
-type DetachmentRepository interface {
-	SetCreateDetachment(detachment entity.Detachment) (entity.Detachment, error)
-	SetRemoveDetachment(detachment entity.Detachment) (entity.Detachment, error)
-	GetFindDetachmentById(Id uint) (entity.Detachment, error)
-	GetAllDetachment() ([]entity.Detachment, error)
-}
+func GetDetachmentInstance() Interfaces.IDetachment {
+	var (
+		_OPEN *OpenConnections
+		_ONCE sync.Once
+	)
+	_ONCE.Do(func() {
+		_OPEN = &OpenConnections{
 
-type detachmentConnection struct {
-	connection *gorm.DB
-}
-
-func NewDetachmentRepository() DetachmentRepository {
-	var db *gorm.DB = entity.DatabaseConnection()
-	return &detachmentConnection{
-		connection: db,
-	}
+			connection: entity.Factory(constantvariables.OPTION_FACTORY_DB),
+		}
+	})
+	return _OPEN
 }
 
 /*
 @param detachment,is a struct of Detachment
 */
 
-func (db *detachmentConnection) SetCreateDetachment(detachment entity.Detachment) (entity.Detachment, error) {
-
+func (db *OpenConnections) SetCreateDetachment(detachment entity.Detachment) (entity.Detachment, error) {
+	db.mux.Lock()
 	err := db.connection.Save(&detachment).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return detachment, err
 }
 
 /*
 @param detachment,is a struct of Detachment
 */
-func (db *detachmentConnection) SetRemoveDetachment(detachment entity.Detachment) (entity.Detachment, error) {
+func (db *OpenConnections) SetRemoveDetachment(detachment entity.Detachment) (entity.Detachment, error) {
+	db.mux.Lock()
 	err := db.connection.Delete(&detachment).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return detachment, err
 }
 
 /*
 @param Id,is a uint of Detachment
 */
-func (db *detachmentConnection) GetFindDetachmentById(Id uint) (entity.Detachment, error) {
+func (db *OpenConnections) GetFindDetachmentById(Id uint) (entity.Detachment, error) {
 	var result entity.Detachment
+	db.mux.Lock()
 	err := db.connection.Find(&result, Id).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return result, err
 }
-func (db *detachmentConnection) GetAllDetachment() ([]entity.Detachment, error) {
+func (db *OpenConnections) GetAllDetachment() ([]entity.Detachment, error) {
 	var results []entity.Detachment
+	db.mux.Lock()
 	err := db.connection.Find(&results).Error
 	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return results, err
 }

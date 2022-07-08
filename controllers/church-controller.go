@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	constantvariables "bete/Infrastructure/constantVariables"
 	"bete/Infrastructure/middleware"
+	"bete/UseCases/InterfacesService"
 	"bete/UseCases/services"
 	"bete/UseCases/utilities"
 	"net/http"
@@ -18,8 +20,8 @@ type ChurchController interface {
 }
 
 type churchController struct {
-	church services.ChurchService
-	jwt    services.JWTService
+	church InterfacesService.IChurchService
+	jwt    InterfacesService.IJWTService
 }
 
 func NewChurchController() ChurchController {
@@ -33,36 +35,36 @@ func NewChurchController() ChurchController {
 //method:GET
 //api/getAll
 func (c *churchController) All(context *gin.Context) {
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol > 0 {
 		c.church.AllChurch(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }
 
 //method:GET
 //api/getFindById/:id
 func (c *churchController) FindById(context *gin.Context) {
 
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol == 1 {
 		c.church.FindChurchById(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }
 
 //method:POST
 //api/setCreate
 func (c *churchController) Create(context *gin.Context) {
 
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol == 1 {
 		c.church.CreateChurchService(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 
 }
 
@@ -70,22 +72,22 @@ func (c *churchController) Create(context *gin.Context) {
 //api/setUpdate
 func (c *churchController) Update(context *gin.Context) {
 
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol == 1 {
 		c.church.UpdateChurch(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }
 
 // method:DELETE
 // api/setDelete?:id
 func (c *churchController) Delete(context *gin.Context) {
 
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol == 1 {
 		c.church.DeleteChurch(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }

@@ -2,6 +2,7 @@ package routers
 
 import (
 	"bete/Infrastructure/middleware"
+	"bete/UseCases/InterfacesService"
 	"bete/UseCases/services"
 	"bete/controllers"
 	"time"
@@ -16,7 +17,7 @@ import (
 
 //controller
 var (
-	jwtService services.JWTService = services.NewJWTService()
+	jwtService InterfacesService.IJWTService = services.NewJWTService()
 
 	authController          controllers.AuthController          = controllers.NewAuthController()
 	userController          controllers.UserController          = controllers.NewUserController()
@@ -58,10 +59,11 @@ func NewRouter() {
 		//authRoutes.POST("/register", authController.Register)
 	}
 	//userRoutes := r.Group("api/user", middleware.AuthorizeJWT(jwtService))
+	//userRoutes := r.Group("api/v1/user", middleware.AuthorizeJWT(jwtService))
 	userRoutes := r.Group("api/v1/user", middleware.AuthorizeJWT(jwtService))
 	{
-		userRoutes.GET("/", userController.Profile)
-		userRoutes.GET("/users", userController.ListUser)
+		//userRoutes.GET("/", userController.Profile)
+		userRoutes.GET("/", userController.ListUser)
 		userRoutes.GET("/:id", userController.FindUser)
 		userRoutes.GET("search/:search", userController.FindUserNameLastName)
 		//userRoutes.GET("/users/", userController.All)
@@ -148,7 +150,7 @@ func NewRouter() {
 		subDetachmentRoutes.DELETE("/:id", subDetachmentController.Remove)
 
 	}
-	patrolRoutes := r.Group("api/v1/patrol", middleware.AuthorizeJWT(jwtService))
+	patrolRoutes := r.Group("api/v1/patrol")
 	{
 		patrolRoutes.GET("/", patrolController.All)
 		patrolRoutes.GET("/:id", patrolController.FindById)

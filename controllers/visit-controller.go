@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	constantvariables "bete/Infrastructure/constantVariables"
 	"bete/Infrastructure/middleware"
+	"bete/UseCases/InterfacesService"
 	"bete/UseCases/services"
 	"bete/UseCases/utilities"
 	"net/http"
@@ -18,8 +20,8 @@ type VisitController interface {
 }
 
 type visitController struct {
-	visit services.VisitService
-	jwt   services.JWTService
+	visit InterfacesService.IVisitService
+	jwt   InterfacesService.IJWTService
 }
 
 func NewVisitController() VisitController {
@@ -31,45 +33,45 @@ func NewVisitController() VisitController {
 
 //All the visit
 func (c *visitController) All(context *gin.Context) {
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol > 0 {
 		c.visit.GetAllVisitService(context)
 
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 
 }
 func (c *visitController) AllVisitByUserAndSubDatachment(context *gin.Context) {
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol > 0 {
-		c.visit.GetAllVisitByUserVisitService(claim.Subdetachmentid, context)
+		c.visit.GetAllVisitByUserVisitService(claim.Churchid, context)
 
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }
 func (c *visitController) CreateVisit(context *gin.Context) {
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol > 0 {
 		c.visit.SetCreateVisitService(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }
 func (c *visitController) UpdateVisit(context *gin.Context) {
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol > 0 {
 		c.visit.SetUpdateVisitService(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }
 func (c *visitController) RemoveVisit(context *gin.Context) {
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol > 0 {
 		c.visit.SetRemoveVisitService(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }
