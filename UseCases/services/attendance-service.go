@@ -26,6 +26,7 @@ func NewAttendanceService() InterfacesService.IAttendanceService {
 		IWeeksDetachment: repositorys.NewWeeksDetachmentRepository(),
 	}
 }
+
 func (attendanceService *attendanceService) AttendancesSubdetachmentService(sub_detachment_id uint, context *gin.Context) {
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 	if err != nil {
@@ -136,12 +137,8 @@ func (attendanceService *attendanceService) RemoveAttendanceService(context *gin
 	}
 	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_IT_WAS_REMOVED, data))
 }
-
-//weeks sud detachment
-func (attendanceService *attendanceService) WeeksbySubDetachmentsAttendanceService(sub_detachment_id uint, context *gin.Context) {
-	weeksSubDetachments, err := attendanceService.IWeeksDetachment.GetFindByIdWeeks(1)
-
-	a := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
+func validarAttendance(a dto.AttendanceDTO, context *gin.Context, option int) bool {
+	res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.NAME)
 
 	switch option {
 	case 1:

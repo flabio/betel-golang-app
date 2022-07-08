@@ -8,5 +8,5 @@ type IAttendanceService interface {
 	RemoveAttendanceService(context *gin.Context)
 	AllAttendanceService(context *gin.Context)
 	AttendancesSubdetachmentService(sub_detachment_id uint, context *gin.Context)
-	WeeksbySubDetachmentsAttendanceService(sub_detachment_id uint, context *gin.Context)
+	//WeeksbySubDetachmentsAttendanceService(sub_detachment_id uint, context *gin.Context)
 }

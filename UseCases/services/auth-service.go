@@ -29,7 +29,7 @@ func (authService *authService) VerifyCredential(email string, password string) 
 	res := authService.IUser.VerifyCredential(email, password)
 
 	if v, ok := res.(entity.User); ok {
-		if v.Email == Email {
+		if v.Email == email {
 			return res
 		}
 		//comparedPassword := comparePassword(v.Password, []byte(Password))
