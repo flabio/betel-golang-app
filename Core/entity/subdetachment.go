@@ -9,7 +9,6 @@ type SubDetachment struct {
 	Archives     string     `gorm:"type:text" json:"archives"`
 	DetachmentId uint       `gorm:"NULL" json:"detachmentid"`
 	Detachment   Detachment `gorm:"foreignkey:DetachmentId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"detachment"`
-	User         *[]User    `json:"users,omitempty"`
 	Patrol       *[]Patrol  `json:"patrols,omitempty"`
 	Active       bool       `gorm:"type:TINYINT" json:"active"`
 	CreatedAt    time.Time  `gorm:"<-:created_at" json:"created_at"`

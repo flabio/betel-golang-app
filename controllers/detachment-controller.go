@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	constantvariables "bete/Infrastructure/constantVariables"
 	"bete/Infrastructure/middleware"
+	"bete/UseCases/InterfacesService"
 	"bete/UseCases/services"
 	"bete/UseCases/utilities"
 	"net/http"
@@ -20,8 +22,8 @@ type DetachmentController interface {
 }
 
 type detachmentController struct {
-	detachmentService services.DetachmentService
-	jwt               services.JWTService
+	detachmentService InterfacesService.IDetachmentService
+	jwt               InterfacesService.IJWTService
 }
 
 func NewDetachmentController() DetachmentController {
@@ -36,24 +38,24 @@ func NewDetachmentController() DetachmentController {
 //api/getAll
 func (c *detachmentController) All(context *gin.Context) {
 
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol == 1 {
 		c.detachmentService.All(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }
 
 //method:GET
 //api/getFindById/:id
 func (c *detachmentController) FindById(context *gin.Context) {
 
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol == 1 {
 		c.detachmentService.FindById(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }
 
 //method:POST
@@ -66,22 +68,22 @@ func (c *detachmentController) Create(context *gin.Context) {
 //api/setUpdate
 func (c *detachmentController) Update(context *gin.Context) {
 
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol == 1 {
 		c.detachmentService.Update(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }
 
 // method:DELETE
 // api/setDelete?:id
 func (c *detachmentController) Delete(context *gin.Context) {
 
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol == 1 {
 		c.detachmentService.Delete(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }

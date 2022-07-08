@@ -1,83 +1,65 @@
 package repositorys
 
 import (
+	"bete/Core/Interfaces"
 	"bete/Core/entity"
 	constantvariables "bete/Infrastructure/constantVariables"
-
-	"gorm.io/gorm"
+	"sync"
 )
 
-type ChurchRepository interface {
-	SetCreateChurch(church entity.Church) (entity.Church, error)
-	SetRemoveChurch(church entity.Church) (bool, error)
-	GetFindChurchById(Id uint) (entity.Church, error)
-	GetAllChurch() ([]entity.Church, error)
-}
+func GetChurchInstance() Interfaces.IChurch {
+	var (
+		_OPEN *OpenConnections
+		_ONCE sync.Once
+	)
+	_ONCE.Do(func() {
+		_OPEN = &OpenConnections{
 
-type churchConnection struct {
-	connection *gorm.DB
+			connection: entity.Factory(constantvariables.OPTION_FACTORY_DB),
+		}
+	})
+	return _OPEN
 }
-
-func NewChurchRepository() ChurchRepository {
-	var db *gorm.DB = entity.DatabaseConnection()
-	return &churchConnection{
-		connection: db,
-	}
-}
-
-var errChanChurch = make(chan error, constantvariables.CHAN_VALUE)
 
 /*
 @param church is the Church, of type struct
 */
-func (db *churchConnection) SetCreateChurch(church entity.Church) (entity.Church, error) {
-
-	go func() {
-		err := db.connection.Save(&church).Error
-		defer entity.Closedb()
-		errChanChurch <- err
-	}()
-	err := <-errChanChurch
+func (db *OpenConnections) SetCreateChurch(church entity.Church) (entity.Church, error) {
+	db.mux.Lock()
+	err := db.connection.Save(&church).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return church, err
 }
 
 /*
 @param Id is the of Church, is of type uint
 */
-func (db *churchConnection) GetFindChurchById(Id uint) (entity.Church, error) {
+func (db *OpenConnections) GetFindChurchById(Id uint) (entity.Church, error) {
 	var church entity.Church
-
-	go func() {
-		err := db.connection.Find(&church, Id).Error
-		defer entity.Closedb()
-		errChanChurch <- err
-	}()
-	err := <-errChanChurch
+	db.mux.Lock()
+	err := db.connection.Find(&church, Id).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return church, err
 }
-func (db *churchConnection) GetAllChurch() ([]entity.Church, error) {
+func (db *OpenConnections) GetAllChurch() ([]entity.Church, error) {
 	var churchs []entity.Church
-
-	go func() {
-		err := db.connection.Find(&churchs).Error
-		defer entity.Closedb()
-		errChanChurch <- err
-	}()
-	err := <-errChanChurch
+	db.mux.Lock()
+	err := db.connection.Find(&churchs).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return churchs, err
 }
 
 /*
 @param church is the of Church, is of type struct
 */
-func (db *churchConnection) SetRemoveChurch(church entity.Church) (bool, error) {
-
-	go func() {
-		err := db.connection.Delete(&church).Error
-		defer entity.Closedb()
-		errChanChurch <- err
-	}()
-	err := <-errChanChurch
+func (db *OpenConnections) SetRemoveChurch(church entity.Church) (bool, error) {
+	db.mux.Lock()
+	err := db.connection.Delete(&church).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	if err == nil {
 		return true, err
 	}

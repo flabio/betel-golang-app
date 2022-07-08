@@ -1,8 +1,10 @@
 package controllers
 
 import (
+	constantvariables "bete/Infrastructure/constantVariables"
 	"bete/Infrastructure/middleware"
 
+	"bete/UseCases/InterfacesService"
 	"bete/UseCases/services"
 	"bete/UseCases/utilities"
 	"net/http"
@@ -19,9 +21,9 @@ type ScoutController interface {
 }
 
 type scoutController struct {
-	user services.ScoutService
-	role services.UserRolService
-	jwt  services.JWTService
+	user InterfacesService.IScoutService
+	role InterfacesService.IUserRolService
+	jwt  InterfacesService.IJWTService
 }
 
 //NewscoutController is creating anew instance of UserControlller
@@ -35,44 +37,44 @@ func NewScoutController() ScoutController {
 
 //create user method post
 func (c *scoutController) Create(context *gin.Context) {
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol > 0 {
-		c.user.Create(claim.Subdetachmentid, claim.Churchid, context)
+		c.user.Create(claim.Churchid, context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }
 
 //update user method push
 func (c *scoutController) Update(context *gin.Context) {
 
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol > 0 {
-		c.user.Update(claim.Subdetachmentid, claim.Churchid, context)
+		c.user.Update(claim.Churchid, context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 
 }
 
 func (c *scoutController) ListKingsScouts(context *gin.Context) {
 
-	claim := middleware.GetRol(c.jwt, context)
+	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol > 0 {
-		c.user.ListKingsScouts(claim.Subdetachmentid, context)
+		c.user.ListKingsScouts(claim.Churchid, context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
 }
 
 // //delete user
 // func (c *scoutController) Delete(context *gin.Context) {
 
-// 	rol, _ := middleware.GetRol(c.jwt, context)
+// 	rol, _ := middleware.ValidadToken(c.jwt, context)
 // 	if rol > 0 {
 // 		c.user.Delete(context)
 // 		return
 // 	}
-// 	context.JSON(http.StatusBadRequest, utilities.BuildDanedResponse())
+// 	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest,constantvariables.PERMISSION_DANIED))
 
 // }

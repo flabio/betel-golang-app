@@ -1,38 +1,34 @@
 package repositorys
 
 import (
+	"bete/Core/Interfaces"
 	"bete/Core/entity"
 	constantvariables "bete/Infrastructure/constantVariables"
-
-	"gorm.io/gorm"
+	"sync"
 )
 
-type ScoutParentRepository interface {
-	SetCreateParentScout(parentScout entity.ParentScout) (entity.ParentScout, error)
-}
+func GetScoutParentInstance() Interfaces.IScoutParent {
+	var (
+		_OPEN *OpenConnections
+		_ONCE sync.Once
+	)
+	_ONCE.Do(func() {
+		_OPEN = &OpenConnections{
 
-type parentscoutConnection struct {
-	connection *gorm.DB
+			connection: entity.Factory(constantvariables.OPTION_FACTORY_DB),
+		}
+	})
+	return _OPEN
 }
-
-func NewScoutParentRepository() ScoutParentRepository {
-	var db *gorm.DB = entity.DatabaseConnection()
-	return &parentscoutConnection{
-		connection: db,
-	}
-}
-
-var errChanParentS = make(chan error, constantvariables.CHAN_VALUE)
 
 /*
 @param parentScout, is a struct of ParentScout
 */
-func (db *parentscoutConnection) SetCreateParentScout(parentScout entity.ParentScout) (entity.ParentScout, error) {
-	go func() {
-		err := db.connection.Save(&parentScout).Error
-		defer entity.Closedb()
-		errChanParentS <- err
-	}()
-	err := <-errChanParentS
+func (db *OpenConnections) SetCreateParentScouts(parentScout entity.ParentScout) (entity.ParentScout, error) {
+	db.mux.Lock()
+	err := db.connection.Save(&parentScout).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
+
 	return parentScout, err
 }

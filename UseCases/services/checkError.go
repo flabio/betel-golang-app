@@ -1,11 +1,7 @@
 package services
 
 import (
-	"bete/UseCases/utilities"
 	"log"
-	"net/http"
-
-	"github.com/gin-gonic/gin"
 )
 
 func checkError(err error) bool {
@@ -18,33 +14,34 @@ func checkError(err error) bool {
 }
 
 //func of validation
-func validadErrors(errDTO error, context *gin.Context) {
+// func validadErrors(errDTO error, context *gin.Context) {
 
-	res := utilities.BuildErrorAllResponse(errDTO.Error())
-	context.AbortWithStatusJSON(http.StatusBadRequest, res)
-}
+// 	res := utilities.BuildErrorAllResponse(errDTO.Error())
+// 	context.AbortWithStatusJSON(http.StatusBadRequest, res)
+// }
 
-func validadExistScout(context *gin.Context) {
+// func validadExistScout(context *gin.Context) {
 
-	context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildExistResponse())
-}
+// 	context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildExistResponse())
+// }
 
 //validadRequiredMsg
-func validadRequiredMsg(message string, context *gin.Context) {
+// func validadRequiredMsg(message string, context *gin.Context) {
 
-	context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrorAllResponseMessage(message))
-}
-func validadBirdateRequiredMsg(message string, context *gin.Context) {
+// 	context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrorAllResponseMessage(message))
+// }
+// func validadBirdateRequiredMsg(message string, context *gin.Context) {
 
-	res := utilities.BuildErrorAllResponseMessage(message)
-	context.AbortWithStatusJSON(http.StatusBadRequest, res)
-}
-func validadErrorById(context *gin.Context) {
-	res := utilities.BuildErrorByIdResponse()
-	context.AbortWithStatusJSON(http.StatusBadRequest, res)
-}
+// 	res := utilities.BuildErrorAllResponseMessage(message)
+// 	context.AbortWithStatusJSON(http.StatusBadRequest, res)
+// }
 
-func validadErrorRemove(data interface{}, context *gin.Context) {
-	response := utilities.BuildCanNotDeteleteResponse(data)
-	context.JSON(http.StatusBadRequest, response)
-}
+// func validadErrorById(context *gin.Context) {
+// 	res := utilities.BuildErrorByIdResponse()
+// 	context.AbortWithStatusJSON(http.StatusBadRequest, res)
+// }
+
+// func validadErrorRemove(data interface{}, context *gin.Context) {
+// 	response := utilities.BuildCanNotDeteleteResponse(data)
+// 	context.JSON(http.StatusBadRequest, response)
+// }

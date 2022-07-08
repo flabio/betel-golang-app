@@ -1,52 +1,43 @@
 package repositorys
 
 import (
+	"bete/Core/Interfaces"
 	"bete/Core/entity"
 	constantvariables "bete/Infrastructure/constantVariables"
-
-	"gorm.io/gorm"
+	"sync"
 )
 
-type VisitRepository interface {
-	SetCreateVisit(visit entity.Visit) (entity.Visit, error)
-	GetAllVisit() ([]entity.Visit, error)
-	GetFindByIdVisit(Id uint) (entity.Visit, error)
-	GetAllVisitByUserVisit(userId uint, subDetachmentId uint) ([]entity.Visit, error)
-	SetRemoveVisit(Id uint) (bool, error)
-}
-type visitConnection struct {
-	connection *gorm.DB
-}
+func GetVisitInstance() Interfaces.IVisit {
 
-func NewVisitConnection() VisitRepository {
-	return &visitConnection{
-		connection: entity.DatabaseConnection(),
-	}
-}
+	var (
+		_OPEN *OpenConnections
+		_ONCE sync.Once
+	)
+	_ONCE.Do(func() {
+		_OPEN = &OpenConnections{
 
-var errChanVisit = make(chan error, constantvariables.CHAN_VALUE)
+			connection: entity.Factory(constantvariables.OPTION_FACTORY_DB),
+		}
+	})
+	return _OPEN
+}
 
 /*
 @param visit, is a struct of Visit
 */
-func (db *visitConnection) SetCreateVisit(visit entity.Visit) (entity.Visit, error) {
-
-	go func() {
-		err := db.connection.Save(&visit).Error
-		defer entity.Closedb()
-		errChanVisit <- err
-	}()
-	err := <-errChanVisit
+func (db *OpenConnections) SetCreateVisit(visit entity.Visit) (entity.Visit, error) {
+	db.mux.Lock()
+	err := db.connection.Save(&visit).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return visit, err
 }
-func (db *visitConnection) GetAllVisit() ([]entity.Visit, error) {
+func (db *OpenConnections) GetAllVisit() ([]entity.Visit, error) {
 	var visit []entity.Visit
-	go func() {
-		err := db.connection.Find(&visit).Error
-		errChanVisit <- err
-		defer entity.Closedb()
-	}()
-	err := <-errChanVisit
+	db.mux.Lock()
+	err := db.connection.Find(&visit).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return visit, err
 }
 
@@ -54,45 +45,37 @@ func (db *visitConnection) GetAllVisit() ([]entity.Visit, error) {
 @param userId, is a uint
 @param subDetachmentId, is a uint
 */
-func (db *visitConnection) GetAllVisitByUserVisit(userId uint, subDetachmentId uint) ([]entity.Visit, error) {
+func (db *OpenConnections) GetAllVisitByUserVisit(userId uint, subDetachmentId uint) ([]entity.Visit, error) {
 	var visit []entity.Visit
-	go func() {
-		err := db.connection.Where("userid=?", userId).
-			Where("subdetachmentid=?", subDetachmentId).
-			Find(&visit).Error
-		errChanVisit <- err
-		defer entity.Closedb()
-	}()
-
-	err := <-errChanVisit
+	db.mux.Lock()
+	err := db.connection.Where("userid=?", userId).
+		Where("subdetachmentid=?", subDetachmentId).
+		Find(&visit).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return visit, err
 }
 
 /*
 @param Id, is a uint
 */
-func (db *visitConnection) GetFindByIdVisit(Id uint) (entity.Visit, error) {
+func (db *OpenConnections) GetFindByIdVisit(Id uint) (entity.Visit, error) {
 	var visit entity.Visit
-	go func() {
-		err := db.connection.Find(&visit, Id).Error
-		errChanVisit <- err
-		defer entity.Closedb()
-	}()
-
-	err := <-errChanVisit
+	db.mux.Lock()
+	err := db.connection.Find(&visit, Id).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return visit, err
 }
 
 /*
 @param Id, is a uint
 */
-func (db *visitConnection) SetRemoveVisit(Id uint) (bool, error) {
-	go func() {
-		err := db.connection.Delete(&entity.Visit{}, Id).Error
-		errChanVisit <- err
-		defer entity.Closedb()
-	}()
-	err := <-errChanVisit
+func (db *OpenConnections) SetRemoveVisit(Id uint) (bool, error) {
+	db.mux.Lock()
+	err := db.connection.Delete(&entity.Visit{}, Id).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	if err != nil {
 		return true, err
 	}

@@ -1,46 +1,33 @@
 package repositorys
 
 import (
+	"bete/Core/Interfaces"
 	"bete/Core/entity"
 	constantvariables "bete/Infrastructure/constantVariables"
-
-	"gorm.io/gorm"
+	"sync"
 )
 
-type AttendanceRepository interface {
-	SetCreateAttendance(attendance entity.Attendance) (entity.Attendance, error)
-	SetRemoveAttendance(Id uint) (bool, error)
-	GetFindByIdAttendance(Id uint) (entity.Attendance, error)
-	GetFindByIdWeeksDetachment(Week string, IdUser uint) (entity.Attendance, error)
-	GetAllAttendance() ([]entity.Attendance, error)
-	GetAttendancesSubdetachment(IdUser uint, IdSubDetachment uint) ([]entity.Attendance, error)
-}
+func GetAttendanceInstance() Interfaces.IAttendance {
+	var (
+		_OPEN *OpenConnections
+		_ONCE sync.Once
+	)
+	_ONCE.Do(func() {
+		_OPEN = &OpenConnections{
 
-type attendanceConnection struct {
-	connection *gorm.DB
-}
-
-func NewAttendanceRepository() AttendanceRepository {
-	var db *gorm.DB = entity.DatabaseConnection()
-	return &attendanceConnection{
-		connection: db,
-	}
+			connection: entity.Factory(constantvariables.OPTION_FACTORY_DB),
+		}
+	})
+	return _OPEN
 }
 
 //NewAttendanceRepository()
 
-var errChan = make(chan error, constantvariables.CHAN_VALUE)
-
-func (db *attendanceConnection) SetCreateAttendance(attendance entity.Attendance) (entity.Attendance, error) {
-
-	go func() {
-		err := db.connection.Save(&attendance).Error
-		defer entity.Closedb()
-		errChan <- err
-	}()
-	//go
-	err := <-errChan
-
+func (db *OpenConnections) SetCreateAttendance(attendance entity.Attendance) (entity.Attendance, error) {
+	db.mux.Lock()
+	err := db.connection.Save(&attendance).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return attendance, err
 }
 
@@ -49,27 +36,23 @@ func (db *attendanceConnection) SetCreateAttendance(attendance entity.Attendance
 /*
 @param Id is Attendace ,of type uint
 */
-func (db *attendanceConnection) SetRemoveAttendance(Id uint) (bool, error) {
+func (db *OpenConnections) SetRemoveAttendance(Id uint) (bool, error) {
 	var attendance entity.Attendance
-	go func() {
-		err := db.connection.Delete(&attendance, Id).Error
-		defer entity.Closedb()
-		errChan <- err
-	}()
-	err := <-errChan
+	db.mux.Lock()
+	err := db.connection.Delete(&attendance, Id).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	if err != nil {
 		return false, err
 	}
 	return true, err
 }
-func (db *attendanceConnection) GetAllAttendance() ([]entity.Attendance, error) {
+func (db *OpenConnections) GetAllAttendance() ([]entity.Attendance, error) {
 	var attendance []entity.Attendance
-	go func() {
-		err := db.connection.Preload("User").Preload("SubDetachment").Find(&attendance).Error
-		defer entity.Closedb()
-		errChan <- err
-	}()
-	err := <-errChan
+	db.mux.Lock()
+	err := db.connection.Preload("User").Preload("SubDetachment").Find(&attendance).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return attendance, err
 }
 
@@ -77,32 +60,28 @@ func (db *attendanceConnection) GetAllAttendance() ([]entity.Attendance, error) 
 @param IdUser is the user, of type uint
 @param IdSubDetachment is the Subdetachment, of type uint
 */
-func (db *attendanceConnection) GetAttendancesSubdetachment(IdUser uint, IdSubDetachment uint) ([]entity.Attendance, error) {
+func (db *OpenConnections) GetAttendancesSubdetachment(IdUser uint, IdSubDetachment uint) ([]entity.Attendance, error) {
 	var attendance []entity.Attendance
-	go func() {
-		err := db.connection.Preload("User").
-			Preload("SubDetachment").
-			Where("user_id=?", IdUser).
-			Where("sub_detachment_id=?", IdSubDetachment).
-			Find(&attendance).Error
-		defer entity.Closedb()
-		errChan <- err
-	}()
-	err := <-errChan
+	db.mux.Lock()
+	err := db.connection.Preload("User").
+		Preload("SubDetachment").
+		Where("user_id=?", IdUser).
+		Where("sub_detachment_id=?", IdSubDetachment).
+		Find(&attendance).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return attendance, err
 }
 
 /*
 @param Id is the attendance, of type uint
 */
-func (db *attendanceConnection) GetFindByIdAttendance(Id uint) (entity.Attendance, error) {
+func (db *OpenConnections) GetFindByIdAttendance(Id uint) (entity.Attendance, error) {
 	var attendance entity.Attendance
-	go func() {
-		err := db.connection.Find(&attendance, Id).Error
-		defer entity.Closedb()
-		errChan <- err
-	}()
-	err := <-errChan
+	db.mux.Lock()
+	err := db.connection.Find(&attendance, Id).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return attendance, err
 }
 
@@ -111,15 +90,13 @@ func (db *attendanceConnection) GetFindByIdAttendance(Id uint) (entity.Attendanc
 @param IdUser is the attendance, of type uint
 
 */
-func (db *attendanceConnection) GetFindByIdWeeksDetachment(Week string, IdUser uint) (entity.Attendance, error) {
+func (db *OpenConnections) GetFindByIdWeeksDetachment(Week string, IdUser uint) (entity.Attendance, error) {
 	var attendance entity.Attendance
-	go func() {
-		err := db.connection.Where("user_id=?", IdUser).
-			Where("week_sub_detachment=?", Week).
-			Find(&attendance).Error
-		defer entity.Closedb()
-		errChan <- err
-	}()
-	err := <-errChan
+	db.mux.Lock()
+	err := db.connection.Where("user_id=?", IdUser).
+		Where("week_sub_detachment=?", Week).
+		Find(&attendance).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return attendance, err
 }

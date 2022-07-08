@@ -1,36 +1,32 @@
 package repositorys
 
 import (
+	"bete/Core/Interfaces"
 	"bete/Core/entity"
 	constantvariables "bete/Infrastructure/constantVariables"
-
-	"gorm.io/gorm"
+	"sync"
 )
 
-type CityRepository interface {
-	GetAllCity() ([]entity.City, error)
+func GetCityInstance() Interfaces.ICity {
+	var (
+		_OPEN *OpenConnections
+		_ONCE sync.Once
+	)
+	_ONCE.Do(func() {
+		_OPEN = &OpenConnections{
+
+			connection: entity.Factory(constantvariables.OPTION_FACTORY_DB),
+		}
+	})
+	return _OPEN
 }
 
-type cityConnection struct {
-	connection *gorm.DB
-}
-
-func NewCityRepository() CityRepository {
-	return &cityConnection{
-		connection: entity.DatabaseConnection(),
-	}
-}
-
-var errChanCity = make(chan error, constantvariables.CHAN_VALUE)
-
-func (db *cityConnection) GetAllCity() ([]entity.City, error) {
+func (db *OpenConnections) GetAllCity() ([]entity.City, error) {
 
 	var citys []entity.City
-	go func() {
-		err := db.connection.Find(&citys).Error
-		defer entity.Closedb()
-		errChanCity <- err
-	}()
-	err := <-errChanCity
+	db.mux.Lock()
+	err := db.connection.Find(&citys).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return citys, err
 }

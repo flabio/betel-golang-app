@@ -1,9 +1,11 @@
 package services
 
 import (
+	"bete/Core/Interfaces"
 	"bete/Core/entity"
 	"bete/Core/repositorys"
 	constantvariables "bete/Infrastructure/constantVariables"
+	"bete/UseCases/InterfacesService"
 	"bete/UseCases/dto"
 	"bete/UseCases/utilities"
 	"net/http"
@@ -13,50 +15,44 @@ import (
 	"github.com/mashingan/smapping"
 )
 
-type AttendanceService interface {
-	CreateAttendanceService(sub_detachment_id uint, context *gin.Context)
-	UpdateAttendanceService(context *gin.Context)
-	RemoveAttendanceService(context *gin.Context)
-	AllAttendanceService(context *gin.Context)
-	AttendancesSubdetachmentService(sub_detachment_id uint, context *gin.Context)
-	WeeksbySubDetachmentsAttendanceService(sub_detachment_id uint, context *gin.Context)
-}
-
 type attendanceService struct {
-	attendanceRepository        repositorys.AttendanceRepository
-	weekSubDetachmentRepository repositorys.WeeksDetachmentRepository
+	IAttendance      Interfaces.IAttendance
+	IWeeksDetachment Interfaces.IWeeksDetachment
 }
 
-func NewAttendanceService() AttendanceService {
+func NewAttendanceService() InterfacesService.IAttendanceService {
 	return &attendanceService{
-		attendanceRepository:        repositorys.NewAttendanceRepository(),
-		weekSubDetachmentRepository: repositorys.NewWeeksDetachmentRepository(),
+		IAttendance:      repositorys.GetAttendanceInstance(),
+		IWeeksDetachment: repositorys.NewWeeksDetachmentRepository(),
 	}
 }
-func (s *attendanceService) AttendancesSubdetachmentService(sub_detachment_id uint, context *gin.Context) {
+func (attendanceService *attendanceService) AttendancesSubdetachmentService(sub_detachment_id uint, context *gin.Context) {
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 
-	attendances, err := s.attendanceRepository.GetAttendancesSubdetachment(uint(id), sub_detachment_id)
+	attendances, err := attendanceService.IAttendance.GetAttendancesSubdetachment(uint(id), sub_detachment_id)
 
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(true, "ok", attendances))
+	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, "ok", attendances))
 }
-func (s *attendanceService) AllAttendanceService(context *gin.Context) {
-	attendances, err := s.attendanceRepository.GetAllAttendance()
+func (attendanceService *attendanceService) AllAttendanceService(context *gin.Context) {
+	attendances, err := attendanceService.IAttendance.GetAllAttendance()
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(true, "ok", attendances))
+	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, "ok", attendances))
 }
-func (s *attendanceService) CreateAttendanceService(sub_detachment_id uint, context *gin.Context) {
+func (attendanceService *attendanceService) CreateAttendanceService(sub_detachment_id uint, context *gin.Context) {
 	attendance := entity.Attendance{}
 	var attendanceDTO dto.AttendanceDTO
 
@@ -68,23 +64,24 @@ func (s *attendanceService) CreateAttendanceService(sub_detachment_id uint, cont
 	attendanceDTO.SubDetachmentId = uint(sub_detachment_id)
 
 	smapping.FillStruct(&attendance, smapping.MapFields(&attendanceDTO))
-	existWeek, _ := s.attendanceRepository.GetFindByIdWeeksDetachment(attendanceDTO.WeekSubDetachment, attendanceDTO.UserId)
+	existWeek, _ := attendanceService.IAttendance.GetFindByIdWeeksDetachment(attendanceDTO.WeekSubDetachment, attendanceDTO.UserId)
 
 	if existWeek.Id > 0 {
-		msg := utilities.MessageRequired{}
-		validadRequiredMsg(msg.ExtisByUserWeek(), context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.WEEK_ALREADY)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 
 	}
-	data, errCreate := s.attendanceRepository.SetCreateAttendance(attendance)
+	data, errCreate := attendanceService.IAttendance.SetCreateAttendance(attendance)
 	if errCreate != nil {
-		validadErrors(errCreate, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, errCreate.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildCreateResponse(data))
+	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_CREATE, data))
 
 }
-func (s *attendanceService) UpdateAttendanceService(context *gin.Context) {
+func (attendanceService *attendanceService) UpdateAttendanceService(context *gin.Context) {
 	attendance := entity.Attendance{}
 	var attendanceDTO dto.AttendanceDTO
 
@@ -99,76 +96,81 @@ func (s *attendanceService) UpdateAttendanceService(context *gin.Context) {
 		checkError(errMap)
 		return
 	}
-	attendanceById, _ := s.attendanceRepository.GetFindByIdAttendance(uint(attendanceDTO.Id))
+	attendanceById, _ := attendanceService.IAttendance.GetFindByIdAttendance(uint(attendanceDTO.Id))
 	if attendanceById.Id == 0 {
-		validadErrorById(context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.GIVEN_ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	data, errUpdate := s.attendanceRepository.SetCreateAttendance(attendance)
+	data, errUpdate := attendanceService.IAttendance.SetCreateAttendance(attendance)
 	if errUpdate != nil {
-		validadErrors(errUpdate, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, errUpdate.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildUpdateResponse(data))
+	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_UPDATE, data))
 }
-func (s *attendanceService) RemoveAttendanceService(context *gin.Context) {
+func (attendanceService *attendanceService) RemoveAttendanceService(context *gin.Context) {
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	attendanceById, errById := s.attendanceRepository.GetFindByIdAttendance(uint(id))
+	attendanceById, errById := attendanceService.IAttendance.GetFindByIdAttendance(uint(id))
 	if attendanceById.Id == 0 {
-		validadErrorById(context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.GIVEN_ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 	if errById != nil {
-		validadErrors(errById, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, errById.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	data, errRemove := s.attendanceRepository.SetRemoveAttendance(uint(id))
+	data, errRemove := attendanceService.IAttendance.SetRemoveAttendance(uint(id))
 	if errRemove != nil {
-		validadErrors(errRemove, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, errRemove.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildDeteleteResponse(data, attendanceById))
+	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_IT_WAS_REMOVED, data))
 }
 
 //weeks sud detachment
-func (s *attendanceService) WeeksbySubDetachmentsAttendanceService(sub_detachment_id uint, context *gin.Context) {
-	weeksSubDetachments, err := s.weekSubDetachmentRepository.GetFindByIdWeeksDetachment(1)
+func (attendanceService *attendanceService) WeeksbySubDetachmentsAttendanceService(sub_detachment_id uint, context *gin.Context) {
+	weeksSubDetachments, err := attendanceService.IWeeksDetachment.GetFindByIdWeeks(1)
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(true, "ok", weeksSubDetachments))
+	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, "ok", weeksSubDetachments))
 }
 
 //validarAttendance
 func validarAttendance(a dto.AttendanceDTO, context *gin.Context, option int) bool {
 	context.ShouldBind(&a)
+	res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
 
 	switch option {
 	case 1:
 		if len(a.WeekSubDetachment) == 0 || a.WeekSubDetachment == "" {
-			msg := utilities.MessageRequired{}
-			validadRequiredMsg(msg.RequiredWeek(), context)
+			res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.WEEK_REQUIRED)
+			context.JSON(http.StatusBadRequest, res)
 			return true
 		}
 		if a.UserId == 0 {
-			msg := utilities.MessageRequired{}
-			validadRequiredMsg(msg.RequiredId(), context)
+			context.JSON(http.StatusBadRequest, res)
 			return true
 		}
 	case 2:
 		if a.Id == 0 {
-			msg := utilities.MessageRequired{}
-			validadRequiredMsg(msg.RequiredId(), context)
+			context.JSON(http.StatusBadRequest, res)
 			return true
 		}
 		if a.UserId == 0 {
-			msg := utilities.MessageRequired{}
-			validadRequiredMsg(msg.RequiredId(), context)
+			context.JSON(http.StatusBadRequest, res)
 			return true
 		}
 	}

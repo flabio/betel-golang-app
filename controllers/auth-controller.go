@@ -2,12 +2,14 @@ package controllers
 
 import (
 	"bete/Core/entity"
+	constantvariables "bete/Infrastructure/constantVariables"
+	"bete/UseCases/InterfacesService"
 	"bete/UseCases/dto"
 	"bete/UseCases/services"
 	"bete/UseCases/utilities"
+	"strconv"
 
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,8 +21,8 @@ type AuthController interface {
 }
 
 type authController struct {
-	authService services.AuthService
-	jwtService  services.JWTService
+	authService InterfacesService.IAuthService
+	jwtService  InterfacesService.IJWTService
 }
 
 //NewAuthController creates a new instance of AuthController
@@ -45,24 +47,28 @@ func (c *authController) Login(ctx *gin.Context) {
 	// 	return
 	// }
 	if len(loginDTO.Email) == 0 || len(loginDTO.Password) == 0 {
-		response := utilities.BuildEmailPasswordIncorrectResponse()
+		response := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PASSWORD_EMAIL_INCORRECT)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
 	authResult := c.authService.VerifyCredential(loginDTO.Email, loginDTO.Password)
 
 	if v, ok := authResult.(entity.User); ok {
-		//
-		RoldId := c.authService.GetIdRol(v.Id)
 
-		generatedToken := c.jwtService.GenerateToken(strconv.FormatUint(uint64(v.Id), 10), strconv.FormatUint(uint64(RoldId), 10), strconv.FormatUint(uint64(v.SubDetachmentId), 10), strconv.FormatUint(uint64(v.ChurchId), 10))
+		if v.Roles == nil {
+			response := utilities.BuildErrResponse(http.StatusUnauthorized, constantvariables.PARMISSION_DENIED)
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
+			return
+		}
+
+		generatedToken := c.jwtService.GenerateToken(strconv.FormatUint(uint64(v.Id), 10), strconv.FormatUint(uint64(v.Roles.RolId), 10), strconv.FormatUint(uint64(v.ChurchId), 10))
 		v.Token = generatedToken
-		response := utilities.BuildResponse(true, "OK!", v)
+		response := utilities.BuildResponse(http.StatusOK, "OK!", v)
 		ctx.JSON(http.StatusOK, response)
 		return
 	}
 
-	response := utilities.BuildErrorResponse("Please check again your credential", "Invalid Credential", utilities.EmptObj{})
+	response := utilities.BuildErrResponse(http.StatusUnauthorized, constantvariables.AGAIN_CREDENTIAL)
 	ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 }
 

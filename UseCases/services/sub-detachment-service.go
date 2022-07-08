@@ -1,9 +1,11 @@
 package services
 
 import (
+	"bete/Core/Interfaces"
 	"bete/Core/entity"
 	"bete/Core/repositorys"
 	constantvariables "bete/Infrastructure/constantVariables"
+	"bete/UseCases/InterfacesService"
 	"bete/UseCases/dto"
 	"bete/UseCases/utilities"
 	"net/http"
@@ -13,26 +15,15 @@ import (
 	"github.com/mashingan/smapping"
 )
 
-//SubDetachmentService
-type SubDetachmentService interface {
-	SetCreateSubDetachmentService(context *gin.Context)
-	SetUpdateSubDetachmentService(context *gin.Context)
-	SetRemoveSubDetachmentService(context *gin.Context)
-	GetFindByIdSubDetachmentService(context *gin.Context)
-	GetFindByIdDetachmentSubDetachmentService(context *gin.Context)
-	GetAllSubDetachmentService(context *gin.Context)
-}
-
 //subDetachmentService
 type subDetachmentService struct {
-	subDetachmentRepository repositorys.SubDetachmentRepository
+	iSubDetachment Interfaces.ISubDetachment
 }
 
 //NewSubDetachmentService
-func NewSubDetachmentService() SubDetachmentService {
-	subDetachmentRepository := repositorys.NewSubDetachmentRepository()
+func NewSubDetachmentService() InterfacesService.ISubDetachmentService {
 	return &subDetachmentService{
-		subDetachmentRepository: subDetachmentRepository,
+		iSubDetachment: repositorys.NewSubDetachmentRepository(),
 	}
 }
 
@@ -49,12 +40,13 @@ func (subDetachmentService *subDetachmentService) SetCreateSubDetachmentService(
 	filename, err := UploadFile(context)
 	subDetachment.Archives = filename
 
-	res, err := subDetachmentService.subDetachmentRepository.SetCreateSubDetachment(subDetachment)
+	res, err := subDetachmentService.iSubDetachment.SetCreateSubDetachment(subDetachment)
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildCreateResponse(res))
+	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_CREATE, res))
 }
 
 //Update
@@ -67,12 +59,18 @@ func (subDetachmentService *subDetachmentService) SetUpdateSubDetachmentService(
 	}
 	smapping.FillStruct(&subDetachment, smapping.MapFields(&dto))
 
-	findById, _ := subDetachmentService.subDetachmentRepository.GetFindByIdSubDetachment(uint(dto.Id))
+	findById, _ := subDetachmentService.iSubDetachment.GetFindByIdSubDetachment(uint(dto.Id))
 	if findById.Id == 0 {
-		validadErrorById(context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 	filename, err := UploadFile(context)
+	if err != nil {
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
 
 	if len(findById.Archives) == 0 {
 		subDetachment.Archives = filename
@@ -84,12 +82,13 @@ func (subDetachmentService *subDetachmentService) SetUpdateSubDetachmentService(
 		}
 	}
 
-	res, err := subDetachmentService.subDetachmentRepository.SetCreateSubDetachment(subDetachment)
+	res, err := subDetachmentService.iSubDetachment.SetCreateSubDetachment(subDetachment)
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildUpdateResponse(res))
+	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_UPDATE, res))
 }
 
 //Remove
@@ -97,21 +96,29 @@ func (subDetachmentService *subDetachmentService) SetRemoveSubDetachmentService(
 
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+	if id == 0 {
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 
-	findById, _ := subDetachmentService.subDetachmentRepository.GetFindByIdSubDetachment(uint(id))
+	findById, _ := subDetachmentService.iSubDetachment.GetFindByIdSubDetachment(uint(id))
 	if findById.Id == 0 {
-		validadErrorById(context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.GIVEN_ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	res, err := subDetachmentService.subDetachmentRepository.SetRemoveSubDetachment(findById.Id)
+	res, err := subDetachmentService.iSubDetachment.SetRemoveSubDetachment(findById.Id)
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildDeteleteResponse(res, findById))
+	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_IT_WAS_REMOVED, res))
 
 }
 
@@ -119,41 +126,56 @@ func (subDetachmentService *subDetachmentService) SetRemoveSubDetachmentService(
 func (subDetachmentService *subDetachmentService) GetFindByIdSubDetachmentService(context *gin.Context) {
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	findById, _ := subDetachmentService.subDetachmentRepository.GetFindByIdSubDetachment(uint(id))
+	if id == 0 {
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+	findById, _ := subDetachmentService.iSubDetachment.GetFindByIdSubDetachment(uint(id))
 	if findById.Id == 0 {
-		validadErrorById(context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(true, "ok", findById))
+	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, "ok", findById))
 }
 
 //FindByIdDetachment
 func (subDetachmentService *subDetachmentService) GetFindByIdDetachmentSubDetachmentService(context *gin.Context) {
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	res, err := subDetachmentService.subDetachmentRepository.GetFindByIdDetachmentSubDetachment(uint(id))
+	if id == 0 {
+		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+	res, err := subDetachmentService.iSubDetachment.GetFindByIdDetachmentSubDetachment(uint(id))
 
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(true, "ok", res))
+	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, "ok", res))
 }
 
 //All
 func (subDetachmentService *subDetachmentService) GetAllSubDetachmentService(context *gin.Context) {
-	res, err := subDetachmentService.subDetachmentRepository.GetAllSubDetachment()
+	res, err := subDetachmentService.iSubDetachment.GetAllSubDetachment()
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(true, "ok", res))
+	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, "ok", res))
 }
 
 //Validate
@@ -163,13 +185,13 @@ func validateSubDetachments(dto dto.SubDetachmentDTO, context *gin.Context, opti
 	switch options {
 	case 1:
 		if len(dto.Name) == 0 {
-			msg := utilities.MessageRequired{}
-			validadRequiredMsg(msg.RequiredId(), context)
+			res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.NAME)
+			context.AbortWithStatusJSON(http.StatusBadRequest, res)
 			return true
 		}
 		if dto.DetachmentId == 0 {
-			msg := utilities.MessageRequired{}
-			validadRequiredMsg(msg.RequiredDetachment(), context)
+			res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.DETACHMENT_ID)
+			context.AbortWithStatusJSON(http.StatusBadRequest, res)
 			return true
 		}
 
@@ -183,13 +205,13 @@ func validateUserSubDetachments(dto dto.UserSubDetachmentDTO, context *gin.Conte
 	switch options {
 	case 1:
 		if dto.UserId == 0 {
-			msg := utilities.MessageRequired{}
-			validadRequiredMsg(msg.RequiredId(), context)
+			res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
+			context.AbortWithStatusJSON(http.StatusBadRequest, res)
 			return true
 		}
 		if dto.SubDetachmentId == 0 {
-			msg := utilities.MessageRequired{}
-			validadRequiredMsg(msg.RequiredDetachment(), context)
+			res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.SUDDETACHMENT)
+			context.AbortWithStatusJSON(http.StatusBadRequest, res)
 			return true
 		}
 	}

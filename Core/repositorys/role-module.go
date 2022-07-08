@@ -1,53 +1,45 @@
 package repositorys
 
 import (
+	"bete/Core/Interfaces"
 	"bete/Core/entity"
 	constantvariables "bete/Infrastructure/constantVariables"
-
-	"gorm.io/gorm"
+	"sync"
 )
 
-type RoleModule interface {
-	SetCreateRoleModule(roleModule entity.RoleModule) (entity.RoleModule, error)
-	SetRemoveRoleModule(Id uint) (bool, error)
-}
+func GetRoleModuleInstance() Interfaces.IRoleModule {
+	var (
+		_OPEN *OpenConnections
+		_ONCE sync.Once
+	)
+	_ONCE.Do(func() {
+		_OPEN = &OpenConnections{
 
-type roleModuleConnection struct {
-	connection *gorm.DB
+			connection: entity.Factory(constantvariables.OPTION_FACTORY_DB),
+		}
+	})
+	return _OPEN
 }
-
-func NewRoleModuleRepository() RoleModule {
-	var db *gorm.DB = entity.DatabaseConnection()
-	return &roleModuleConnection{
-		connection: db,
-	}
-}
-
-var errChanRoleModule = make(chan error, constantvariables.CHAN_VALUE)
 
 /*
 @param roleModule, is a struct of RoleModule
 */
-func (db *roleModuleConnection) SetCreateRoleModule(roleModule entity.RoleModule) (entity.RoleModule, error) {
-	go func() {
-		err := db.connection.Save(&roleModule).Error
-		defer entity.Closedb()
-		errChanRoleModule <- err
-	}()
-	err := <-errChanRoleModule
+func (db *OpenConnections) SetCreateRoleModule(roleModule entity.RoleModule) (entity.RoleModule, error) {
+	db.mux.Lock()
+	err := db.connection.Save(&roleModule).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return roleModule, err
 }
 
 /*
 @param Id, is a struct of RoleModule
 */
-func (db *roleModuleConnection) SetRemoveRoleModule(Id uint) (bool, error) {
-	go func() {
-		err := db.connection.Delete(&entity.RoleModule{}, Id).Error
-		defer entity.Closedb()
-		errChanRoleModule <- err
-	}()
-	err := <-errChanRoleModule
+func (db *OpenConnections) SetDeleteRoleModule(Id uint) (bool, error) {
+	db.mux.Lock()
+	err := db.connection.Delete(&entity.RoleModule{}, Id).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	if err == nil {
 		return true, err
 	}

@@ -1,59 +1,47 @@
 package repositorys
 
 import (
+	"bete/Core/Interfaces"
 	"bete/Core/entity"
 	constantvariables "bete/Infrastructure/constantVariables"
-
-	"gorm.io/gorm"
+	"sync"
 )
 
-type RolRepository interface {
-	SetCreateRol(rol entity.Rol) (entity.Rol, error)
-	GetAllRol() ([]entity.Rol, error)
-	GetAllGroupRol() ([]entity.Rol, error)
-	GetRolsModule() ([]entity.RoleModule, error)
-	SetRemoveRol(rol entity.Rol) (bool, error)
-	GetFindRolById(Id uint) (entity.Rol, error)
-}
-type rolConnection struct {
-	connection *gorm.DB
-}
+func GetRolInstance() Interfaces.IRol {
 
-func NewRolRepository() RolRepository {
-	var db *gorm.DB = entity.DatabaseConnection()
-	return &rolConnection{
-		connection: db,
-	}
-}
+	var (
+		_OPEN *OpenConnections
+		_ONCE sync.Once
+	)
+	_ONCE.Do(func() {
+		_OPEN = &OpenConnections{
 
-var errChanRol = make(chan error, constantvariables.CHAN_VALUE)
+			connection: entity.Factory(constantvariables.OPTION_FACTORY_DB),
+		}
+	})
+	return _OPEN
+}
 
 /*
 @param rol, is a struct of Rol
 */
-func (db *rolConnection) SetCreateRol(rol entity.Rol) (entity.Rol, error) {
+func (db *OpenConnections) SetCreateRol(rol entity.Rol) (entity.Rol, error) {
 
-	go func() {
-		err := db.connection.Save(&rol).Error
-		defer entity.Closedb()
-		errChanRol <- err
-	}()
-	err := <-errChanRol
-
+	db.mux.Lock()
+	err := db.connection.Save(&rol).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return rol, err
 }
 
 /*
 @param rol, is a struct of Rol
 */
-func (db *rolConnection) SetRemoveRol(rol entity.Rol) (bool, error) {
-
-	go func() {
-		err := db.connection.Delete(&rol).Error
-		defer entity.Closedb()
-		errChanRol <- err
-	}()
-	err := <-errChanRol
+func (db *OpenConnections) SetRemoveRol(rol entity.Rol) (bool, error) {
+	db.mux.Lock()
+	err := db.connection.Delete(&rol).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	if err == nil {
 		return true, err
 	}
@@ -63,58 +51,47 @@ func (db *rolConnection) SetRemoveRol(rol entity.Rol) (bool, error) {
 /*
 @param Id, is a uint of Rol
 */
-func (db *rolConnection) GetFindRolById(Id uint) (entity.Rol, error) {
+func (db *OpenConnections) GetFindRolById(Id uint) (entity.Rol, error) {
 
 	var rol entity.Rol
-	go func() {
-		err := db.connection.Find(&rol, Id).Error
-		defer entity.Closedb()
-		errChanRol <- err
-	}()
-	err := <-errChanRol
+	db.mux.Lock()
+	err := db.connection.Find(&rol, Id).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return rol, err
 }
 
-func (db *rolConnection) GetAllRol() ([]entity.Rol, error) {
+func (db *OpenConnections) GetAllRol() ([]entity.Rol, error) {
 
 	var rols []entity.Rol
-	go func() {
-		err := db.connection.Find(&rols).Error
-		defer entity.Closedb()
-		errChanRol <- err
-	}()
-	err := <-errChanRol
+	db.mux.Lock()
+	err := db.connection.Find(&rols).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return rols, err
 }
 
-func (db *rolConnection) GetAllGroupRol() ([]entity.Rol, error) {
+func (db *OpenConnections) GetAllGroupRol() ([]entity.Rol, error) {
 	var rols []entity.Rol
-
-	go func() {
-		err := db.connection.Where("id IN ?", []int{
-			constantvariables.NAVIGANTORS_ROL,
-			constantvariables.PIONEERS_ROL,
-			constantvariables.PATH_FOLLOWERS_ROL,
-			constantvariables.SCOUTS_ROL}).
-			Find(&rols).Error
-		defer entity.Closedb()
-		errChanRol <- err
-
-	}()
-	err := <-errChanRol
+	db.mux.Lock()
+	err := db.connection.Where("id IN ?", []int{
+		constantvariables.NAVIGANTORS_ROL,
+		constantvariables.PIONEERS_ROL,
+		constantvariables.PATH_FOLLOWERS_ROL,
+		constantvariables.SCOUTS_ROL}).
+		Find(&rols).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return rols, err
 }
-func (db *rolConnection) GetRolsModule() ([]entity.RoleModule, error) {
+func (db *OpenConnections) GetRolsModule() ([]entity.RoleModule, error) {
 
 	var roleModule []entity.RoleModule
-
-	go func() {
-		err := db.connection.Preload("Role.Rol").
-			Preload("Module").
-			Find(&roleModule).Error
-		defer entity.Closedb()
-		errChanRol <- err
-	}()
-	err := <-errChanRol
+	db.mux.Lock()
+	err := db.connection.Preload("Role.Rol").
+		Preload("Module").
+		Find(&roleModule).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
 	return roleModule, err
 }

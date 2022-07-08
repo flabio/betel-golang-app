@@ -1,27 +1,24 @@
 package services
 
 import (
+	"bete/Core/Interfaces"
 	"bete/Core/entity"
 	"bete/Core/repositorys"
+	"bete/UseCases/InterfacesService"
+	"bete/UseCases/utilities"
 
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-//UserService is a contract.....
-type KanbanService interface {
-	GetKanbans(context *gin.Context)
-	GetCountKanbans(context *gin.Context)
-}
-
 type kanbanService struct {
-	kanbanR repositorys.UserRepository
+	kanbanR Interfaces.IUser
 }
 
 //NewUserService creates a new instance of UserService
-func NewKanbanService() KanbanService {
-	var kanban repositorys.UserRepository = repositorys.NewUserRepository()
+func NewKanbanService() InterfacesService.IKanbanService {
+	kanban := repositorys.NewUserRepository()
 	return &kanbanService{
 		kanbanR: kanban,
 	}
@@ -30,14 +27,36 @@ func NewKanbanService() KanbanService {
 func (kanbanService *kanbanService) GetKanbans(context *gin.Context) {
 
 	navigatores, err := kanbanService.kanbanR.GetListNavigators()
-	pioneers, err := kanbanService.kanbanR.GetListPioneers()
-	followers, err := kanbanService.kanbanR.GetListFollowersWays()
-	scouts, err := kanbanService.kanbanR.GetListScouts()
-	commanders, err := kanbanService.kanbanR.GetListCommanders()
 	if err != nil {
-		validadErrors(err, context)
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
+	pioneers, err := kanbanService.kanbanR.GetListPioneers()
+	if err != nil {
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+	followers, err := kanbanService.kanbanR.GetListFollowersWays()
+	if err != nil {
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+	scouts, err := kanbanService.kanbanR.GetListScouts()
+	if err != nil {
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+	commanders, err := kanbanService.kanbanR.GetListCommanders()
+	if err != nil {
+		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
 	context.JSON(http.StatusOK, struct {
 		GetNavigators    []entity.User `json:"navigatores"`
 		GetPioneers      []entity.User `json:"pioneers"`

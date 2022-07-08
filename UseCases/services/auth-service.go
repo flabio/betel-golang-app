@@ -1,8 +1,10 @@
 package services
 
 import (
+	"bete/Core/Interfaces"
 	"bete/Core/entity"
 	"bete/Core/repositorys"
+	"bete/UseCases/InterfacesService"
 	"bete/UseCases/dto"
 
 	"github.com/mashingan/smapping"
@@ -10,29 +12,21 @@ import (
 )
 
 //authService is a contract about something that this service can do
-type AuthService interface {
-	VerifyCredential(email string, password string) interface{}
-	CreateUser(user dto.UserDTO) entity.User
-	FindByEmail(email string) (entity.User, error)
-	IsDuplicateEmail(email string) (bool, error)
-	GetIdRol(id uint) uint
-}
 
 type authService struct {
-	userRepository repositorys.UserRepository
+	IUser Interfaces.IUser
 }
 
 //NewauthService creates a new instance of authService
-func NewAuthService() AuthService {
+func NewAuthService() InterfacesService.IAuthService {
 
-	var userRepo repositorys.UserRepository = repositorys.NewUserRepository()
 	return &authService{
-		userRepository: userRepo,
+		IUser: repositorys.NewUserRepository(),
 	}
 }
 
 func (authService *authService) VerifyCredential(email string, password string) interface{} {
-	res := authService.userRepository.VerifyCredential(email, password)
+	res := authService.IUser.VerifyCredential(email, password)
 
 	if v, ok := res.(entity.User); ok {
 
@@ -52,23 +46,27 @@ func (authService *authService) CreateUser(user dto.UserDTO) entity.User {
 	err := smapping.FillStruct(&userToCreate, smapping.MapFields(&user))
 	checkError(err)
 
-	res, err := authService.userRepository.SetInsertUser(userToCreate)
+	res, err := authService.IUser.SetInsertUser(userToCreate)
 
 	return res
 }
 
 func (authService *authService) FindByEmail(email string) (entity.User, error) {
-	return authService.userRepository.GetFindByEmail(email)
+	return authService.IUser.GetFindByEmail(email)
 }
 
 func (authService *authService) IsDuplicateEmail(email string) (bool, error) {
-	return authService.userRepository.IsDuplicateEmail(email)
+	return authService.IUser.IsDuplicateEmail(email)
 
 }
 
 func (authService *authService) GetIdRol(id uint) uint {
 
-	user, _ := authService.userRepository.GetProfileUser(id)
+	user, err := authService.IUser.GetProfileUser(id)
+	if err != nil {
+
+		return 0
+	}
 	return user.Roles.RolId
 }
 func comparePassword(hashedPwd string, plainPassword []byte) bool {
