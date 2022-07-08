@@ -7,9 +7,12 @@ import (
 	"bete/controllers"
 	"time"
 
-	cors "github.com/itsjamie/gin-cors"
+	docs "bete/docs"
 
 	"github.com/gin-gonic/gin"
+	cors "github.com/itsjamie/gin-cors"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 //controller
@@ -35,7 +38,7 @@ var (
 func NewRouter() {
 
 	r := gin.New()
-
+	docs.SwaggerInfo_swagger.BasePath = "/api/v1"
 	// Set up CORS middleware options
 	config := cors.Config{
 		Origins:         "*",
@@ -177,6 +180,10 @@ func NewRouter() {
 		cityRoutes.GET("/", cityController.All)
 	}
 	r.Static("assets", "./assets")
+
+	url := ginSwagger.URL("http://localhost:8080/swagger/doc.json") // The url pointing to API definition
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler, url))
+
 	r.Run(":8080")
 	return
 }

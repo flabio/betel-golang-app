@@ -4,9 +4,12 @@ import (
 	"log"
 )
 
-func checkError(err error) bool {
-	if err != nil {
-		log.Fatalf("Failed map %v", err)
+/*
+@param Err is of type error
+*/
+func checkError(Err error) bool {
+	if Err != nil {
+		log.Fatalf("Failed map %v", Err)
 		return false
 
 	}

@@ -140,18 +140,8 @@ func (attendanceService *attendanceService) RemoveAttendanceService(context *gin
 //weeks sud detachment
 func (attendanceService *attendanceService) WeeksbySubDetachmentsAttendanceService(sub_detachment_id uint, context *gin.Context) {
 	weeksSubDetachments, err := attendanceService.IWeeksDetachment.GetFindByIdWeeks(1)
-	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
-		return
-	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, "ok", weeksSubDetachments))
-}
 
-//validarAttendance
-func validarAttendance(a dto.AttendanceDTO, context *gin.Context, option int) bool {
-	context.ShouldBind(&a)
-	res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
+	a := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
 
 	switch option {
 	case 1:
