@@ -33,6 +33,17 @@ func (db *OpenConnections) SetCreatePatrol(patrol entity.Patrol) (entity.Patrol,
 }
 
 /*
+@param patrol, is a struct of Patrol
+*/
+func (db *OpenConnections) SetUpdatePatrol(patrol entity.Patrol, Id uint) (entity.Patrol, error) {
+	db.mux.Lock()
+	err := db.connection.Where("id=?", Id).Save(&patrol).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
+	return patrol, err
+}
+
+/*
 @param Id, is a uint of Patrol
 */
 func (db *OpenConnections) SetRemovePatrol(Id uint) (bool, error) {

@@ -25,7 +25,7 @@ func NewVisitService() InterfacesService.IVisitService {
 	}
 }
 
-//Create visit
+// Create visit
 func (visitService *visitService) SetCreateVisitService(context *gin.Context) {
 	var visitDto dto.VisitDTO
 	var visit entity.Visit
@@ -37,14 +37,14 @@ func (visitService *visitService) SetCreateVisitService(context *gin.Context) {
 	data, err := visitService.IVisit.SetCreateVisit(visit)
 
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		res := utilities.BuildErrResponse(err.Error())
 		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_CREATE, data))
+	context.JSON(http.StatusCreated, utilities.BuildCreatedResponse(data))
 }
 
-//Update
+// Update
 func (visitService *visitService) SetUpdateVisitService(context *gin.Context) {
 	var visitDto dto.VisitDTO
 	var visit entity.Visit
@@ -55,48 +55,48 @@ func (visitService *visitService) SetUpdateVisitService(context *gin.Context) {
 	smapping.FillStruct(&visit, smapping.MapFields(&visitDto))
 	existVisit, _ := visitService.IVisit.GetFindByIdVisit(visitDto.Id)
 	if existVisit.Id == 0 {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.GIVEN_ID)
+		res := utilities.BuildErrResponse(constantvariables.GIVEN_ID)
 		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 	data, err := visitService.IVisit.SetCreateVisit(visit)
 
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		res := utilities.BuildErrResponse(err.Error())
 		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_UPDATE, data))
+	context.JSON(http.StatusOK, utilities.BuildUpdatedResponse(data))
 }
 
-//All visit
+// All visit
 func (visitService *visitService) GetAllVisitService(context *gin.Context) {
 	data, err := visitService.IVisit.GetAllVisit()
 
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		res := utilities.BuildErrResponse(err.Error())
 		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, "ok", data))
+	context.JSON(http.StatusOK, utilities.BuildUpdatedResponse(data))
 }
 
-//AllVisitByUser by iduser and idsubdetachment
+// AllVisitByUser by iduser and idsubdetachment
 func (visitService *visitService) GetAllVisitByUserVisitService(subDetachmentId uint, context *gin.Context) {
 	id, errId := strconv.ParseInt(context.Param("id"), 0, 0)
 	if errId != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, errId.Error())
+		res := utilities.BuildErrResponse(errId.Error())
 		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 	data, err := visitService.IVisit.GetAllVisitByUserVisit(uint(id), uint(subDetachmentId))
 
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		res := utilities.BuildErrResponse(err.Error())
 		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, "ok", data))
+	context.JSON(http.StatusOK, utilities.BuildResponse(data))
 
 }
 
@@ -104,29 +104,29 @@ func (visitService *visitService) SetRemoveVisitService(context *gin.Context) {
 	id, err := strconv.ParseInt(context.Param("id"), 0, 0)
 
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		res := utilities.BuildErrResponse(err.Error())
 		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 	existVisit, _ := visitService.IVisit.GetFindByIdVisit(uint(id))
 	if existVisit.Id == 0 {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.GIVEN_ID)
+		res := utilities.BuildErrResponse(constantvariables.GIVEN_ID)
 		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 	parent, err := visitService.IVisit.SetRemoveVisit(uint(id))
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.NOT_DELETED)
+		res := utilities.BuildErrResponse(constantvariables.NOT_DELETED)
 		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
 	if parent {
-		context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_IT_WAS_REMOVED, existVisit))
+		context.JSON(http.StatusOK, utilities.BuildRemovedResponse(existVisit))
 
 	}
 }
 
-//validarVisiCreate
+// validarVisiCreate
 func validarVisit(visit dto.VisitDTO, context *gin.Context, option int) bool {
 	context.ShouldBind(&visit)
 	switch option {
@@ -137,7 +137,7 @@ func validarVisit(visit dto.VisitDTO, context *gin.Context, option int) bool {
 	case 2:
 
 		if visit.Id == 0 {
-			res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
+			res := utilities.BuildErrResponse(constantvariables.ID)
 			context.AbortWithStatusJSON(http.StatusBadRequest, res)
 			return true
 		}
@@ -149,27 +149,27 @@ func validarVisit(visit dto.VisitDTO, context *gin.Context, option int) bool {
 	return false
 }
 
-//validarVisiEdit
+// validarVisiEdit
 func validarVisitField(visit dto.VisitDTO, context *gin.Context) bool {
 	context.ShouldBind(&visit)
 	if len(visit.State) == 0 || visit.State == "" {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.STATE)
+		res := utilities.BuildErrResponse(constantvariables.STATE)
 		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return true
 	}
 	if len(visit.Description) == 0 || visit.Description == "" {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.DESCRIPTION)
+		res := utilities.BuildErrResponse(constantvariables.DESCRIPTION)
 		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return true
 	}
 	if visit.UserId == 0 {
 
-		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.USER_ID)
+		res := utilities.BuildErrResponse(constantvariables.USER_ID)
 		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return true
 	}
 	if visit.SubDetachmentId == 0 {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.SUB_DETACHMENT_ID)
+		res := utilities.BuildErrResponse(constantvariables.SUB_DETACHMENT_ID)
 		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return true
 	}

@@ -153,7 +153,7 @@ func NewRouter() {
 		patrolRoutes.GET("/", patrolController.All)
 		patrolRoutes.GET("/:id", patrolController.FindById)
 		patrolRoutes.POST("/", patrolController.Create)
-		patrolRoutes.PUT("/", patrolController.Update)
+		patrolRoutes.PUT("/:id", patrolController.Update)
 		patrolRoutes.DELETE("/:id", patrolController.Remove)
 
 	}

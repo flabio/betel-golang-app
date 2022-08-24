@@ -26,7 +26,7 @@ type scoutService struct {
 	IUser Interfaces.IUser
 }
 
-//NewUserService creates a new instance of UserService
+// NewUserService creates a new instance of UserService
 func NewScoutService() InterfacesService.IScoutService {
 	return &scoutService{
 		IUser: repositorys.NewUserRepository(),
@@ -40,14 +40,14 @@ func (scoutService *scoutService) ListKingsScouts(id uint, context *gin.Context)
 	users, err := scoutService.IUser.GetListKingsScouts(uint(id))
 
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		res := utilities.BuildErrResponse(err.Error())
 		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, "OK", users))
+	context.JSON(http.StatusOK, utilities.BuildResponse(users))
 }
 
-//Create scout
+// Create scout
 func (scoutService *scoutService) Create(ChurchId uint, context *gin.Context) {
 	userChan := make(chan int)
 	option := 0
@@ -81,11 +81,11 @@ func (scoutService *scoutService) Create(ChurchId uint, context *gin.Context) {
 		userToCreated.Identification = documentfile
 		createdUser, errs := scoutService.IUser.SetInsertUser(userToCreated)
 		if errs != nil {
-			res := utilities.BuildErrResponse(http.StatusBadRequest, errs.Error())
+			res := utilities.BuildErrResponse(errs.Error())
 			context.AbortWithStatusJSON(http.StatusBadRequest, res)
 			return
 		}
-		res := utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_CREATE, createdUser)
+		res := utilities.BuildCreatedResponse(createdUser)
 		context.JSON(http.StatusOK, res)
 		userChan <- int(createdUser.Id)
 		close(userChan)
@@ -102,18 +102,18 @@ func (scoutService *scoutService) Create(ChurchId uint, context *gin.Context) {
 			log.Println(err)
 			_, err := scoutService.IUser.SetRemoveUser(uint(user_id))
 			if err != nil {
-				res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.NOT_DELETED)
+				res := utilities.BuildErrResponse(constantvariables.NOT_DELETED)
 				context.JSON(http.StatusBadRequest, res)
 				return
 			}
-			res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+			res := utilities.BuildErrResponse(err.Error())
 			context.JSON(http.StatusBadRequest, res)
 			return
 		}
 	}
 }
 
-//update scout
+// update scout
 func (scoutService *scoutService) Update(ChurchId uint, context *gin.Context) {
 	userToCreated := entity.User{}
 	roleToCreated := entity.Role{}
@@ -143,7 +143,7 @@ func (scoutService *scoutService) Update(ChurchId uint, context *gin.Context) {
 
 	findById, _ := scoutService.IUser.GetProfileUser(uint(userDTO.Id))
 	if findById.Id == 0 {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.GIVEN_ID)
+		res := utilities.BuildErrResponse(constantvariables.GIVEN_ID)
 		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}
@@ -174,11 +174,11 @@ func (scoutService *scoutService) Update(ChurchId uint, context *gin.Context) {
 	u, err := scoutService.IUser.SetEditUser(userToCreated)
 
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
+		res := utilities.BuildErrResponse(err.Error())
 		context.JSON(http.StatusBadRequest, res)
 		return
 	}
-	res := utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_UPDATE, u)
+	res := utilities.BuildUpdatedResponse(u)
 	context.JSON(http.StatusOK, res)
 
 }
@@ -196,7 +196,7 @@ func goRunitaCreateScoutRole(scoutService *scoutService, roleToCreated entity.Ro
 	}
 }
 
-//goRunitaUpdateRole
+// goRunitaUpdateRole
 func goRunitaUpdateScoutRole(scoutService *scoutService, roleToCreated entity.Role) {
 	wgs.Done()
 	role, err := scoutService.IUser.SetEditRole(roleToCreated)
@@ -211,56 +211,56 @@ func goRunitaUpdateScoutRole(scoutService *scoutService, roleToCreated entity.Ro
 	}
 }
 
-//validarUser
+// validarUser
 func validarScout(u dto.ScoutDTO, scoutService *scoutService, context *gin.Context, option int) bool {
 	context.ShouldBind(&u)
 
 	if len(u.Name) == 0 {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.NAME)
+		res := utilities.BuildErrResponse(constantvariables.NAME)
 		context.JSON(http.StatusBadRequest, res)
 		return true
 	}
 	if len(u.LastName) == 0 {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.LAST_NAME)
+		res := utilities.BuildErrResponse(constantvariables.LAST_NAME)
 		context.JSON(http.StatusBadRequest, res)
 		return true
 	}
 	if len(u.Identification) == 0 {
 
-		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.IDENTIFICATION)
+		res := utilities.BuildErrResponse(constantvariables.IDENTIFICATION)
 		context.JSON(http.StatusBadRequest, res)
 		return true
 	}
 
 	if len(u.TypeIdentification) == 0 {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.TYPE_IDENTIFICATION)
+		res := utilities.BuildErrResponse(constantvariables.TYPE_IDENTIFICATION)
 		context.JSON(http.StatusBadRequest, res)
 		return true
 	}
 	if len(u.Birthplace) == 0 {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.BIRTH_PLACE)
+		res := utilities.BuildErrResponse(constantvariables.BIRTH_PLACE)
 		context.JSON(http.StatusBadRequest, res)
 		return true
 	}
 	if len(u.Gender) == 0 {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.GENDER)
+		res := utilities.BuildErrResponse(constantvariables.GENDER)
 		context.JSON(http.StatusBadRequest, res)
 		return true
 	}
 	if u.ChurchId == 0 {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.CHURCH_ID)
+		res := utilities.BuildErrResponse(constantvariables.CHURCH_ID)
 		context.JSON(http.StatusBadRequest, res)
 		return true
 	}
 	if u.SubDetachmentId == 0 {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.DETACHMENT_ID)
+		res := utilities.BuildErrResponse(constantvariables.DETACHMENT_ID)
 		context.JSON(http.StatusBadRequest, res)
 		return true
 	}
 	if option == 1 {
 
 		if u.Id == 0 {
-			res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
+			res := utilities.BuildErrResponse(constantvariables.ID)
 			context.JSON(http.StatusBadRequest, res)
 			return true
 		}
@@ -269,7 +269,7 @@ func validarScout(u dto.ScoutDTO, scoutService *scoutService, context *gin.Conte
 		existsIdentification := scoutService.IUser.IsDuplicateIdentificatio(u.Identification)
 		if existsIdentification {
 
-			res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.IDENTIFICATION_EXIST)
+			res := utilities.BuildErrResponse(constantvariables.IDENTIFICATION_EXIST)
 			context.JSON(http.StatusBadRequest, res)
 			return true
 		}
@@ -286,7 +286,7 @@ func validateBirthDayScout(u dto.ScoutDTO, scoutService *scoutService, context *
 	yearB, _ := strconv.ParseUint(YearBirthday[0], 0, 0)
 
 	difYear := uint64(currentDate.Year()) - yearB
-	res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.BIRTH_PLACE_CHECK)
+	res := utilities.BuildErrResponse(constantvariables.BIRTH_PLACE_CHECK)
 
 	if u.SubDetachmentId == 1 {
 		if difYear < 3 || difYear > 8 {

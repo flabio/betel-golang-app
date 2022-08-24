@@ -1,6 +1,6 @@
 package dto
 
-type RolCreateDTO struct {
+type RolDTO struct {
 	Id     uint   `json:"id" form:"id"`
 	Name   string `json:"name" form:"name"`
 	Active bool   `json:"active" form:"active"`

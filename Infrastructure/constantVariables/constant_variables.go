@@ -1,7 +1,7 @@
 package constantvariables
 
-//factory
-//nota la option 1 mysql, la option 2 postgres
+// factory
+// nota la option 1 mysql, la option 2 postgres
 const OPTION_FACTORY_DB = 1
 
 //const OPTION_FACTORY_DB=2
@@ -26,7 +26,7 @@ const SCOUTS_SUB_DETACHMENT = 4
 const OPTION_CREATE = 1
 const OPTION_EDIT = 2
 
-//Alerta
+// Alerta
 const SUCCESS_CREATE = "Create successfully"
 const SUCCESS_UPDATE = "Update successfully"
 const SUCCESS_PASSWORD_UPDATE = "Update password successfully"
@@ -48,7 +48,7 @@ const LAST_NAME = "The last name is required"
 const ID = "The id is required"
 const USER_ID = "The user id is required"
 const SUB_DETACHMENT_ID = "The id of subdetachment is required"
-const GIVEN_ID = "No data with given id"
+const GIVEN_ID = "Id does not exist"
 const IDENTIFICATION = "The identification is required"
 const TYPE_IDENTIFICATION = "The type identification is required"
 const BIRTH_PLACE = "The birthplace is required"

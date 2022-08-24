@@ -15,7 +15,7 @@ import (
 	"github.com/mashingan/smapping"
 )
 
-//patrolService
+// patrolService
 type patrolService struct {
 	IPatrol Interfaces.IPatrol
 }
@@ -26,53 +26,51 @@ func NewPatrolService() InterfacesService.IPatrolService {
 	}
 }
 
-//Create
+// Create
 func (patrolService *patrolService) Create(context *gin.Context) {
-	patrol := entity.Patrol{}
 	var dto dto.PatrolDTO
-	context.ShouldBind(&dto)
-	if validatePatroCreate(dto, context) {
+	patrol, err := getMappingPatrol(dto, context)
+	if err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	smapping.FillStruct(&patrol, smapping.MapFields(&dto))
-
 	filename, err := UploadFile(context)
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
 	patrol.Archives = filename
 
 	res, err := patrolService.IPatrol.SetCreatePatrol(patrol)
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_CREATE, res))
+	context.JSON(http.StatusCreated, utilities.BuildCreatedResponse(res))
 }
 
-//Update
+// Update
 func (patrolService *patrolService) Update(context *gin.Context) {
-	patrol := entity.Patrol{}
 	var dto dto.PatrolDTO
-	context.ShouldBind(&dto)
-	if validatePatroCreate(dto, context) {
+	id, err := strconv.Atoi(context.Param("id"))
+	if id == 0 {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
 		return
 	}
-	smapping.FillStruct(&patrol, smapping.MapFields(&dto))
+	patrol, err := getMappingPatrol(dto, context)
+	if err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+		return
+	}
 
-	findById, _ := patrolService.IPatrol.GetFindByIdPatrol(uint(dto.Id))
+	findById, _ := patrolService.IPatrol.GetFindByIdPatrol(uint(id))
 	if findById.Id == 0 {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
 		return
 	}
 	filename, err := UploadFile(context)
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
 	if len(findById.Archives) == 0 {
@@ -85,80 +83,111 @@ func (patrolService *patrolService) Update(context *gin.Context) {
 		}
 	}
 
-	res, err := patrolService.IPatrol.SetCreatePatrol(patrol)
+	res, err := patrolService.IPatrol.SetUpdatePatrol(patrol, uint(id))
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_UPDATE, res))
+	context.JSON(http.StatusCreated, utilities.BuildResponse(res))
 }
 
-//Remove
+// Remove
 func (patrolService *patrolService) Remove(context *gin.Context) {
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
 
 	findById, _ := patrolService.IPatrol.GetFindByIdPatrol(uint(id))
 	if findById.Id == 0 {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
 		return
 	}
 	res, err := patrolService.IPatrol.SetRemovePatrol(findById.Id)
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_IT_WAS_REMOVED, res))
+	context.JSON(http.StatusCreated, utilities.BuildRemovedResponse(res))
 }
 
-//FindById
+// FindById
 func (patrolService *patrolService) FindById(context *gin.Context) {
+	var patrolList []dto.PatrolListDTO
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
 
-	findById, _ := patrolService.IPatrol.GetFindByIdPatrol(uint(id))
-	if findById.Id == 0 {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+	data, _ := patrolService.IPatrol.GetFindByIdPatrol(uint(id))
+	if data.Id == 0 {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, "ok", findById))
+	patrol := dto.PatrolListDTO{
+		Id:                data.Id,
+		Name:              data.Name,
+		Archives:          data.Archives,
+		Active:            data.Active,
+		SubDetachmentId:   data.SubDetachmentId,
+		SubDetachmentName: data.SubDetachment.Name,
+	}
+	patrolList = append(patrolList, patrol)
+	context.JSON(http.StatusOK, utilities.BuildResponse(patrolList))
 }
 
-//All
+// All
 func (patrolService *patrolService) All(context *gin.Context) {
+	var patrolList []dto.PatrolListDTO
 	res, err := patrolService.IPatrol.GetAllPatrol()
+
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, "ok", res))
+	for _, data := range res {
+		patrol := dto.PatrolListDTO{
+			Id:                data.Id,
+			Name:              data.Name,
+			Archives:          data.Archives,
+			Active:            data.Active,
+			SubDetachmentId:   data.SubDetachmentId,
+			SubDetachmentName: data.SubDetachment.Name,
+		}
+		patrolList = append(patrolList, patrol)
+	}
+	context.JSON(http.StatusOK, utilities.BuildResponse(patrolList))
 }
 
-//validate
+// validate
 func validatePatroCreate(dto dto.PatrolDTO, context *gin.Context) bool {
 	context.ShouldBind(&dto)
 	if len(dto.Name) == 0 {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.NAME)
+		res := utilities.BuildErrResponse(constantvariables.NAME)
 		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return true
 	}
 	if dto.SubDetachmentId == 0 {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
+		res := utilities.BuildErrResponse(constantvariables.ID)
 		context.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return true
 	}
 	return false
+}
+
+func getMappingPatrol(dto dto.PatrolDTO, context *gin.Context) (entity.Patrol, error) {
+	patrol := entity.Patrol{}
+	err := context.ShouldBind(&dto)
+	if err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
+		return patrol, err
+	}
+	err = smapping.FillStruct(&patrol, smapping.MapFields(&dto))
+	if err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
+		return patrol, err
+	}
+	return patrol, nil
 }
