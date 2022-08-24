@@ -32,62 +32,62 @@ func NewAttendanceController() AttendanceController {
 	}
 }
 
-//Create
+// Create
 func (c *attendanceController) Create(context *gin.Context) {
 	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol > 0 {
 		c.attendance.CreateAttendanceService(claim.Churchid, context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 
-//Update
+// Update
 func (c *attendanceController) Update(context *gin.Context) {
 	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol > 0 {
 		c.attendance.UpdateAttendanceService(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 
-//Remove
+// Remove
 func (c *attendanceController) Remove(context *gin.Context) {
 	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol > 0 {
 		c.attendance.RemoveAttendanceService(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 
-//All
+// All
 func (c *attendanceController) All(context *gin.Context) {
 	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol == 1 {
 		c.attendance.AllAttendanceService(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 
-//Attendances by subdetachment
+// Attendances by subdetachment
 func (c *attendanceController) AttendancesSubdetachment(context *gin.Context) {
 	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol > 0 {
 		c.attendance.AttendancesSubdetachmentService(claim.Churchid, context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 
-//WeeksbySubDetachments
+// WeeksbySubDetachments
 func (c *attendanceController) WeeksbySubDetachments(context *gin.Context) {
 	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol > 0 {
-		c.attendance.WeeksbySubDetachmentsAttendanceService(claim.Churchid, context)
+		//c.attendance.WeeksbySubDetachmentsAttendanceService(claim.Churchid, context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }

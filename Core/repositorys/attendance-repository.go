@@ -7,11 +7,14 @@ import (
 	"sync"
 )
 
+// NewAttendanceRepository()
 func GetAttendanceInstance() Interfaces.IAttendance {
+	// sync.Once bloquear de manera
 	var (
 		_OPEN *OpenConnections
 		_ONCE sync.Once
 	)
+	// Do aseguro que se ejecute una unica vez de manera seguro
 	_ONCE.Do(func() {
 		_OPEN = &OpenConnections{
 
@@ -21,8 +24,6 @@ func GetAttendanceInstance() Interfaces.IAttendance {
 	return _OPEN
 }
 
-//NewAttendanceRepository()
-
 func (db *OpenConnections) SetCreateAttendance(attendance entity.Attendance) (entity.Attendance, error) {
 	db.mux.Lock()
 	err := db.connection.Save(&attendance).Error
@@ -31,7 +32,13 @@ func (db *OpenConnections) SetCreateAttendance(attendance entity.Attendance) (en
 	return attendance, err
 }
 
-//SetCreateAttendance
+func (db *OpenConnections) SetUpdateAttendance(attendance entity.Attendance, Id uint) (entity.Attendance, error) {
+	db.mux.Lock()
+	err := db.connection.Where("id=?", Id).Save(&attendance).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
+	return attendance, err
+}
 
 /*
 @param Id is Attendace ,of type uint
@@ -88,7 +95,6 @@ func (db *OpenConnections) GetFindByIdAttendance(Id uint) (entity.Attendance, er
 /*
 @param Week is the attendance, of type uint
 @param IdUser is the attendance, of type uint
-
 */
 func (db *OpenConnections) GetFindByIdWeeksDetachment(Week string, IdUser uint) (entity.Attendance, error) {
 	var attendance entity.Attendance

@@ -33,6 +33,17 @@ func (db *OpenConnections) SetCreateChurch(church entity.Church) (entity.Church,
 }
 
 /*
+@param church is the Church, of type struct
+*/
+func (db *OpenConnections) SetUpdateChurch(church entity.Church, Id uint) (entity.Church, error) {
+	db.mux.Lock()
+	err := db.connection.Where("id=?", Id).Save(&church).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
+	return church, err
+}
+
+/*
 @param Id is the of Church, is of type uint
 */
 func (db *OpenConnections) GetFindChurchById(Id uint) (entity.Church, error) {

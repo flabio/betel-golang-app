@@ -2,33 +2,33 @@ package utilities
 
 import (
 	constantvariables "bete/Infrastructure/constantVariables"
+	"net/http"
 )
 
-//Response is used for static shape json return
+// Response is used for static shape json return
 type Response struct {
+	Status int64       `json:"status"`
+	Data   interface{} `json:"data"`
+}
+
+type ResponseCreate struct {
 	Status  int64       `json:"status"`
-	Message string      `json:"message"`
-	Error   interface{} `json:"errors"`
+	Message string      `json:"msg"`
 	Data    interface{} `json:"data"`
 }
 
-//Response is used for static shape json return
+// Response is used for static shape json return
 type ResponseErr struct {
-	Status  int64  `json:"status"`
-	Message string `json:"error"`
-	ok      bool   `json:"status"`
+	Status int64  `json:"status"`
+	Error  string `json:"error"`
+	ok     bool   `json:"status"`
 }
 
-//EmptyObj object is used when data doesnt want to be null on json
-type EmptObj struct{}
-
-//BuildResponse method is to inject dasta value to dynamic success response
-func BuildResponse(status int, message string, data interface{}) Response {
+// BuildResponse method is to inject dasta value to dynamic success response
+func BuildResponse(data interface{}) Response {
 	res := Response{
-		Status:  int64(status),
-		Message: message,
-		Error:   nil,
-		Data:    data,
+		Status: http.StatusOK,
+		Data:   data,
 	}
 	return res
 }
@@ -45,22 +45,22 @@ func BuildResponse(status int, message string, data interface{}) Response {
 // 	return res
 // }
 
-//BuildErrorResponse method is to inject dasta value to dynamic failed response
-func BuildErrResponse(status int, message string) ResponseErr {
+// BuildErrorResponse method is to inject dasta value to dynamic failed response
+func BuildErrResponse(message string) ResponseErr {
 
 	res := ResponseErr{
-		Status:  int64(status),
-		Message: message,
-		ok:      false,
+		Status: http.StatusBadRequest,
+		Error:  message,
+		ok:     false,
 	}
 	return res
 }
 
-//BuildErrorResponse method is to inject dasta value to dynamic failed response
-func BuildNotFoudResponse() Response {
-	res := Response{
-		Status:  403,
-		Message: "not found",
+// BuildErrorResponse method is to inject dasta value to dynamic failed response
+func BuildNotFoudResponse() ResponseErr {
+	res := ResponseErr{
+		Status: http.StatusNotFound,
+		Error:  "not found",
 	}
 	return res
 }
@@ -106,12 +106,29 @@ func BuildNotFoudResponse() Response {
 // 	return res
 // }
 
-//BuildCreateResponse method is to inject dasta value to dynamic success response
-func BuildCreateResponse(status int, data interface{}) Response {
-	res := Response{
-		Status:  int64(status),
+// BuildCreateResponse method is to inject dasta value to dynamic success response
+func BuildCreatedResponse(data interface{}) ResponseCreate {
+	res := ResponseCreate{
+		Status:  http.StatusCreated,
 		Message: constantvariables.SUCCESS_CREATE,
-		Error:   nil,
+		Data:    data,
+	}
+	return res
+}
+
+func BuildUpdatedResponse(data interface{}) ResponseCreate {
+	res := ResponseCreate{
+		Status:  http.StatusCreated,
+		Message: constantvariables.SUCCESS_UPDATE,
+		Data:    data,
+	}
+	return res
+}
+
+func BuildRemovedResponse(data interface{}) ResponseCreate {
+	res := ResponseCreate{
+		Status:  http.StatusCreated,
+		Message: constantvariables.SUCCESS_IT_WAS_REMOVED,
 		Data:    data,
 	}
 	return res

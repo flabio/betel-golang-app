@@ -31,25 +31,23 @@ func NewVisitController() VisitController {
 	}
 }
 
-//All the visit
+// All the visit
 func (c *visitController) All(context *gin.Context) {
 	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol > 0 {
 		c.visit.GetAllVisitService(context)
-
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 
 }
 func (c *visitController) AllVisitByUserAndSubDatachment(context *gin.Context) {
 	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol > 0 {
 		c.visit.GetAllVisitByUserVisitService(claim.Churchid, context)
-
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 func (c *visitController) CreateVisit(context *gin.Context) {
 	claim := middleware.ValidadToken(c.jwt, context)
@@ -57,7 +55,7 @@ func (c *visitController) CreateVisit(context *gin.Context) {
 		c.visit.SetCreateVisitService(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 func (c *visitController) UpdateVisit(context *gin.Context) {
 	claim := middleware.ValidadToken(c.jwt, context)
@@ -65,7 +63,7 @@ func (c *visitController) UpdateVisit(context *gin.Context) {
 		c.visit.SetUpdateVisitService(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 func (c *visitController) RemoveVisit(context *gin.Context) {
 	claim := middleware.ValidadToken(c.jwt, context)
@@ -73,5 +71,5 @@ func (c *visitController) RemoveVisit(context *gin.Context) {
 		c.visit.SetRemoveVisitService(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }

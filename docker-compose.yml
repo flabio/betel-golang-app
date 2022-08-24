@@ -1,76 +1,49 @@
 version: '3.7'
 
 services:
-  db:
-<<<<<<< HEAD
-    container_name: "betel_db"
-    platform: linux/x86_64
-    build:
-      context: .
-      dockerfile: db.Dockerfile
-=======
-    container_name: "golangdb"
-    platform: linux/x86_64
-    build:
-      context: .
-      dockerfile: mysql.Dockerfile
->>>>>>> da314ad1c6e10281faca37c9d9399da9608ca9a5
-    networks:
-      - default
-    restart: always
-    ports:
-      - "3306:3306"
-   
-    environment:
- 
-   
-      MYSQL_RANDOM_ROOT_PASSWORD: "secret"
-<<<<<<< HEAD
-      MYSQL_DATABASE: "beteldb"
-      MYSQL_USER: "tester"
-      MYSQL_PASSWORD: "secret"
-
-      # OR if you want to use "root" as the user, just these two lines
-      # MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
-      # MYSQL_DATABASE: ${DATABASE_NAME}
-
-=======
-      MYSQL_DATABASE: "golangdb"
-      MYSQL_USER: "tester"
-      MYSQL_PASSWORD: "secret"
-
-      
->>>>>>> da314ad1c6e10281faca37c9d9399da9608ca9a5
-    # we mount a data volume to make sure we don't lose data
-    volumes:
-      - mysql_data:/var/lib/mysql
-    command: --default-authentication-plugin=mysql_native_password
   api:
-<<<<<<< HEAD
-    container_name:  "challenge_api"
-=======
-    container_name:  "betel_golang_api"
->>>>>>> da314ad1c6e10281faca37c9d9399da9608ca9a5
+    container_name:  "explorador_api"
     # we want to use the image which is build from our Dockerfile
     build:
       context: .
-      dockerfile: api.Dockerfile
+      dockerfile: ./Dockerfile
+     
     ports:
-<<<<<<< HEAD
-      - 8080:8080
-=======
-      - 8282:8282
->>>>>>> da314ad1c6e10281faca37c9d9399da9608ca9a5
-   
+      - 8282:8080
+    restart: on-failure
+    
     # we are depending on the mysql backend
     depends_on:
-      - db
+      - fullstack-mysql          
+    networks:
+      - fullstack
+
     # We mount the working dir into the container, handy for development
     # This is what makes the hot reloading work inside of a Docker container
     volumes:
       - .:/app/
-
-networks:
-  default:
+ 
+  fullstack-mysql:
+    image: mysql:5.7
+    container_name: full_db_mysql
+    ports: 
+      - 33066:33066
+    environment: 
+      - MYSQL_ROOT_HOST=fullstack-mysql
+      - MYSQL_USER=steven
+      - MYSQL_PASSWORD=12345678
+      - MYSQL_DATABASE=fullstack_api
+      - MYSQL_ROOT_PASSWORD=12345678
+      
+    volumes:
+      - database_mysql:/var/lib/mysql
+    networks:
+      - fullstack
+  
 volumes:
-  mysql_data:
+  api:
+  #database_postgres_test:
+  database_mysql:
+networks:
+  fullstack:
+    driver: bridge

@@ -34,8 +34,8 @@ func NewDetachmentController() DetachmentController {
 	}
 }
 
-//method:GET
-//api/getAll
+// method:GET
+// api/getAll
 func (c *detachmentController) All(context *gin.Context) {
 
 	claim := middleware.ValidadToken(c.jwt, context)
@@ -43,11 +43,11 @@ func (c *detachmentController) All(context *gin.Context) {
 		c.detachmentService.All(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 
-//method:GET
-//api/getFindById/:id
+// method:GET
+// api/getFindById/:id
 func (c *detachmentController) FindById(context *gin.Context) {
 
 	claim := middleware.ValidadToken(c.jwt, context)
@@ -55,17 +55,17 @@ func (c *detachmentController) FindById(context *gin.Context) {
 		c.detachmentService.FindById(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 
-//method:POST
-//api/setCreate
+// method:POST
+// api/setCreate
 func (c *detachmentController) Create(context *gin.Context) {
 	c.detachmentService.Create(context)
 }
 
-//method:PUT
-//api/setUpdate
+// method:PUT
+// api/setUpdate
 func (c *detachmentController) Update(context *gin.Context) {
 
 	claim := middleware.ValidadToken(c.jwt, context)
@@ -73,7 +73,7 @@ func (c *detachmentController) Update(context *gin.Context) {
 		c.detachmentService.Update(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 
 // method:DELETE
@@ -85,5 +85,5 @@ func (c *detachmentController) Delete(context *gin.Context) {
 		c.detachmentService.Delete(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }

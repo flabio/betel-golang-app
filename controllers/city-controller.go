@@ -26,12 +26,12 @@ func NewCityController() CityController {
 	}
 }
 
-//All is method GET
+// All is method GET
 func (c *cityController) All(context *gin.Context) {
 	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol > 0 {
 		c.city.All(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }

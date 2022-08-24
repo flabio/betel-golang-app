@@ -37,7 +37,7 @@ func NewRolController() RolController {
 	}
 }
 
-//GET /rols
+// GET /rols
 // get list of rol
 func (c *rolController) All(context *gin.Context) {
 	claim := middleware.ValidadToken(c.jwt, context)
@@ -46,10 +46,10 @@ func (c *rolController) All(context *gin.Context) {
 		c.rol.GetAllService(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 
-//GET /rols
+// GET /rols
 // get list of rol
 func (c *rolController) AllGroupRol(context *gin.Context) {
 	claim := middleware.ValidadToken(c.jwt, context)
@@ -57,10 +57,10 @@ func (c *rolController) AllGroupRol(context *gin.Context) {
 		c.rol.GetAllGroupRolService(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 
-//GET /role module
+// GET /role module
 // get list of role module
 func (c *rolController) AllRoleModule(context *gin.Context) {
 	claim := middleware.ValidadToken(c.jwt, context)
@@ -68,7 +68,7 @@ func (c *rolController) AllRoleModule(context *gin.Context) {
 		c.rol.GetAllRoleModuleService(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 
 // get
@@ -79,11 +79,11 @@ func (c *rolController) FindRol(context *gin.Context) {
 		c.rol.GetFindByIdService(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 
 }
 
-//create rol metho post
+// create rol metho post
 func (c *rolController) Create(context *gin.Context) {
 
 	// claim := middleware.ValidadToken(c.jwt, context)
@@ -91,18 +91,18 @@ func (c *rolController) Create(context *gin.Context) {
 	c.rol.SetCreateService(context)
 	// 	return
 	// }
-	// context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest,constantvariables.PERMISSION_DANIED))
+	// context.JSON(http.StatusBadRequest, utilities.BuildErrResponse( constantvariables.PERMISSION_DANIED))
 
 }
 
-//update rol method put
+// update rol method put
 func (c *rolController) Update(context *gin.Context) {
 	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol == 1 {
 		c.rol.SetUpdateService(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 
 }
 
@@ -113,6 +113,6 @@ func (c *rolController) Remove(context *gin.Context) {
 		c.rol.SetRemoveService(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 
 }

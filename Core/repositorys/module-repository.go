@@ -33,6 +33,17 @@ func (db *OpenConnections) SetCreateModule(module entity.Module) (entity.Module,
 }
 
 /*
+@param module, Id,is a struct of Module
+*/
+func (db *OpenConnections) SetUpdateModule(module entity.Module, Id uint) (entity.Module, error) {
+	db.mux.Lock()
+	err := db.connection.Where("id=?", Id).Save(&module).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
+	return module, err
+}
+
+/*
 @param rolemodule, is a struct of RoleModule
 */
 func (db *OpenConnections) SetCreateModuleRole(rolemodule entity.RoleModule) (entity.RoleModule, error) {

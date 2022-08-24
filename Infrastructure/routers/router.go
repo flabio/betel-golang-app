@@ -5,17 +5,15 @@ import (
 	"bete/UseCases/InterfacesService"
 	"bete/UseCases/services"
 	"bete/controllers"
-	"time"
 
 	docs "bete/docs"
 
 	"github.com/gin-gonic/gin"
-	cors "github.com/itsjamie/gin-cors"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-//controller
+// controller
 var (
 	jwtService InterfacesService.IJWTService = services.NewJWTService()
 
@@ -40,17 +38,17 @@ func NewRouter() {
 	r := gin.New()
 	docs.SwaggerInfo_swagger.BasePath = "/api/v1"
 	// Set up CORS middleware options
-	config := cors.Config{
-		Origins:         "*",
-		RequestHeaders:  "Authorization",
-		Methods:         "GET, POST, PUT,DELETE",
-		Credentials:     true,
-		ValidateHeaders: false,
-		MaxAge:          1 * time.Minute,
-	}
+	// config := cors.Config{
+	// 	Origins:         "*",
+	// 	RequestHeaders:  "Authorization",
+	// 	Methods:         "GET, POST, PUT,DELETE",
+	// 	Credentials:     true,
+	// 	ValidateHeaders: false,
+	// 	MaxAge:          1 * time.Minute,
+	// }
 
 	// Apply the middleware to the router (works on groups too)
-	r.Use(cors.Middleware(config))
+	//r.Use(cors.Middleware(config))
 
 	//
 	authRoutes := r.Group("api/v1/login")
@@ -90,7 +88,7 @@ func NewRouter() {
 		attendanceRoutes.GET("/:id", attendanceController.AttendancesSubdetachment)
 		attendanceRoutes.GET("/weeks", attendanceController.WeeksbySubDetachments)
 		attendanceRoutes.POST("/", attendanceController.Create)
-		attendanceRoutes.PUT("/edit", attendanceController.Update)
+		attendanceRoutes.PUT("/:id", attendanceController.Update)
 		attendanceRoutes.DELETE("/:id", attendanceController.Remove)
 	}
 	kanbanRoutes := r.Group("api/v1/kanban", middleware.AuthorizeJWT(jwtService))
@@ -123,7 +121,7 @@ func NewRouter() {
 		churchRoutes.GET("/", churchController.All)
 		churchRoutes.GET("/:id", churchController.FindById)
 		churchRoutes.POST("/", churchController.Create)
-		churchRoutes.PUT("/", churchController.Update)
+		churchRoutes.PUT("/:id", churchController.Update)
 		churchRoutes.DELETE("/:id", churchController.Delete)
 
 	}

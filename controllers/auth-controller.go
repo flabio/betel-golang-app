@@ -14,7 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-//AuthController intreface is a contract what this controller can do
+// AuthController intreface is a contract what this controller can do
 type AuthController interface {
 	Login(ctx *gin.Context)
 	//Register(ctx *gin.Context)
@@ -25,7 +25,7 @@ type authController struct {
 	jwtService  InterfacesService.IJWTService
 }
 
-//NewAuthController creates a new instance of AuthController
+// NewAuthController creates a new instance of AuthController
 func NewAuthController() AuthController {
 	jwtService := services.NewJWTService()
 	authService := services.NewAuthService()
@@ -47,7 +47,7 @@ func (c *authController) Login(ctx *gin.Context) {
 	// 	return
 	// }
 	if len(loginDTO.Email) == 0 || len(loginDTO.Password) == 0 {
-		response := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PASSWORD_EMAIL_INCORRECT)
+		response := utilities.BuildErrResponse(constantvariables.PASSWORD_EMAIL_INCORRECT)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
@@ -56,19 +56,18 @@ func (c *authController) Login(ctx *gin.Context) {
 	if v, ok := authResult.(entity.User); ok {
 
 		if v.Roles == nil {
-			response := utilities.BuildErrResponse(http.StatusUnauthorized, constantvariables.PARMISSION_DENIED)
+			response := utilities.BuildErrResponse(constantvariables.PARMISSION_DENIED)
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 			return
 		}
 
 		generatedToken := c.jwtService.GenerateToken(strconv.FormatUint(uint64(v.Id), 10), strconv.FormatUint(uint64(v.Roles.RolId), 10), strconv.FormatUint(uint64(v.ChurchId), 10))
 		v.Token = generatedToken
-		response := utilities.BuildResponse(http.StatusOK, "OK!", v)
-		ctx.JSON(http.StatusOK, response)
+		ctx.JSON(http.StatusOK, utilities.BuildResponse(v))
 		return
 	}
 
-	response := utilities.BuildErrResponse(http.StatusUnauthorized, constantvariables.AGAIN_CREDENTIAL)
+	response := utilities.BuildErrResponse(constantvariables.AGAIN_CREDENTIAL)
 	ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 }
 

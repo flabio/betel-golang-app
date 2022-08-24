@@ -14,20 +14,19 @@ type cityService struct {
 	ICity Interfaces.ICity
 }
 
-//NewCityService
+// NewCityService
 func NewCityService() InterfacesService.ICityService {
 	return &cityService{
 		ICity: repositorys.GetCityInstance(),
 	}
 }
 
-//All
+// All
 func (cityService *cityService) All(context *gin.Context) {
 	var cities, err = cityService.ICity.GetAllCity()
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, "ok", cities))
+	context.JSON(http.StatusOK, utilities.BuildResponse(cities))
 }

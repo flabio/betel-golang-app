@@ -23,7 +23,7 @@ type VariableSession struct {
 
 var IdUsuario uint
 
-//AuthorizeJWT validates the token suer given, return 401 if not valid
+// AuthorizeJWT validates the token suer given, return 401 if not valid
 func AuthorizeJWT(jwtService InterfacesService.IJWTService) gin.HandlerFunc {
 
 	return func(c *gin.Context) {
@@ -31,20 +31,20 @@ func AuthorizeJWT(jwtService InterfacesService.IJWTService) gin.HandlerFunc {
 		authHeader := c.GetHeader("Authorization")
 
 		if authHeader == "" {
-			response := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.TOKEN_REQUIRED)
+			response := utilities.BuildErrResponse(constantvariables.TOKEN_REQUIRED)
 			c.AbortWithStatusJSON(http.StatusBadRequest, response)
 			return
 		}
 		splitToken := strings.Split(authHeader, " ")
 		if len(splitToken) < 2 {
-			response := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.TOKEN_INVALIDO)
+			response := utilities.BuildErrResponse(constantvariables.TOKEN_INVALIDO)
 			c.AbortWithStatusJSON(http.StatusBadRequest, response)
 			return
 		}
 		var extrToken = splitToken[1]
 
 		if len(splitToken) != 2 {
-			response := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.TOKEN_INVALIDO)
+			response := utilities.BuildErrResponse(constantvariables.TOKEN_INVALIDO)
 			c.AbortWithStatusJSON(http.StatusBadRequest, response)
 			return
 		}
@@ -69,7 +69,7 @@ func AuthorizeJWT(jwtService InterfacesService.IJWTService) gin.HandlerFunc {
 			u.Id = uint(id)
 		} else {
 			if err != nil {
-				response := utilities.BuildErrResponse(http.StatusUnauthorized, constantvariables.TOKEN_NOT_IS_VALIDO)
+				response := utilities.BuildErrResponse(constantvariables.TOKEN_NOT_IS_VALIDO)
 				c.AbortWithStatusJSON(http.StatusUnauthorized, response)
 				return
 			}
@@ -79,18 +79,18 @@ func AuthorizeJWT(jwtService InterfacesService.IJWTService) gin.HandlerFunc {
 	}
 }
 
-//AuthorizeJWT validates the token suer given, return 401 if not valid
+// AuthorizeJWT validates the token suer given, return 401 if not valid
 func ValidadToken(jwtService InterfacesService.IJWTService, context *gin.Context) VariableSession {
 	authHeader := context.GetHeader("Authorization")
 
 	if authHeader == "" {
-		response := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.TOKEN_REQUIRED)
+		response := utilities.BuildErrResponse(constantvariables.TOKEN_REQUIRED)
 		context.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return VariableSession{}
 	}
 	splitToken := strings.Split(authHeader, " ")
 	if len(splitToken) != 2 {
-		response := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.TOKEN_INVALIDO)
+		response := utilities.BuildErrResponse(constantvariables.TOKEN_INVALIDO)
 		context.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return VariableSession{}
 	}

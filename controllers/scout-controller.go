@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-//scoutController is a ....
+// scoutController is a ....
 type ScoutController interface {
 	Create(context *gin.Context)
 	Update(context *gin.Context)
@@ -26,7 +26,7 @@ type scoutController struct {
 	jwt  InterfacesService.IJWTService
 }
 
-//NewscoutController is creating anew instance of UserControlller
+// NewscoutController is creating anew instance of UserControlller
 func NewScoutController() ScoutController {
 	return &scoutController{
 		user: services.NewScoutService(),
@@ -35,17 +35,17 @@ func NewScoutController() ScoutController {
 	}
 }
 
-//create user method post
+// create user method post
 func (c *scoutController) Create(context *gin.Context) {
 	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol > 0 {
 		c.user.Create(claim.Churchid, context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 
-//update user method push
+// update user method push
 func (c *scoutController) Update(context *gin.Context) {
 
 	claim := middleware.ValidadToken(c.jwt, context)
@@ -53,7 +53,7 @@ func (c *scoutController) Update(context *gin.Context) {
 		c.user.Update(claim.Churchid, context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 
 }
 
@@ -64,7 +64,7 @@ func (c *scoutController) ListKingsScouts(context *gin.Context) {
 		c.user.ListKingsScouts(claim.Churchid, context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 
 // //delete user
@@ -75,6 +75,6 @@ func (c *scoutController) ListKingsScouts(context *gin.Context) {
 // 		c.user.Delete(context)
 // 		return
 // 	}
-// 	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest,constantvariables.PERMISSION_DANIED))
+// 	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse( constantvariables.PERMISSION_DANIED))
 
 // }

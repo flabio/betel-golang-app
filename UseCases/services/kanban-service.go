@@ -16,7 +16,7 @@ type kanbanService struct {
 	kanbanR Interfaces.IUser
 }
 
-//NewUserService creates a new instance of UserService
+// NewUserService creates a new instance of UserService
 func NewKanbanService() InterfacesService.IKanbanService {
 	kanban := repositorys.NewUserRepository()
 	return &kanbanService{
@@ -28,32 +28,27 @@ func (kanbanService *kanbanService) GetKanbans(context *gin.Context) {
 
 	navigatores, err := kanbanService.kanbanR.GetListNavigators()
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
 	pioneers, err := kanbanService.kanbanR.GetListPioneers()
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
 	followers, err := kanbanService.kanbanR.GetListFollowersWays()
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
 	scouts, err := kanbanService.kanbanR.GetListScouts()
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
 	commanders, err := kanbanService.kanbanR.GetListCommanders()
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
 

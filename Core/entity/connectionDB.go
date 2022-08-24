@@ -16,37 +16,52 @@ func DatabaseConnection() *gorm.DB {
 		panic("Failed to load env file")
 	}
 	dbUser := os.Getenv("DB_USER")
-	dbPass := os.Getenv("DB_PASS")
+	dbPass := os.Getenv("DB_PASSWORD")
 	dbHost := os.Getenv("DB_HOST")
 	dbName := os.Getenv("DB_NAME")
 	dbPort := os.Getenv("DB_PORT")
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", dbUser, dbPass, dbHost, dbPort, dbName)
+	// dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8",
+	// 	os.Getenv("MYSQL_USER"),
+	// 	os.Getenv("MYSQL_PASSWORD"),
+	// 	os.Getenv("MYSQL_HOST"),
+	// 	os.Getenv("MYSQL_PORT"),
+
+	// 	os.Getenv("MYSQL_DATABASE"),
+	// )
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		dbUser,
+		dbPass,
+		dbHost,
+		dbPort,
+		dbName,
+	)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic("Failed to create a connection to database")
+		fmt.Println(err.Error())
+		panic(err)
 	}
-	// db.AutoMigrate(
-	// 	&User{},
-	// 	&Rol{},
-	// 	&Role{},
-	// 	&Church{},
-	// 	&Detachment{},
-	// 	&SubDetachment{},
-	// 	&Patrol{},
-	// 	&StudyCarried{},
-	// 	&Module{},
-	// 	&RoleModule{},
-	// 	&RoleChurch{},
-	// 	&ParentScout{},
-	// 	&MinisterialAcademy{},
-	// 	&UserSubdetachement{},
-	// 	&Attendance{},
-	// 	&WeeksDetachment{},
-	// 	&City{},
-	// 	&Parent{},
+	db.AutoMigrate(
+		&User{},
+		&Rol{},
+		&Role{},
+		&Church{},
+		&Detachment{},
+		&SubDetachment{},
+		&Patrol{},
+		&StudyCarried{},
+		&Module{},
+		&RoleModule{},
+		&RoleChurch{},
+		//&ParentScout{},
+		&MinisterialAcademy{},
+		&UserSubdetachement{},
+		&Attendance{},
+		&WeeksDetachment{},
+		&City{},
+		&Parent{},
 
-	// 	&Visit{},
-	// )
+		&Visit{},
+	)
 
 	return db
 
@@ -62,7 +77,7 @@ func CloseConnection(db *gorm.DB) {
 
 }
 
-//Closedb
+// Closedb
 func Closedb() {
 	var db *gorm.DB = DatabaseConnection()
 	CloseConnection(db)

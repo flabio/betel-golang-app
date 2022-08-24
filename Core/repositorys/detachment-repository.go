@@ -33,6 +33,14 @@ func (db *OpenConnections) SetCreateDetachment(detachment entity.Detachment) (en
 	return detachment, err
 }
 
+func (db *OpenConnections) SetUpdateDetachment(detachment entity.Detachment, Id uint) (entity.Detachment, error) {
+	db.mux.Lock()
+	err := db.connection.Where("id=?", Id).Save(&detachment).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
+	return detachment, err
+}
+
 /*
 @param detachment,is a struct of Detachment
 */
@@ -58,7 +66,7 @@ func (db *OpenConnections) GetFindDetachmentById(Id uint) (entity.Detachment, er
 func (db *OpenConnections) GetAllDetachment() ([]entity.Detachment, error) {
 	var results []entity.Detachment
 	db.mux.Lock()
-	err := db.connection.Find(&results).Error
+	err := db.connection.Preload("Church").Find(&results).Error
 	defer entity.Closedb()
 	defer db.mux.Unlock()
 	return results, err

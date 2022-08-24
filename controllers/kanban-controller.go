@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-//KanbanController is a ....
+// KanbanController is a ....
 type KanbanController interface {
 	GetKanban(context *gin.Context)
 	CountKanban(context *gin.Context)
@@ -22,7 +22,7 @@ type kanbanController struct {
 	jwt    InterfacesService.IJWTService
 }
 
-//NewKanbanController is creating anew instance of UserControlller
+// NewKanbanController is creating anew instance of UserControlller
 func NewKanbanController() KanbanController {
 
 	return &kanbanController{
@@ -38,7 +38,7 @@ func (c *kanbanController) GetKanban(context *gin.Context) {
 		c.kanban.GetKanbans(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 
 func (c *kanbanController) CountKanban(context *gin.Context) {
@@ -49,5 +49,5 @@ func (c *kanbanController) CountKanban(context *gin.Context) {
 
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }

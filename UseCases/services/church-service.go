@@ -25,116 +25,113 @@ func NewChurchService() InterfacesService.IChurchService {
 	}
 }
 
-//create Service
+// create Service
 func (churchService *churchService) CreateChurchService(context *gin.Context) {
-	church := entity.Church{}
 	var churchDTO dto.ChurchDTO
-
-	errDTO := context.ShouldBind(&churchDTO)
-	if errDTO != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, errDTO.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
-		return
-	}
-
-	err := smapping.FillStruct(&church, smapping.MapFields(&churchDTO))
-	checkError(err)
-
+	church, _ := getMappingChurch(churchDTO, context)
 	data, err := churchService.IChurch.SetCreateChurch(church)
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, errDTO.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_CREATE, data))
+	context.JSON(http.StatusOK, utilities.BuildCreatedResponse(data))
 }
 
-//update church
+// update church
 func (churchService *churchService) UpdateChurch(context *gin.Context) {
-
-	church := entity.Church{}
+	id, err := strconv.Atoi(context.Param("id"))
 	var churchDTO dto.ChurchDTO
-
-	errDTO := context.ShouldBind(&churchDTO)
-	if errDTO != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, errDTO.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
-		return
-	}
-	err := smapping.FillStruct(&church, smapping.MapFields(&churchDTO))
-	checkError(err)
-
-	findById, _ := churchService.IChurch.GetFindChurchById(uint(churchDTO.Id))
-	if findById.Id == 0 {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.GIVEN_ID)
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
-		return
-	}
-	data, err := churchService.IChurch.SetCreateChurch(church)
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_UPDATE, data))
+	if id == 0 {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
+		return
+	}
+	church, err := getMappingChurch(churchDTO, context)
+
+	findById, _ := churchService.IChurch.GetFindChurchById(uint(id))
+	if findById.Id == 0 {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.GIVEN_ID))
+		return
+	}
+	data, err := churchService.IChurch.SetUpdateChurch(church, uint(id))
+	if err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+		return
+	}
+	context.JSON(http.StatusOK, utilities.BuildUpdatedResponse(data))
 }
 
-//find by Id
+// find by Id
 func (churchService *churchService) FindChurchById(context *gin.Context) {
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+		return
+	}
+	if id == 0 {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
 		return
 	}
 	church, err := churchService.IChurch.GetFindChurchById(uint(id))
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	res := utilities.BuildResponse(http.StatusOK, "OK", church)
-	context.JSON(http.StatusOK, res)
+	context.JSON(http.StatusOK, utilities.BuildResponse(church))
 }
 
-//list of chuch
+// list of chuch
 func (churchService *churchService) AllChurch(context *gin.Context) {
 	churchs, err := churchService.IChurch.GetAllChurch()
 	if err != nil {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	results := utilities.BuildResponse(http.StatusOK, "OK!", churchs)
-	context.JSON(http.StatusOK, results)
-
+	context.JSON(http.StatusOK, utilities.BuildResponse(churchs))
 }
 
-//delete church
+// delete church
 func (churchService *churchService) DeleteChurch(context *gin.Context) {
 	var church entity.Church
-	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
+	id, err := strconv.Atoi(context.Param("id"))
 
 	if err != nil {
-		response := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
-		context.JSON(http.StatusBadRequest, response)
+		context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
 		return
 	}
 	findById, _ := churchService.IChurch.GetFindChurchById(uint(id))
 	if findById.Id == 0 {
-		res := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.ID)
-		context.JSON(http.StatusBadRequest, res)
+		context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
 		return
 	}
 	status, err := churchService.IChurch.SetRemoveChurch(findById)
 	if err != nil {
-		response := utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.NOT_DELETED)
+		response := utilities.BuildErrResponse(constantvariables.NOT_DELETED)
 		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 	if status {
-		res := utilities.BuildResponse(http.StatusOK, constantvariables.SUCCESS_IT_WAS_REMOVED, church)
-		context.JSON(http.StatusOK, res)
+		context.JSON(http.StatusOK, utilities.BuildRemovedResponse(church))
+
 	}
 
+}
+
+func getMappingChurch(churchDTO dto.ChurchDTO, context *gin.Context) (entity.Church, error) {
+	var church entity.Church
+	err := context.ShouldBind(&churchDTO)
+	if err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+		return church, err
+	}
+
+	err = smapping.FillStruct(&church, smapping.MapFields(&churchDTO))
+	if err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+		return church, err
+	}
+	return church, nil
 }

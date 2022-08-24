@@ -32,19 +32,19 @@ func NewChurchController() ChurchController {
 	}
 }
 
-//method:GET
-//api/getAll
+// method:GET
+// api/getAll
 func (c *churchController) All(context *gin.Context) {
 	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol > 0 {
 		c.church.AllChurch(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 
-//method:GET
-//api/getFindById/:id
+// method:GET
+// api/getFindById/:id
 func (c *churchController) FindById(context *gin.Context) {
 
 	claim := middleware.ValidadToken(c.jwt, context)
@@ -52,11 +52,11 @@ func (c *churchController) FindById(context *gin.Context) {
 		c.church.FindChurchById(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 
-//method:POST
-//api/setCreate
+// method:POST
+// api/setCreate
 func (c *churchController) Create(context *gin.Context) {
 
 	claim := middleware.ValidadToken(c.jwt, context)
@@ -64,12 +64,12 @@ func (c *churchController) Create(context *gin.Context) {
 		c.church.CreateChurchService(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 
 }
 
-//method:PUT
-//api/setUpdate
+// method:PUT
+// api/setUpdate
 func (c *churchController) Update(context *gin.Context) {
 
 	claim := middleware.ValidadToken(c.jwt, context)
@@ -77,7 +77,7 @@ func (c *churchController) Update(context *gin.Context) {
 		c.church.UpdateChurch(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 
 // method:DELETE
@@ -89,5 +89,5 @@ func (c *churchController) Delete(context *gin.Context) {
 		c.church.DeleteChurch(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }

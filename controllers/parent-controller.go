@@ -31,52 +31,52 @@ func NewParentController() ParentController {
 	}
 }
 
-//All the parent
+// All the parent
 func (c *parentController) All(context *gin.Context) {
 	rol := middleware.ValidadToken(c.jwt, context)
 	if rol.Rol > 0 {
 		c.parent.All(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 
-//All the parent
+// All the parent
 func (c *parentController) AllParentScout(context *gin.Context) {
 	rol := middleware.ValidadToken(c.jwt, context)
 	if rol.Rol > 0 {
 		c.parent.AllParentScout(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 
-//Create parent
+// Create parent
 func (c *parentController) Create(context *gin.Context) {
 	rol := middleware.ValidadToken(c.jwt, context)
 	if rol.Rol > 0 {
 		c.parent.Create(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 
-//Update parent
+// Update parent
 func (c *parentController) Update(context *gin.Context) {
 	rol := middleware.ValidadToken(c.jwt, context)
 	if rol.Rol > 0 {
 		c.parent.Update(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 
-//Remove parent
+// Remove parent
 func (c *parentController) Remove(context *gin.Context) {
 	rol := middleware.ValidadToken(c.jwt, context)
 	if rol.Rol > 0 {
 		c.parent.Remove(context)
 		return
 	}
-	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(http.StatusBadRequest, constantvariables.PERMISSION_DANIED))
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
