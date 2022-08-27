@@ -4,9 +4,7 @@ import "bete/Core/entity"
 
 type IUser interface {
 	SetInsertUser(user entity.User) (entity.User, error)
-	SetEditUser(user entity.User) (entity.User, error)
-	SetInsertRole(role entity.Role) error
-	SetEditRole(role entity.Role) (entity.Role, error)
+	SetEditUser(user entity.User, Id uint) (entity.User, error)
 	SetInsertGroup(group entity.UserSubdetachement) error
 	SetEditGroup(group entity.UserSubdetachement) (entity.UserSubdetachement, error)
 	GetAllUser() ([]entity.User, error)
@@ -19,7 +17,6 @@ type IUser interface {
 	IsDuplicateIdentificatio(identification string) bool
 	GetProfileUser(userId uint) (entity.User, error)
 	SetChangePassword(user entity.User) error
-	SetRemoveRoleUser(id uint) error
 	GetCountUser() int64
 	GetListNavigators() ([]entity.User, error)
 	GetListPioneers() ([]entity.User, error)

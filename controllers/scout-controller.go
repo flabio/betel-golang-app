@@ -22,7 +22,6 @@ type ScoutController interface {
 
 type scoutController struct {
 	user InterfacesService.IScoutService
-	role InterfacesService.IUserRolService
 	jwt  InterfacesService.IJWTService
 }
 
@@ -30,7 +29,6 @@ type scoutController struct {
 func NewScoutController() ScoutController {
 	return &scoutController{
 		user: services.NewScoutService(),
-		role: services.NewUserRolService(),
 		jwt:  services.NewJWTService(),
 	}
 }

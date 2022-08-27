@@ -9,7 +9,6 @@ import (
 	"bete/UseCases/InterfacesService"
 	"bete/UseCases/dto"
 	"bete/UseCases/utilities"
-	"log"
 	"net/http"
 	"strconv"
 	"sync"
@@ -37,8 +36,7 @@ func (userService *userService) GetListUserService(context *gin.Context) {
 	users, err := userService.IUser.GetAllUser()
 
 	if err != nil {
-		res := utilities.BuildErrResponse(err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
 	context.JSON(http.StatusOK, utilities.BuildResponse(users))
@@ -50,15 +48,13 @@ func (userService *userService) GetListKingsScoutsService(context *gin.Context) 
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 
 	if err != nil {
-		res := utilities.BuildErrResponse(err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
 	users, err := userService.IUser.GetListKingsScouts(uint(id))
 
 	if err != nil {
-		res := utilities.BuildErrResponse(err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
 	context.JSON(http.StatusOK, utilities.BuildResponse(users))
@@ -66,193 +62,146 @@ func (userService *userService) GetListKingsScoutsService(context *gin.Context) 
 
 // Create user
 func (userService *userService) SetCreateService(context *gin.Context) {
-	// userChan := make(chan int)
-	userToCreated := entity.User{}
-	roleToCreated := entity.Role{}
-
 	var userDTO dto.UserDTO
 
-	context.ShouldBind(&userDTO)
-
-	if validarUser(userDTO, userService, context, constantvariables.OPTION_CREATE) {
+	user, err := getMappingUser(userDTO, context)
+	if err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-
-	smapping.FillStruct(&userToCreated, smapping.MapFields(&userDTO))
-
-	userToCreated.Password = utilities.HashAndSalt([]byte(userToCreated.Password))
+	user.Password = utilities.HashAndSalt([]byte(user.Password))
 
 	filename, _ := UploadFile(context)
 
-	userToCreated.Image = filename
-	createdUser, errs := userService.IUser.SetInsertUser(userToCreated)
+	user.Image = filename
+	createdUser, errs := userService.IUser.SetInsertUser(user)
 	if errs != nil {
-		res := utilities.BuildErrResponse(errs.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(errs.Error()))
 		return
 	}
-	res := utilities.BuildResponse(createdUser)
-	context.JSON(http.StatusOK, res)
-
-	roleToCreated.RolId = userDTO.RolId
-	roleToCreated.UserId = uint(createdUser.Id)
-
-	err := userService.IUser.SetInsertRole(roleToCreated)
-	if err != nil {
-		log.Println(err)
-		_, err := userService.IUser.SetRemoveUser(uint(createdUser.Id))
-		if err != nil {
-			res := utilities.BuildErrResponse(constantvariables.NOT_DELETED)
-			context.AbortWithStatusJSON(http.StatusBadRequest, res)
-			return
-		}
-		res := utilities.BuildErrResponse(err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
-		return
-	}
-
+	context.JSON(http.StatusCreated, utilities.BuildCreatedResponse(createdUser))
 }
 
 // update user
 func (userService *userService) SetUpdateService(context *gin.Context) {
-	userToCreated := entity.User{}
-	roleToCreated := entity.Role{}
-
+	id, err := strconv.Atoi(context.Param("id"))
 	var userDTO dto.UserDTO
 
-	context.ShouldBind(&userDTO)
-
-	if validarUser(userDTO, userService, context, constantvariables.OPTION_EDIT) {
+	if err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+		return
+	}
+	if id == 0 {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
+		return
+	}
+	user, err := getMappingUser(userDTO, context)
+	if err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
 
-	smapping.FillStruct(&userToCreated, smapping.MapFields(&userDTO))
-
-	roleToCreated.RolId = userDTO.RolId
-	roleToCreated.UserId = userDTO.Id
-
-	wg.Add(1)
-	go goRunitaUpdateRole(userService, roleToCreated)
-	wg.Wait()
-
-	findById, _ := userService.IUser.GetProfileUser(uint(userDTO.Id))
+	findById, _ := userService.IUser.GetProfileUser(uint(id))
 	if findById.Id == 0 {
-		res := utilities.BuildErrResponse(constantvariables.GIVEN_ID)
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.GIVEN_ID))
 		return
 	}
 	filename, err := UploadFile(context)
-
+	if err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+		return
+	}
 	if len(findById.Image) == 0 {
-		userToCreated.Image = filename
+		user.Image = filename
 	} else {
 		if filename != "" {
-			userToCreated.Image = filename
+			user.Image = filename
 		} else {
-			userToCreated.Image = findById.Image
+			user.Image = findById.Image
 		}
 	}
-	u, err := userService.IUser.SetEditUser(userToCreated)
+	u, err := userService.IUser.SetEditUser(user, uint(id))
 
 	if err != nil {
-		res := utilities.BuildErrResponse(err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(u))
-
+	context.JSON(http.StatusCreated, utilities.BuildUpdatedResponse(u))
 }
-func (userService *userService) SetUpdatePasswordService(context *gin.Context) {
-	user := entity.User{}
-	var userDTO dto.UserPasswordDTO
 
-	errDTO := context.ShouldBind(&userDTO)
-	if errDTO != nil {
-		res := utilities.BuildErrResponse(errDTO.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+func (userService *userService) SetUpdatePasswordService(context *gin.Context) {
+	var userDTO dto.UserPasswordDTO
+	user, err := getMappingUserPassword(userDTO, context)
+	if err != nil {
+
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	err := smapping.FillStruct(&user, smapping.MapFields(&userDTO))
-	checkError(err)
-	errp := userService.IUser.SetChangePassword(user)
-	if errp != nil {
-		res := utilities.BuildErrResponse(err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+	err = userService.IUser.SetChangePassword(user)
+	if err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	res := utilities.BuildResponse(nil)
-	context.JSON(http.StatusOK, res)
+	context.JSON(http.StatusCreated, utilities.BuildUpdatedResponse(nil))
 }
 func (userService *userService) SetRemoveService(context *gin.Context) {
-	chanels := make(chan bool)
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 
 	if err != nil {
-		res := utilities.BuildErrResponse(err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
-		return
-	}
-	user, errprofile := userService.IUser.GetProfileUser(uint(id))
-	if errprofile != nil {
-		res := utilities.BuildErrResponse(constantvariables.GIVEN_ID)
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
 
-	go func() {
-		err := userService.IUser.SetRemoveRoleUser(user.Id)
-		if err != nil {
-			chanels <- false
-			return
-		}
-		chanels <- true
-		close(chanels)
-	}()
-	if <-chanels {
-
-		_, err := userService.IUser.SetRemoveUser(user.Id)
-		if err != nil {
-			res := utilities.BuildErrResponse(constantvariables.NOT_DELETED)
-			context.AbortWithStatusJSON(http.StatusBadRequest, res)
-			return
-		}
-		res := utilities.BuildResponse(user)
-		context.JSON(http.StatusOK, res)
+	if id == 0 {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
 		return
 	}
-	res := utilities.BuildNotFoudResponse()
-	context.JSON(http.StatusBadRequest, res)
+	user, err := userService.IUser.GetProfileUser(uint(id))
+	if err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.GIVEN_ID))
+		return
+	}
+
+	ok, err := userService.IUser.SetRemoveUser(user.Id)
+	if err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.NOT_DELETED))
+		return
+	}
+	if ok {
+		context.JSON(http.StatusCreated, utilities.BuildRemovedResponse(user))
+	}
+
 }
 func (userService *userService) GetProfileService(Id uint, context *gin.Context) {
-
-	user, err := userService.IUser.GetProfileUser(Id)
-	if err != nil {
-		res := utilities.BuildErrResponse(err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+	if Id == 0 {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
 		return
 	}
-	res := utilities.BuildResponse(user)
-	context.JSON(http.StatusOK, res)
-
+	user, err := userService.IUser.GetProfileUser(Id)
+	if err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+		return
+	}
+	context.JSON(http.StatusOK, utilities.BuildResponse(user))
 }
 
 func (userService *userService) GetFindUserService(context *gin.Context) {
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 
 	if err != nil {
-		res := utilities.BuildErrResponse(err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+		return
+	}
+	if id == 0 {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
 		return
 	}
 	user, err := userService.IUser.GetProfileUser(uint(id))
 	if err != nil {
-		res := utilities.BuildErrResponse(err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	res := utilities.BuildResponse(user)
-	context.JSON(http.StatusOK, res)
-
+	context.JSON(http.StatusOK, utilities.BuildResponse(user))
 }
 func (userService *userService) GetFindUserNameLastNameService(context *gin.Context) {
 
@@ -261,12 +210,10 @@ func (userService *userService) GetFindUserNameLastNameService(context *gin.Cont
 	users, err := userService.IUser.GetFindUserNameLastName(search)
 
 	if err != nil {
-		res := utilities.BuildErrResponse(err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
 	context.JSON(http.StatusOK, utilities.BuildResponse(users))
-	return
 
 }
 func (userService *userService) GetAllService(context *gin.Context) {
@@ -281,8 +228,7 @@ func (userService *userService) GetAllService(context *gin.Context) {
 	users, err := userService.IUser.GetPaginationUsers(begin, int(limit))
 
 	if err != nil {
-		res := utilities.BuildErrResponse(err.Error())
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
 
@@ -301,129 +247,35 @@ func (userService *userService) GetAllService(context *gin.Context) {
 	})
 }
 
-//method private
-//goRunitaCreateRole
-
-func goRunitaCreateRole(userService *userService, roleToCreated entity.Role) {
-	wg.Done()
-	err := userService.IUser.SetInsertRole(roleToCreated)
+// method private
+// mapping user
+func getMappingUser(userDTO dto.UserDTO, context *gin.Context) (entity.User, error) {
+	user := entity.User{}
+	err := context.ShouldBindJSON(&userDTO)
 	if err != nil {
-		log.Println(err)
-		checkError(err)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+		return user, err
 	}
-}
-
-// goRunitaUpdateRole
-func goRunitaUpdateRole(userService *userService, roleToCreated entity.Role) {
-	wg.Done()
-	role, err := userService.IUser.SetEditRole(roleToCreated)
+	err = smapping.FillStruct(&user, smapping.MapFields(&userDTO))
 	if err != nil {
-		log.Println(err)
-		checkError(err)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+		return user, err
 	}
-
-	if role.Id == 0 {
-		userService.IUser.SetInsertRole(roleToCreated)
-	}
+	return user, nil
 }
 
-// validarUser
-func validarUser(u dto.UserDTO, userService *userService, context *gin.Context, option int) bool {
-	context.ShouldBind(&u)
-	switch option {
-	case 1:
-		existEmail, _ := userService.IUser.IsDuplicateEmail(u.Email)
-		existsIdentification := userService.IUser.IsDuplicateIdentificatio(u.Identification)
-		if existsIdentification {
-			context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.IDENTIFICATION_EXIST))
-			return true
-		}
-		if existEmail {
-			context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.EMAIL_EXIST))
-
-			return true
-		}
-		if validarUserField(u, context) {
-			return true
-		}
-
-	case 2:
-		if u.Id == 0 {
-			context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
-			return true
-		}
-		if validarUserField(u, context) {
-			return true
-		}
+// mapping update password
+func getMappingUserPassword(userDTO dto.UserPasswordDTO, context *gin.Context) (entity.User, error) {
+	user := entity.User{}
+	err := context.ShouldBindJSON(&userDTO)
+	if err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+		return user, err
 	}
-
-	return false
-}
-
-func validarUserField(u dto.UserDTO, context *gin.Context) bool {
-
-	if len(u.Name) == 0 {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.NAME))
-
-		return true
+	err = smapping.FillStruct(&user, smapping.MapFields(&userDTO))
+	if err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+		return user, err
 	}
-	if len(u.LastName) == 0 {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.LAST_NAME))
-
-		return true
-	}
-	if len(u.Identification) == 0 {
-
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.IDENTIFICATION))
-
-		return true
-	}
-
-	if len(u.TypeIdentification) == 0 {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.TYPE_IDENTIFICATION))
-
-		return true
-	}
-	if len(u.Birthplace) == 0 {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.BIRTH_PLACE))
-
-		return true
-	}
-	if len(u.Gender) == 0 {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.GENDER))
-
-		return true
-	}
-	if len(u.CivilStatus) == 0 {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.CIVIL_STATUS))
-
-		return true
-	}
-	if len(u.Email) == 0 {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.EMAIL))
-
-		return true
-	}
-
-	if u.RolId == 0 {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ROL))
-
-		return true
-	}
-
-	if u.ChurchId == 0 {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.CHURCH_ID))
-		return true
-	}
-
-	if u.Password == "" {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PASSWORD))
-		return true
-	}
-	if u.Password != u.ConfirmPassword {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PASSWORD_CONFIRM))
-
-		return true
-	}
-	return false
+	return user, nil
 }

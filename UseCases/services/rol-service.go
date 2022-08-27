@@ -34,6 +34,7 @@ func (rolService *rolService) SetCreateService(context *gin.Context) {
 	var rolDto dto.RolDTO
 	rol, err := getMappingRol(rolDto, context)
 	if err != nil {
+
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
@@ -72,7 +73,7 @@ func (rolService *rolService) SetUpdateService(context *gin.Context) {
 		return
 	}
 
-	data, err := rolService.Irol.SetCreateRol(rol)
+	data, err := rolService.Irol.SetUpdateRol(rol, uint(id))
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
@@ -180,7 +181,7 @@ func (rolService *rolService) GetFindByIdService(context *gin.Context) {
 
 func getMappingRol(rolDto dto.RolDTO, context *gin.Context) (entity.Rol, error) {
 	rol := entity.Rol{}
-	err := context.ShouldBind(&rolDto)
+	err := context.ShouldBindJSON(&rolDto)
 
 	if err != nil {
 		return rol, err

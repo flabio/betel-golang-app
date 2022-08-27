@@ -12,6 +12,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mashingan/smapping"
 )
 
 type parentService struct {
@@ -79,8 +80,15 @@ func (parentService *parentService) Update(context *gin.Context) {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
+	if id == 0 {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
+		return
+	}
 	parent, err := getMappingParent(parentDto, context)
-
+	if err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+		return
+	}
 	existId, _ := parentService.IParent.GetFindParentById(uint(id))
 	if existId.Id == 0 {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
@@ -152,8 +160,16 @@ func (parentService *parentService) Remove(context *gin.Context) {
 	}
 }
 
-func getMappingParent(parentDto dto.ParentDTO, context *gin.Context) (entity.Parent, error) {
+func getMappingParent(dto dto.ParentDTO, context *gin.Context) (entity.Parent, error) {
 	var parent entity.Parent
+	err := context.ShouldBind(&dto)
+	if err != nil {
+		return parent, err
+	}
+	err = smapping.FillStruct(&parent, smapping.MapFields(&dto))
+	if err != nil {
+		return parent, err
+	}
 
 	return parent, nil
 }

@@ -56,9 +56,7 @@ func NewRouter() {
 		authRoutes.POST("/", authController.Login)
 		//authRoutes.POST("/register", authController.Register)
 	}
-	//userRoutes := r.Group("api/user", middleware.AuthorizeJWT(jwtService))
-	//userRoutes := r.Group("api/v1/user", middleware.AuthorizeJWT(jwtService))
-	userRoutes := r.Group("api/v1/user", middleware.AuthorizeJWT(jwtService))
+	userRoutes := r.Group("api/v1/user")
 	{
 		//userRoutes.GET("/", userController.Profile)
 		userRoutes.GET("/", userController.ListUser)
@@ -66,8 +64,8 @@ func NewRouter() {
 		userRoutes.GET("search/:search", userController.FindUserNameLastName)
 		//userRoutes.GET("/users/", userController.All)
 		//userRoutes.GET("/usersroles", userController.UsersRoles)
-		userRoutes.POST("/create", userController.Create)
-		userRoutes.PUT("/edit", userController.Update)
+		userRoutes.POST("/", userController.Create)
+		userRoutes.PUT("/:id", userController.Update)
 		userRoutes.PUT("/update_password", userController.PasswordChange)
 		userRoutes.PUT("/", userController.UpdateProfile)
 		userRoutes.DELETE("/:id", userController.Delete)
@@ -101,8 +99,8 @@ func NewRouter() {
 		rolRoutes.GET("/", rolController.All)
 		rolRoutes.GET("/group", rolController.AllGroupRol)
 		rolRoutes.GET("/rolemodule", rolController.AllRoleModule)
-		rolRoutes.POST("/create", rolController.Create)
-		rolRoutes.PUT("/", rolController.Update)
+		rolRoutes.POST("/", rolController.Create)
+		rolRoutes.PUT("/:id", rolController.Update)
 		rolRoutes.DELETE("/:id", rolController.Remove)
 		rolRoutes.GET("/:id", rolController.FindRol)
 	}

@@ -39,6 +39,17 @@ func (db *subConnection) SetCreateSubDetachment(subdetachment entity.SubDetachme
 }
 
 /*
+@param subdetachment, is a struct of SubDetachment
+*/
+func (db *subConnection) SetUpdateSubDetachment(subdetachment entity.SubDetachment, Id uint) (entity.SubDetachment, error) {
+	db.mux.Lock()
+	err := db.connection.Where("id=?", Id).Save(&subdetachment).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
+	return subdetachment, err
+}
+
+/*
 @param Id, is a uint of SubDetachment
 */
 func (db *subConnection) SetRemoveSubDetachment(Id uint) (bool, error) {
@@ -58,7 +69,7 @@ func (db *subConnection) SetRemoveSubDetachment(Id uint) (bool, error) {
 func (db *subConnection) GetFindByIdSubDetachment(Id uint) (entity.SubDetachment, error) {
 	var subdetachment entity.SubDetachment
 	db.mux.Lock()
-	err := db.connection.Find(&subdetachment, Id).Error
+	err := db.connection.Preload("Detachment").Find(&subdetachment, Id).Error
 	defer entity.Closedb()
 	defer db.mux.Unlock()
 	return subdetachment, err

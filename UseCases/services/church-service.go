@@ -124,13 +124,10 @@ func getMappingChurch(churchDTO dto.ChurchDTO, context *gin.Context) (entity.Chu
 	var church entity.Church
 	err := context.ShouldBind(&churchDTO)
 	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return church, err
 	}
-
 	err = smapping.FillStruct(&church, smapping.MapFields(&churchDTO))
 	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return church, err
 	}
 	return church, nil

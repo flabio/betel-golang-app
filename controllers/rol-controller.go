@@ -6,7 +6,6 @@ import (
 	"bete/UseCases/InterfacesService"
 	"bete/UseCases/services"
 	"bete/UseCases/utilities"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -41,7 +40,6 @@ func NewRolController() RolController {
 // get list of rol
 func (c *rolController) All(context *gin.Context) {
 	claim := middleware.ValidadToken(c.jwt, context)
-	fmt.Println(claim)
 	if claim.Rol == 1 {
 		c.rol.GetAllService(context)
 		return
@@ -86,13 +84,11 @@ func (c *rolController) FindRol(context *gin.Context) {
 // create rol metho post
 func (c *rolController) Create(context *gin.Context) {
 
-	// claim := middleware.ValidadToken(c.jwt, context)
-	// if claim.Rol == 1 {
-	c.rol.SetCreateService(context)
-	// 	return
-	// }
-	// context.JSON(http.StatusBadRequest, utilities.BuildErrResponse( constantvariables.PERMISSION_DANIED))
-
+	claim := middleware.ValidadToken(c.jwt, context)
+	if claim.Rol == 1 {
+		return
+	}
+	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
 }
 
 // update rol method put
@@ -103,7 +99,6 @@ func (c *rolController) Update(context *gin.Context) {
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
-
 }
 
 // delete rol
@@ -114,5 +109,4 @@ func (c *rolController) Remove(context *gin.Context) {
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))
-
 }

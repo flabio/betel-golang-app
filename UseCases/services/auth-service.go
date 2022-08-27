@@ -17,7 +17,7 @@ type authService struct {
 	IUser Interfaces.IUser
 }
 
-//NewauthService creates a new instance of authService
+// NewauthService creates a new instance of authService
 func NewAuthService() InterfacesService.IAuthService {
 
 	return &authService{
@@ -30,14 +30,14 @@ func (authService *authService) VerifyCredential(email string, password string) 
 
 	if v, ok := res.(entity.User); ok {
 		if v.Email == email {
-			return res
+			return v
 		}
-		//comparedPassword := comparePassword(v.Password, []byte(Password))
-		/*if comparedPassword {
-			if v.Email == Email && comparedPassword {
+		comparedPassword := comparePassword(v.Password, []byte(password))
+		if comparedPassword {
+			if v.Email == email && comparedPassword {
 				return res
 			}
-		}*/
+		}
 		return nil
 	}
 	return nil
@@ -45,7 +45,6 @@ func (authService *authService) VerifyCredential(email string, password string) 
 
 /*
 @param User is of type struct
-
 */
 func (authService *authService) CreateUser(User dto.UserDTO) entity.User {
 	userToCreate := entity.User{}
@@ -76,7 +75,7 @@ func (authService *authService) GetIdRol(Id uint) uint {
 
 		return 0
 	}
-	return user.Roles.RolId
+	return user.RolId
 }
 func comparePassword(HashedPwd string, PlainPassword []byte) bool {
 	byteHash := []byte(HashedPwd)

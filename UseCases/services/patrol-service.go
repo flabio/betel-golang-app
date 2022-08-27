@@ -162,31 +162,14 @@ func (patrolService *patrolService) All(context *gin.Context) {
 }
 
 // validate
-func validatePatroCreate(dto dto.PatrolDTO, context *gin.Context) bool {
-	context.ShouldBind(&dto)
-	if len(dto.Name) == 0 {
-		res := utilities.BuildErrResponse(constantvariables.NAME)
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
-		return true
-	}
-	if dto.SubDetachmentId == 0 {
-		res := utilities.BuildErrResponse(constantvariables.ID)
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
-		return true
-	}
-	return false
-}
-
 func getMappingPatrol(dto dto.PatrolDTO, context *gin.Context) (entity.Patrol, error) {
 	patrol := entity.Patrol{}
 	err := context.ShouldBind(&dto)
 	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
 		return patrol, err
 	}
 	err = smapping.FillStruct(&patrol, smapping.MapFields(&dto))
 	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
 		return patrol, err
 	}
 	return patrol, nil

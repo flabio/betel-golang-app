@@ -55,15 +55,27 @@ func (c *authController) Login(ctx *gin.Context) {
 
 	if v, ok := authResult.(entity.User); ok {
 
-		if v.Roles == nil {
+		if v.RolId == 0 {
 			response := utilities.BuildErrResponse(constantvariables.PARMISSION_DENIED)
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 			return
 		}
 
-		generatedToken := c.jwtService.GenerateToken(strconv.FormatUint(uint64(v.Id), 10), strconv.FormatUint(uint64(v.Roles.RolId), 10), strconv.FormatUint(uint64(v.ChurchId), 10))
+		generatedToken := c.jwtService.GenerateToken(strconv.FormatUint(uint64(v.Id), 10), strconv.FormatUint(uint64(v.RolId), 10), strconv.FormatUint(uint64(v.ChurchId), 10))
 		v.Token = generatedToken
-		ctx.JSON(http.StatusOK, utilities.BuildResponse(v))
+		data := dto.UserAuthDTO{
+			Id:         v.Id,
+			Image:      v.Image,
+			Name:       v.Name,
+			LastName:   v.LastName,
+			RolId:      v.RolId,
+			RolName:    v.Rol.Name,
+			ChurchId:   v.ChurchId,
+			ChurchName: v.Church.Name,
+			Active:     v.Active,
+			Token:      v.Token,
+		}
+		ctx.JSON(http.StatusOK, utilities.BuildResponse(data))
 		return
 	}
 

@@ -12,7 +12,6 @@ import (
 	"bete/UseCases/InterfacesService"
 	"bete/UseCases/dto"
 	"bete/UseCases/utilities"
-	"log"
 	"net/http"
 	"sync"
 
@@ -49,17 +48,11 @@ func (scoutService *scoutService) ListKingsScouts(id uint, context *gin.Context)
 
 // Create scout
 func (scoutService *scoutService) Create(ChurchId uint, context *gin.Context) {
-	userChan := make(chan int)
-	option := 0
 
 	userToCreated := entity.User{}
-	roleToCreated := entity.Role{}
-
 	var userDTO dto.ScoutDTO
 
 	userDTO.ChurchId = ChurchId
-
-	context.ShouldBind(&userDTO)
 
 	if len(userDTO.Email) == 0 {
 		userDTO.Email = " "
@@ -67,84 +60,53 @@ func (scoutService *scoutService) Create(ChurchId uint, context *gin.Context) {
 	if validateBirthDayScout(userDTO, scoutService, context) {
 		return
 	}
-	if validarScout(userDTO, scoutService, context, option) {
+	userToCreated, err := getMappingScout(userDTO, context)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
 
-	smapping.FillStruct(&userToCreated, smapping.MapFields(&userDTO))
-
-	go func(userChan chan<- int) {
-
-		filename, _ := UploadFile(context)
-		documentfile, _ := UploadFileDocument(context)
-		userToCreated.Image = filename
-		userToCreated.Identification = documentfile
-		createdUser, errs := scoutService.IUser.SetInsertUser(userToCreated)
-		if errs != nil {
-			res := utilities.BuildErrResponse(errs.Error())
-			context.AbortWithStatusJSON(http.StatusBadRequest, res)
-			return
-		}
-		res := utilities.BuildCreatedResponse(createdUser)
-		context.JSON(http.StatusOK, res)
-		userChan <- int(createdUser.Id)
-		close(userChan)
-	}(userChan)
-
-	select {
-	case user_id := <-userChan:
-
-		roleToCreated.RolId = 29
-		roleToCreated.UserId = uint(user_id)
-
-		err := scoutService.IUser.SetInsertRole(roleToCreated)
-		if err != nil {
-			log.Println(err)
-			_, err := scoutService.IUser.SetRemoveUser(uint(user_id))
-			if err != nil {
-				res := utilities.BuildErrResponse(constantvariables.NOT_DELETED)
-				context.JSON(http.StatusBadRequest, res)
-				return
-			}
-			res := utilities.BuildErrResponse(err.Error())
-			context.JSON(http.StatusBadRequest, res)
-			return
-		}
+	filename, _ := UploadFile(context)
+	documentfile, _ := UploadFileDocument(context)
+	userToCreated.Image = filename
+	userToCreated.Identification = documentfile
+	createdUser, errs := scoutService.IUser.SetInsertUser(userToCreated)
+	if errs != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(errs.Error()))
+		return
 	}
+	context.JSON(http.StatusCreated, utilities.BuildCreatedResponse(createdUser))
+
 }
 
 // update scout
 func (scoutService *scoutService) Update(ChurchId uint, context *gin.Context) {
-	userToCreated := entity.User{}
-	roleToCreated := entity.Role{}
+	id, err := strconv.Atoi(context.Param("id"))
 
 	var userDTO dto.ScoutDTO
 
 	userDTO.ChurchId = ChurchId
-	err := context.ShouldBind(&userDTO)
+
+	if err != nil {
+		context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+		return
+	}
 	if len(userDTO.Email) == 0 {
 		userDTO.Email = " "
 	}
 	if validateBirthDayScout(userDTO, scoutService, context) {
 		return
+
 	}
-	if validarScout(userDTO, scoutService, context, 1) {
+	userToCreated, err := getMappingScout(userDTO, context)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
 
-	smapping.FillStruct(&userToCreated, smapping.MapFields(&userDTO))
-
-	roleToCreated.RolId = 29
-	roleToCreated.UserId = userDTO.Id
-
-	wgs.Add(1)
-	go goRunitaUpdateScoutRole(scoutService, roleToCreated)
-	wgs.Wait()
-
-	findById, _ := scoutService.IUser.GetProfileUser(uint(userDTO.Id))
+	findById, _ := scoutService.IUser.GetProfileUser(uint(id))
 	if findById.Id == 0 {
-		res := utilities.BuildErrResponse(constantvariables.GIVEN_ID)
-		context.AbortWithStatusJSON(http.StatusBadRequest, res)
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.GIVEN_ID))
 		return
 	}
 	filename, err := UploadFile(context)
@@ -171,112 +133,21 @@ func (scoutService *scoutService) Update(ChurchId uint, context *gin.Context) {
 			userToCreated.Identification = findById.Identification
 		}
 	}
-	u, err := scoutService.IUser.SetEditUser(userToCreated)
+	u, err := scoutService.IUser.SetEditUser(userToCreated, uint(id))
 
 	if err != nil {
-		res := utilities.BuildErrResponse(err.Error())
-		context.JSON(http.StatusBadRequest, res)
+		context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	res := utilities.BuildUpdatedResponse(u)
-	context.JSON(http.StatusOK, res)
+
+	context.JSON(http.StatusOK, utilities.BuildUpdatedResponse(u))
 
 }
 
 //method private
-//goRunitaCreateRole
-
-func goRunitaCreateScoutRole(scoutService *scoutService, roleToCreated entity.Role) {
-	wgs.Done()
-	err := scoutService.IUser.SetInsertRole(roleToCreated)
-	if err != nil {
-		log.Println(err)
-		checkError(err)
-		return
-	}
-}
-
-// goRunitaUpdateRole
-func goRunitaUpdateScoutRole(scoutService *scoutService, roleToCreated entity.Role) {
-	wgs.Done()
-	role, err := scoutService.IUser.SetEditRole(roleToCreated)
-	if err != nil {
-		log.Println(err)
-		checkError(err)
-		return
-	}
-
-	if role.Id == 0 {
-		scoutService.IUser.SetInsertRole(roleToCreated)
-	}
-}
 
 // validarUser
-func validarScout(u dto.ScoutDTO, scoutService *scoutService, context *gin.Context, option int) bool {
-	context.ShouldBind(&u)
 
-	if len(u.Name) == 0 {
-		res := utilities.BuildErrResponse(constantvariables.NAME)
-		context.JSON(http.StatusBadRequest, res)
-		return true
-	}
-	if len(u.LastName) == 0 {
-		res := utilities.BuildErrResponse(constantvariables.LAST_NAME)
-		context.JSON(http.StatusBadRequest, res)
-		return true
-	}
-	if len(u.Identification) == 0 {
-
-		res := utilities.BuildErrResponse(constantvariables.IDENTIFICATION)
-		context.JSON(http.StatusBadRequest, res)
-		return true
-	}
-
-	if len(u.TypeIdentification) == 0 {
-		res := utilities.BuildErrResponse(constantvariables.TYPE_IDENTIFICATION)
-		context.JSON(http.StatusBadRequest, res)
-		return true
-	}
-	if len(u.Birthplace) == 0 {
-		res := utilities.BuildErrResponse(constantvariables.BIRTH_PLACE)
-		context.JSON(http.StatusBadRequest, res)
-		return true
-	}
-	if len(u.Gender) == 0 {
-		res := utilities.BuildErrResponse(constantvariables.GENDER)
-		context.JSON(http.StatusBadRequest, res)
-		return true
-	}
-	if u.ChurchId == 0 {
-		res := utilities.BuildErrResponse(constantvariables.CHURCH_ID)
-		context.JSON(http.StatusBadRequest, res)
-		return true
-	}
-	if u.SubDetachmentId == 0 {
-		res := utilities.BuildErrResponse(constantvariables.DETACHMENT_ID)
-		context.JSON(http.StatusBadRequest, res)
-		return true
-	}
-	if option == 1 {
-
-		if u.Id == 0 {
-			res := utilities.BuildErrResponse(constantvariables.ID)
-			context.JSON(http.StatusBadRequest, res)
-			return true
-		}
-	} else {
-
-		existsIdentification := scoutService.IUser.IsDuplicateIdentificatio(u.Identification)
-		if existsIdentification {
-
-			res := utilities.BuildErrResponse(constantvariables.IDENTIFICATION_EXIST)
-			context.JSON(http.StatusBadRequest, res)
-			return true
-		}
-
-	}
-	return false
-}
 func validateBirthDayScout(u dto.ScoutDTO, scoutService *scoutService, context *gin.Context) bool {
 
 	context.ShouldBind(&u)
@@ -317,4 +188,19 @@ func validateBirthDayScout(u dto.ScoutDTO, scoutService *scoutService, context *
 		return false
 	}
 	return false
+}
+
+func getMappingScout(userDTO dto.ScoutDTO, context *gin.Context) (entity.User, error) {
+	user := entity.User{}
+	err := context.ShouldBind(&userDTO)
+	if err != nil {
+		return user, err
+	}
+
+	err = smapping.FillStruct(&user, smapping.MapFields(&userDTO))
+	if err != nil {
+		return user, err
+	}
+	return user, nil
+
 }

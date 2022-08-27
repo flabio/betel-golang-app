@@ -178,16 +178,11 @@ func getMappingDetachment(detachmentDTO dto.DetachmentDTO, context *gin.Context)
 	var detachment entity.Detachment
 	err := context.ShouldBind(&detachmentDTO)
 	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return detachment, err
 	}
-
 	err = smapping.FillStruct(&detachment, smapping.MapFields(&detachmentDTO))
 	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return detachment, err
 	}
-
 	return detachment, nil
-
 }

@@ -30,7 +30,6 @@ type UserController interface {
 
 type userController struct {
 	user InterfacesService.IUserService
-	role InterfacesService.IUserRolService
 	jwt  InterfacesService.IJWTService
 }
 
@@ -38,7 +37,6 @@ type userController struct {
 func NewUserController() UserController {
 	return &userController{
 		user: services.NewUserService(),
-		role: services.NewUserRolService(),
 		jwt:  services.NewJWTService(),
 	}
 }
@@ -47,7 +45,7 @@ func NewUserController() UserController {
 func (c *userController) Create(context *gin.Context) {
 
 	claim := middleware.ValidadToken(c.jwt, context)
-	if claim.Rol == 1 {
+	if claim.Rol == 0 {
 		c.user.SetCreateService(context)
 		return
 	}

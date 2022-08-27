@@ -35,7 +35,8 @@ type User struct {
 	Active              bool                  `gorm:"type:TINYINT" json:"active"`
 	CreatedAt           time.Time             `gorm:"<-:created_at" json:"created_at"`
 	UpdatedAt           *time.Time            `gorm:"type:TIMESTAMP(6)" json:"updated_at"`
-	Roles               *Role                 `json:"rolid,omitempty"`
+	RolId               uint                  `gorm:"NULL" json:"rolid"`
+	Rol                 Rol                   `gorm:"foreignkey:RolId;constraint:onUpdate:CASCADE,onDelete:CASCADE" json:"rol"`
 	UserSubdetachements *UserSubdetachement   `json:"usersubdetachement,omitempty"`
 	MinisterialAcademys *[]MinisterialAcademy `json:"ministerialacademy,omitempty"`
 	ChurchId            uint                  `gorm:"NULL" json:"churchid"`

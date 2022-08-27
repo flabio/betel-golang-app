@@ -34,6 +34,15 @@ func (db *OpenConnections) SetCreateRol(rol entity.Rol) (entity.Rol, error) {
 	return rol, err
 }
 
+func (db *OpenConnections) SetUpdateRol(rol entity.Rol, Id uint) (entity.Rol, error) {
+
+	db.mux.Lock()
+	err := db.connection.Where("id=?", Id).Updates(&rol).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
+	return rol, err
+}
+
 /*
 @param rol, is a struct of Rol
 */

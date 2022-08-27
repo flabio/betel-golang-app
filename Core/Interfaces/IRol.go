@@ -6,6 +6,7 @@ import (
 
 type IRol interface {
 	SetCreateRol(rol entity.Rol) (entity.Rol, error)
+	SetUpdateRol(rol entity.Rol, Id uint) (entity.Rol, error)
 	GetAllRol() ([]entity.Rol, error)
 	GetAllGroupRol() ([]entity.Rol, error)
 	GetRolsModule() ([]entity.RoleModule, error)

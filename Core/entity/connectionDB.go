@@ -40,28 +40,28 @@ func DatabaseConnection() *gorm.DB {
 		fmt.Println(err.Error())
 		panic(err)
 	}
-	db.AutoMigrate(
-		&User{},
-		&Rol{},
-		&Role{},
-		&Church{},
-		&Detachment{},
-		&SubDetachment{},
-		&Patrol{},
-		&StudyCarried{},
-		&Module{},
-		&RoleModule{},
-		&RoleChurch{},
-		//&ParentScout{},
-		&MinisterialAcademy{},
-		&UserSubdetachement{},
-		&Attendance{},
-		&WeeksDetachment{},
-		&City{},
-		&Parent{},
+	// db.AutoMigrate(
+	// 	&User{},
+	// 	&Rol{},
+	// 	&Role{},
+	// 	&Church{},
+	// 	&Detachment{},
+	// 	&SubDetachment{},
+	// 	&Patrol{},
+	// 	&StudyCarried{},
+	// 	&Module{},
+	// 	&RoleModule{},
+	// 	&RoleChurch{},
+	// 	//&ParentScout{},
+	// 	&MinisterialAcademy{},
+	// 	&UserSubdetachement{},
+	// 	&Attendance{},
+	// 	&WeeksDetachment{},
+	// 	&City{},
+	// 	&Parent{},
 
-		&Visit{},
-	)
+	// 	&Visit{},
+	// )
 
 	return db
 

@@ -210,12 +210,10 @@ func getMappingModule(moduledto dto.ModuleDTO, context *gin.Context) (entity.Mod
 	err := context.ShouldBind(&moduledto)
 
 	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return module, err
 	}
 	err = smapping.FillStruct(&module, smapping.MapFields(&moduledto))
 	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return module, err
 	}
 	return module, nil
