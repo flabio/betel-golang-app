@@ -32,14 +32,18 @@ func NewUserService() InterfacesService.IUserService {
 
 // List user
 func (userService *userService) GetListUserService(context *gin.Context) {
-
+	var usersLists []dto.UserListDTO
 	users, err := userService.IUser.GetAllUser()
 
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(users))
+	for _, data := range users {
+		user := getListsUserDto(data)
+		usersLists = append(usersLists, user)
+	}
+	context.JSON(http.StatusOK, utilities.BuildResponse(usersLists))
 }
 
 // list ListKingsScouts
@@ -85,7 +89,7 @@ func (userService *userService) SetCreateService(context *gin.Context) {
 // update user
 func (userService *userService) SetUpdateService(context *gin.Context) {
 	id, err := strconv.Atoi(context.Param("id"))
-	var userDTO dto.UserDTO
+	var userDTO dto.UserUpdateDTO
 
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
@@ -95,7 +99,7 @@ func (userService *userService) SetUpdateService(context *gin.Context) {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
 		return
 	}
-	user, err := getMappingUser(userDTO, context)
+	user, err := getMappingUserUpdate(userDTO, context)
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
@@ -217,6 +221,8 @@ func (userService *userService) GetFindUserNameLastNameService(context *gin.Cont
 
 }
 func (userService *userService) GetAllService(context *gin.Context) {
+	var usersLists []dto.UserListDTO
+
 	total := userService.IUser.GetCountUser()
 	var limit int64 = 9
 	page, begin := utilities.Pagination(context, int(limit))
@@ -231,15 +237,18 @@ func (userService *userService) GetAllService(context *gin.Context) {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-
+	for _, data := range users {
+		user := getListsUserDto(data)
+		usersLists = append(usersLists, user)
+	}
 	context.JSON(http.StatusOK, struct {
-		Data  []entity.User `json:"data"`
-		Total int64         `json:"total"`
-		Page  int           `json:"page"`
-		Pages int64         `json:"pages"`
-		Limit int64         `json:"limit"`
+		Data  []dto.UserListDTO `json:"data"`
+		Total int64             `json:"total"`
+		Page  int               `json:"page"`
+		Pages int64             `json:"pages"`
+		Limit int64             `json:"limit"`
 	}{
-		Data:  users,
+		Data:  usersLists,
 		Total: total,
 		Page:  page,
 		Pages: pages,
@@ -250,6 +259,20 @@ func (userService *userService) GetAllService(context *gin.Context) {
 // method private
 // mapping user
 func getMappingUser(userDTO dto.UserDTO, context *gin.Context) (entity.User, error) {
+	user := entity.User{}
+	err := context.ShouldBindJSON(&userDTO)
+	if err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+		return user, err
+	}
+	err = smapping.FillStruct(&user, smapping.MapFields(&userDTO))
+	if err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+		return user, err
+	}
+	return user, nil
+}
+func getMappingUserUpdate(userDTO dto.UserUpdateDTO, context *gin.Context) (entity.User, error) {
 	user := entity.User{}
 	err := context.ShouldBindJSON(&userDTO)
 	if err != nil {
@@ -278,4 +301,40 @@ func getMappingUserPassword(userDTO dto.UserPasswordDTO, context *gin.Context) (
 		return user, err
 	}
 	return user, nil
+}
+
+func getListsUserDto(data entity.User) dto.UserListDTO {
+	return dto.UserListDTO{
+		Id:                 data.Id,
+		Image:              data.Image,
+		Name:               data.Name,
+		LastName:           data.LastName,
+		Identification:     data.Identification,
+		TypeIdentification: data.TypeIdentification,
+		Birthday:           data.Birthday,
+		Birthplace:         data.Birthplace,
+		Gender:             data.Gender,
+		Rh:                 data.Rh,
+		CivilStatus:        data.CivilStatus,
+		Email:              data.Email,
+		Direction:          data.Direction,
+		CellPhone:          data.CellPhone,
+		PhoneNumber:        data.PhoneNumber,
+		Position:           data.Position,
+		Occupation:         data.Occupation,
+		School:             data.School,
+		Grade:              data.Grade,
+		HobbiesInterests:   data.HobbiesInterests,
+		Allergies:          data.Allergies,
+		BaptismWater:       data.BaptismWater,
+		BaptismSpirit:      data.BaptismSpirit,
+		YearConversion:     data.YearConversion,
+		ChurchName:         data.Church.Name,
+		ChurchId:           data.ChurchId,
+		RolName:            data.Rol.Name,
+		RolId:              data.RolId,
+		CityName:           data.City.Name,
+		CityId:             data.CityId,
+		Active:             data.Active,
+	}
 }

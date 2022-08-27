@@ -137,6 +137,7 @@ func (db *OpenConnections) GetAllUser() ([]entity.User, error) {
 	db.mux.Lock()
 	err := db.connection.Preload("Rol").
 		Preload("Church").
+		Preload("City").
 		Find(&user).Error
 	defer entity.Closedb()
 	defer db.mux.Unlock()
@@ -167,12 +168,6 @@ func (db *OpenConnections) GetProfileUser(userID uint) (entity.User, error) {
 	err := db.connection.Preload("Rol").
 		Preload("Church").
 		Find(&user, userID).Error
-	// err := db.connection.Preload("City").
-	// 	Preload("Roles.Rol").
-	// 	Preload("Roles.StudyCarried").
-	// 	Preload("MinisterialAcademys").
-	// 	Preload("Church").
-	// 	Find(&user, userID).Error
 	defer entity.Closedb()
 	defer db.mux.Unlock()
 	if err == nil {

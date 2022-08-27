@@ -45,7 +45,7 @@ func NewUserController() UserController {
 func (c *userController) Create(context *gin.Context) {
 
 	claim := middleware.ValidadToken(c.jwt, context)
-	if claim.Rol == 0 {
+	if claim.Rol == 1 {
 		c.user.SetCreateService(context)
 		return
 	}
@@ -91,7 +91,7 @@ func (c *userController) ListUser(context *gin.Context) {
 
 	claim := middleware.ValidadToken(c.jwt, context)
 	if claim.Rol == 1 {
-		c.user.GetListUserService(context)
+		c.user.GetAllService(context)
 		return
 	}
 	context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.PERMISSION_DANIED))

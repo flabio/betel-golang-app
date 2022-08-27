@@ -1,36 +1,71 @@
 package dto
 
+import "mime/multipart"
+
 type UserDTO struct {
-	Id                 uint   `json:"id" form:"id"`
-	Image              string `json:"imagen" form:"imagen" `
-	Name               string `json:"name" form:"name" binding:"required,min=3"`
-	Email              string `json:"email" form:"email" binding:"required,email"`
-	LastName           string `json:"last_name" form:"last_name" binding:"required"`
-	Identification     string `json:"identification" form:"identification" binding:"required"`
-	TypeIdentification string `json:"type_identification" form:"type_identification" binding:"required,max=4"`
-	Birthday           string `json:"birthday" form:"birthday" binding:"required"`
-	Birthplace         string `json:"birthplace" form:"birthplace" binding:"required"`
-	Gender             string `json:"gender" form:"gender" binding:"required,max=1"`
-	Rh                 string `json:"rh" form:"rh" binding:"required,max=3"`
-	Direction          string `json:"direction" form:"direction" binding:"required"`
-	PhoneNumber        string `json:"phone_number" binding:"required"`
-	CellPhone          string `json:"cell_phone" form:"cell_phone" `
-	CivilStatus        string `json:"civil_status" form:"civil_status" binding:"required"`
-	Position           string `json:"position" form:"position" binding:"required"`
-	Occupation         string `json:"occupation" form:"occupation" binding:"required"`
-	School             string `json:"school" form:"school" `
-	Grade              string `json:"grade" form:"grade"`
-	HobbiesInterests   string `json:"hobbies_interests" form:"hobbies_interests"`
-	Allergies          string `json:"allergies" form:"allergies"`
-	BaptismWater       bool   `json:"baptism_water" form:"baptism_water" `
-	BaptismSpirit      bool   `json:"baptism_spirit" form:"baptism_spirit" `
-	YearConversion     int64  `json:"year_conversion" form:"year_conversion,numeric" `
-	Active             bool   `json:"active" form:"active" `
-	ChurchId           uint   `json:"churchid" form:"churchid" binding:"required,numeric" `
-	RolId              uint   `json:"rolid" form:"rolid" binding:"required,numeric"`
-	CityId             uint   `json:"cityid" form:"cityid" binding:"required,numeric"`
-	Password           string `json:"password" form:"password" binding:"required,eqfield=ConfirmPassword"`
-	ConfirmPassword    string `json:"confirm_password" form:"confirm_password" binding:"required" `
+	Id                 uint                  `json:"id" form:"id"`
+	Image              string                `json:"imagen" form:"imagen" `
+	Name               string                `json:"name" form:"name" binding:"required,min=3"`
+	Email              string                `json:"email" form:"email" binding:"required,email"`
+	LastName           string                `json:"last_name" form:"last_name" binding:"required"`
+	Identification     string                `json:"identification" form:"identification" binding:"required"`
+	TypeIdentification string                `json:"type_identification" form:"type_identification" binding:"required,max=4"`
+	Birthday           string                `json:"birthday" form:"birthday" binding:"required"`
+	Birthplace         string                `json:"birthplace" form:"birthplace" binding:"required"`
+	Gender             string                `json:"gender" form:"gender" binding:"required,max=1"`
+	Rh                 string                `json:"rh" form:"rh" binding:"required,max=3"`
+	Direction          string                `json:"direction" form:"direction" binding:"required"`
+	PhoneNumber        string                `json:"phone_number" binding:"required"`
+	CellPhone          string                `json:"cell_phone" form:"cell_phone" `
+	CivilStatus        string                `json:"civil_status" form:"civil_status" binding:"required"`
+	Position           string                `json:"position" form:"position" binding:"required"`
+	Occupation         string                `json:"occupation" form:"occupation" binding:"required"`
+	School             string                `json:"school" form:"school" `
+	Grade              string                `json:"grade" form:"grade"`
+	HobbiesInterests   string                `json:"hobbies_interests" form:"hobbies_interests"`
+	Allergies          string                `json:"allergies" form:"allergies"`
+	BaptismWater       bool                  `json:"baptism_water" form:"baptism_water" `
+	BaptismSpirit      bool                  `json:"baptism_spirit" form:"baptism_spirit" `
+	YearConversion     int64                 `json:"year_conversion" form:"year_conversion,numeric" `
+	Active             bool                  `json:"active" form:"active" `
+	ChurchId           uint                  `json:"churchid" form:"churchid" binding:"required,numeric" `
+	RolId              uint                  `json:"rolid" form:"rolid" binding:"required,numeric"`
+	CityId             uint                  `json:"cityid" form:"cityid" binding:"required,numeric"`
+	Password           string                `json:"password" form:"password" binding:"required,eqfield=ConfirmPassword"`
+	ConfirmPassword    string                `json:"confirm_password" form:"confirm_password" binding:"required"`
+	File               *multipart.FileHeader `json:"file" form:"file"`
+}
+
+type UserUpdateDTO struct {
+	Id                 uint                  `json:"id" form:"id"`
+	Image              string                `json:"imagen" form:"imagen" `
+	Name               string                `json:"name" form:"name" binding:"required,min=3"`
+	Email              string                `json:"email" form:"email" binding:"required,email"`
+	LastName           string                `json:"last_name" form:"last_name" binding:"required"`
+	Identification     string                `json:"identification" form:"identification" binding:"required"`
+	TypeIdentification string                `json:"type_identification" form:"type_identification" binding:"required,max=4"`
+	Birthday           string                `json:"birthday" form:"birthday" binding:"required"`
+	Birthplace         string                `json:"birthplace" form:"birthplace" binding:"required"`
+	Gender             string                `json:"gender" form:"gender" binding:"required,max=1"`
+	Rh                 string                `json:"rh" form:"rh" binding:"required,max=3"`
+	Direction          string                `json:"direction" form:"direction" binding:"required"`
+	PhoneNumber        string                `json:"phone_number" binding:"required"`
+	CellPhone          string                `json:"cell_phone" form:"cell_phone" `
+	CivilStatus        string                `json:"civil_status" form:"civil_status" binding:"required"`
+	Position           string                `json:"position" form:"position" binding:"required"`
+	Occupation         string                `json:"occupation" form:"occupation" binding:"required"`
+	School             string                `json:"school" form:"school" `
+	Grade              string                `json:"grade" form:"grade"`
+	HobbiesInterests   string                `json:"hobbies_interests" form:"hobbies_interests"`
+	Allergies          string                `json:"allergies" form:"allergies"`
+	BaptismWater       bool                  `json:"baptism_water" form:"baptism_water" `
+	BaptismSpirit      bool                  `json:"baptism_spirit" form:"baptism_spirit" `
+	YearConversion     int64                 `json:"year_conversion" form:"year_conversion,numeric" `
+	Active             bool                  `json:"active" form:"active" `
+	ChurchId           uint                  `json:"churchid" form:"churchid" binding:"required,numeric" `
+	RolId              uint                  `json:"rolid" form:"rolid" binding:"required,numeric"`
+	CityId             uint                  `json:"cityid" form:"cityid" binding:"required,numeric"`
+	File               *multipart.FileHeader `json:"file" form:"file"`
 }
 
 type ScoutDTO struct {
@@ -81,4 +116,38 @@ type UserAuthDTO struct {
 	RolId      uint   `json:"rolid" form:"rolid"`
 	RolName    string `json:"rol_name" form:"rol_name"`
 	Token      string `json:"token" form:"token"`
+}
+
+type UserListDTO struct {
+	Id                 uint   `json:"id" form:"id"`
+	Image              string `json:"image" form:"image"`
+	Name               string `json:"name" form:"name"`
+	Email              string `json:"email" form:"email"`
+	LastName           string `json:"last_name" form:"last_name" `
+	Identification     string `json:"identification" form:"identification"`
+	TypeIdentification string `json:"type_identification" form:"type_identification" `
+	Birthday           string `json:"birthday" form:"birthday"`
+	Birthplace         string `json:"birthplace" form:"birthplace"`
+	Gender             string `json:"gender" form:"gender"`
+	Rh                 string `json:"rh" form:"rh"`
+	Direction          string `json:"direction" form:"direction"`
+	PhoneNumber        string `json:"phone_number"`
+	CellPhone          string `json:"cell_phone" form:"cell_phone" `
+	CivilStatus        string `json:"civil_status" form:"civil_status"`
+	Position           string `json:"position" form:"position"`
+	Occupation         string `json:"occupation" form:"occupation"`
+	School             string `json:"school" form:"school"`
+	Grade              string `json:"grade" form:"grade"`
+	HobbiesInterests   string `json:"hobbies_interests" form:"hobbies_interests"`
+	Allergies          string `json:"allergies" form:"allergies"`
+	BaptismWater       bool   `json:"baptism_water" form:"baptism_water" `
+	BaptismSpirit      bool   `json:"baptism_spirit" form:"baptism_spirit" `
+	YearConversion     int64  `json:"year_conversion" form:"year_conversion"`
+	Active             bool   `json:"active" form:"active" `
+	ChurchId           uint   `json:"churchid" form:"churchid" `
+	RolId              uint   `json:"rolid" form:"rolid" `
+	CityId             uint   `json:"cityid" form:"cityid"`
+	ChurchName         string `json:"church_name" form:"church_name"`
+	RolName            string `json:"rol_name" form:"rol_name"`
+	CityName           string `json:"city_name" form:"city_name"`
 }
