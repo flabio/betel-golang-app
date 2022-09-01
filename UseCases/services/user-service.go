@@ -73,17 +73,29 @@ func (userService *userService) SetCreateService(context *gin.Context) {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
+	existIdentification := userService.IUser.IsDuplicateIdentification(user.Identification)
+
+	if existIdentification {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.IDENTIFICATION_EXIST))
+		return
+	}
+	existEmail, _ := userService.IUser.IsDuplicateEmail(user.Email)
+	if existEmail {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.EMAIL_EXIST))
+		return
+	}
 	user.Password = utilities.HashAndSalt([]byte(user.Password))
 
 	filename, _ := UploadFile(context)
 
 	user.Image = filename
-	createdUser, errs := userService.IUser.SetInsertUser(user)
+	data, errs := userService.IUser.SetInsertUser(user)
 	if errs != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(errs.Error()))
 		return
 	}
-	context.JSON(http.StatusCreated, utilities.BuildCreatedResponse(createdUser))
+	result := getListsUserDto(data)
+	context.JSON(http.StatusCreated, utilities.BuildCreatedResponse(result))
 }
 
 // update user
@@ -104,33 +116,45 @@ func (userService *userService) SetUpdateService(context *gin.Context) {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
+	existIdentification, _ := userService.IUser.IsDuplicateIdentificationById(user.Identification, uint(id))
 
+	if existIdentification {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.IDENTIFICATION_EXIST))
+		return
+	}
+	existEmail, _ := userService.IUser.IsDuplicateDiifEmailById(user.Email, uint(id))
+	if existEmail {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.EMAIL_EXIST))
+		return
+	}
 	findById, _ := userService.IUser.GetProfileUser(uint(id))
 	if findById.Id == 0 {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.GIVEN_ID))
 		return
 	}
-	filename, err := UploadFile(context)
-	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
-		return
-	}
-	if len(findById.Image) == 0 {
-		user.Image = filename
-	} else {
-		if filename != "" {
-			user.Image = filename
-		} else {
-			user.Image = findById.Image
-		}
-	}
-	u, err := userService.IUser.SetEditUser(user, uint(id))
+
+	// filename, err := UploadFile(context)
+	// if err != nil {
+	// 	context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+	// 	return
+	// }
+	// if len(findById.Image) == 0 {
+	// 	user.Image = filename
+	// } else {
+	// 	if filename != "" {
+	// 		user.Image = filename
+	// 	} else {
+	// 		user.Image = findById.Image
+	// 	}
+	// }
+	data, err := userService.IUser.SetEditUser(user, uint(id))
 
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	context.JSON(http.StatusCreated, utilities.BuildUpdatedResponse(u))
+	result := getListsUserDto(data)
+	context.JSON(http.StatusCreated, utilities.BuildUpdatedResponse(result))
 }
 
 func (userService *userService) SetUpdatePasswordService(context *gin.Context) {
@@ -150,7 +174,6 @@ func (userService *userService) SetUpdatePasswordService(context *gin.Context) {
 }
 func (userService *userService) SetRemoveService(context *gin.Context) {
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
-
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
@@ -172,7 +195,8 @@ func (userService *userService) SetRemoveService(context *gin.Context) {
 		return
 	}
 	if ok {
-		context.JSON(http.StatusCreated, utilities.BuildRemovedResponse(user))
+		result := getListsUserDto(user)
+		context.JSON(http.StatusCreated, utilities.BuildRemovedResponse(result))
 	}
 
 }
@@ -191,7 +215,6 @@ func (userService *userService) GetProfileService(Id uint, context *gin.Context)
 
 func (userService *userService) GetFindUserService(context *gin.Context) {
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
-
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
@@ -200,24 +223,27 @@ func (userService *userService) GetFindUserService(context *gin.Context) {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
 		return
 	}
-	user, err := userService.IUser.GetProfileUser(uint(id))
+	data, err := userService.IUser.GetProfileUser(uint(id))
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
+	user := getListsUserDto(data)
 	context.JSON(http.StatusOK, utilities.BuildResponse(user))
 }
 func (userService *userService) GetFindUserNameLastNameService(context *gin.Context) {
-
+	var listUsrs []dto.UserListDTO
 	search := context.Param("search")
-
-	users, err := userService.IUser.GetFindUserNameLastName(search)
-
+	data, err := userService.IUser.GetFindUserNameLastName(search)
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildResponse(users))
+	for _, item := range data {
+		user := getListsUserDto(item)
+		listUsrs = append(listUsrs, user)
+	}
+	context.JSON(http.StatusOK, utilities.BuildResponse(listUsrs))
 
 }
 func (userService *userService) GetAllService(context *gin.Context) {
@@ -232,7 +258,6 @@ func (userService *userService) GetAllService(context *gin.Context) {
 	}
 
 	users, err := userService.IUser.GetPaginationUsers(begin, int(limit))
-
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return

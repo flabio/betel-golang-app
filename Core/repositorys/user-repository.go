@@ -4,6 +4,7 @@ import (
 	"bete/Core/Interfaces"
 	"bete/Core/entity"
 	constantvariables "bete/Infrastructure/constantVariables"
+	"fmt"
 	"sync"
 )
 
@@ -39,7 +40,7 @@ func (db *OpenConnections) SetInsertUser(user entity.User) (entity.User, error) 
 */
 func (db *OpenConnections) SetEditUser(user entity.User, Id uint) (entity.User, error) {
 	db.mux.Lock()
-	err := db.connection.Where("id=?", Id).Save(&user).Error
+	err := db.connection.Where("id=?", Id).Updates(&user).Error
 	defer entity.Closedb()
 	defer db.mux.Unlock()
 	return user, err
@@ -103,10 +104,23 @@ func (db *OpenConnections) IsDuplicateEmail(email string) (bool, error) {
 	return false, err
 }
 
+func (db *OpenConnections) IsDuplicateDiifEmailById(email string, Id uint) (bool, error) {
+	var user entity.User
+	db.mux.Lock()
+	err := db.connection.Where("email = ?", email).Where("id=!", Id).Take(&user).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
+
+	if err == nil {
+		return true, err
+	}
+	return false, err
+}
+
 /*
 @param identification, is a string of user
 */
-func (db *OpenConnections) IsDuplicateIdentificatio(identification string) bool {
+func (db *OpenConnections) IsDuplicateIdentification(identification string) bool {
 	var user entity.User
 	db.mux.Lock()
 	err := db.connection.Where("identification = ?", identification).Take(&user).Error
@@ -116,6 +130,25 @@ func (db *OpenConnections) IsDuplicateIdentificatio(identification string) bool 
 		return true
 	}
 	return false
+}
+
+/*
+@param identification, is a string of user
+*/
+func (db *OpenConnections) IsDuplicateIdentificationById(identification string, Id uint) (bool, error) {
+	var user entity.User
+	db.mux.Lock()
+	err := db.connection.
+		Where("identification = ?", identification).
+		Where("id != ?", Id).
+		Take(&user).Error
+	defer entity.Closedb()
+	defer db.mux.Unlock()
+	if err == nil {
+		fmt.Println("ok-true")
+		return true, err
+	}
+	return false, err
 }
 
 /*
@@ -167,6 +200,7 @@ func (db *OpenConnections) GetProfileUser(userID uint) (entity.User, error) {
 	db.mux.Lock()
 	err := db.connection.Preload("Rol").
 		Preload("Church").
+		Preload("City").
 		Find(&user, userID).Error
 	defer entity.Closedb()
 	defer db.mux.Unlock()
@@ -381,6 +415,7 @@ func (db *OpenConnections) GetFindUserNameLastName(data string) ([]entity.User, 
 	db.mux.Lock()
 	err := db.connection.Preload("Rol").
 		Preload("Church").
+		Preload("City").
 		Where("concat(name,' ',last_name) LIKE ?", "%"+string(data)+"%").
 		Find(&user).Error
 	defer entity.Closedb()

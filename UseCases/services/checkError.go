@@ -11,7 +11,6 @@ func checkError(Err error) bool {
 	if Err != nil {
 		log.Fatalf("Failed map %v", Err)
 		return false
-
 	}
 	return true
 }

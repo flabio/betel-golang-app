@@ -29,9 +29,9 @@ func NewModuleService() InterfacesService.IModuleService {
 // create module
 func (moduleService *moduleService) CreateModule(context *gin.Context) {
 	var moduledto dto.ModuleDTO
-	module, err := getMappingModule(moduledto, context)
-	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+	module, msg := getMappingModule(moduledto, context)
+	if msg != "" {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(msg))
 		return
 	}
 
@@ -54,9 +54,9 @@ func (moduleService *moduleService) UpdateModule(context *gin.Context) {
 		return
 	}
 
-	module, err := getMappingModule(moduledto, context)
-	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+	module, msg := getMappingModule(moduledto, context)
+	if msg != "" {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(msg))
 		return
 	}
 	//	77506216
@@ -189,32 +189,33 @@ func (moduleService *moduleService) DeleteRoleModule(context *gin.Context) {
 		context.JSON(http.StatusOK, utilities.BuildRemovedResponse(module))
 	}
 }
-func getMappingModuleRole(moduledto dto.ModuleRoleDTO, context *gin.Context) (entity.RoleModule, error) {
+func getMappingModuleRole(moduledto dto.ModuleRoleDTO, context *gin.Context) (entity.RoleModule, string) {
 	module := entity.RoleModule{}
 	err := context.ShouldBind(&moduledto)
 
 	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
-		return module, err
+
+		msgError := utilities.GetMsgErrorRequired(err)
+		return module, msgError
 	}
 	err = smapping.FillStruct(&module, smapping.MapFields(&moduledto))
 	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
-		return module, err
+		return module, err.Error()
 	}
-	return module, nil
+	return module, ""
 }
 
-func getMappingModule(moduledto dto.ModuleDTO, context *gin.Context) (entity.Module, error) {
+func getMappingModule(moduledto dto.ModuleDTO, context *gin.Context) (entity.Module, string) {
 	module := entity.Module{}
 	err := context.ShouldBind(&moduledto)
 
 	if err != nil {
-		return module, err
+		msgError := utilities.GetMsgErrorRequired(err)
+		return module, msgError
 	}
 	err = smapping.FillStruct(&module, smapping.MapFields(&moduledto))
 	if err != nil {
-		return module, err
+		return module, err.Error()
 	}
-	return module, nil
+	return module, ""
 }

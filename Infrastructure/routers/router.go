@@ -56,14 +56,11 @@ func NewRouter() {
 		authRoutes.POST("/", authController.Login)
 		//authRoutes.POST("/register", authController.Register)
 	}
-	userRoutes := r.Group("api/v1/user")
+	userRoutes := r.Group("api/v1/user", middleware.AuthorizeJWT(jwtService))
 	{
-		//userRoutes.GET("/", userController.Profile)
 		userRoutes.GET("/", userController.ListUser)
 		userRoutes.GET("/:id", userController.FindUser)
 		userRoutes.GET("search/:search", userController.FindUserNameLastName)
-		//userRoutes.GET("/users/", userController.All)
-		//userRoutes.GET("/usersroles", userController.UsersRoles)
 		userRoutes.POST("/", userController.Create)
 		userRoutes.PUT("/:id", userController.Update)
 		userRoutes.PUT("/update_password", userController.PasswordChange)
@@ -110,7 +107,7 @@ func NewRouter() {
 		detachmentRoutes.GET("/", detachmentController.All)
 		detachmentRoutes.GET("/:id", detachmentController.FindById)
 		detachmentRoutes.POST("/", detachmentController.Create)
-		detachmentRoutes.PUT("/", detachmentController.Update)
+		detachmentRoutes.PUT("/:id", detachmentController.Update)
 		detachmentRoutes.DELETE("/:id", detachmentController.Delete)
 
 	}

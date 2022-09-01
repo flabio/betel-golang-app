@@ -33,16 +33,16 @@ func NewParentService() InterfacesService.IParentService {
 func (parentService *parentService) Create(context *gin.Context) {
 	id, err := strconv.ParseInt(context.Param("id"), 0, 0)
 	parentScout := entity.ParentScout{}
-	var parentDto dto.ParentDTO
+	var parentDto dto.ParentRequest
 
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	parent, err := getMappingParent(parentDto, context)
+	parent, msg := getMappingParent(parentDto, context)
 
-	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+	if msg != "" {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(msg))
 		return
 	}
 	existParent, err := parentService.IParent.GetFindParentByIdentification(parent.Identification)
@@ -74,7 +74,7 @@ func (parentService *parentService) Create(context *gin.Context) {
 
 // update
 func (parentService *parentService) Update(context *gin.Context) {
-	var parentDto dto.ParentDTO
+	var parentDto dto.ParentRequest
 	id, err := strconv.ParseInt(context.Param("id"), 0, 0)
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
@@ -84,9 +84,9 @@ func (parentService *parentService) Update(context *gin.Context) {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
 		return
 	}
-	parent, err := getMappingParent(parentDto, context)
-	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+	parent, msg := getMappingParent(parentDto, context)
+	if msg != "" {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(msg))
 		return
 	}
 	existId, _ := parentService.IParent.GetFindParentById(uint(id))
@@ -160,16 +160,16 @@ func (parentService *parentService) Remove(context *gin.Context) {
 	}
 }
 
-func getMappingParent(dto dto.ParentDTO, context *gin.Context) (entity.Parent, error) {
+func getMappingParent(dto dto.ParentRequest, context *gin.Context) (entity.Parent, string) {
 	var parent entity.Parent
 	err := context.ShouldBind(&dto)
 	if err != nil {
-		return parent, err
+		msgError := utilities.GetMsgErrorRequired(err)
+		return parent, msgError
 	}
 	err = smapping.FillStruct(&parent, smapping.MapFields(&dto))
 	if err != nil {
-		return parent, err
+		return parent, err.Error()
 	}
-
-	return parent, nil
+	return parent, ""
 }

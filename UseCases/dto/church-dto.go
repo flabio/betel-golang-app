@@ -1,6 +1,6 @@
 package dto
 
-type ChurchDTO struct {
+type ChurchRequest struct {
 	Id          uint   `json:"id" form:"id" `
 	Name        string `json:"name" form:"name" binding:"required"`
 	Direction   string `json:"direction" form:"direction" binding:"required"`

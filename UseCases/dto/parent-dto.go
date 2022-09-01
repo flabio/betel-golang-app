@@ -1,6 +1,6 @@
 package dto
 
-type ParentDTO struct {
+type ParentRequest struct {
 	Id                 uint   `json:"id" form:"id"`
 	FullName           string `json:"full_name" form:"full_name"`
 	Identification     string `json:"identification" form:"identification"`

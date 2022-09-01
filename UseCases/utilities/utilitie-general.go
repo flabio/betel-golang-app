@@ -1,8 +1,10 @@
 package utilities
 
 import (
+	"errors"
 	"log"
 
+	"github.com/go-playground/validator/v10"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -20,4 +22,15 @@ func checkError(err error) bool {
 
 	}
 	return true
+}
+
+func GetMsgErrorRequired(err error) string {
+	var verr validator.ValidationErrors
+	e := errors.As(err, &verr)
+	if e {
+		for _, f := range verr {
+			return f.Field() + " is " + f.Tag()
+		}
+	}
+	return err.Error()
 }

@@ -8,4 +8,5 @@ type IDetachment interface {
 	SetRemoveDetachment(detachment entity.Detachment) (entity.Detachment, error)
 	GetFindDetachmentById(Id uint) (entity.Detachment, error)
 	GetAllDetachment() ([]entity.Detachment, error)
+	IsDuplicateNumber(Number uint8) (bool, error)
 }

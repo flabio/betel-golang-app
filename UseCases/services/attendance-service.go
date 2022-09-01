@@ -55,9 +55,9 @@ func (attendanceService *attendanceService) CreateAttendanceService(sub_detachme
 	var attendanceDTO dto.AttendanceDTO
 	attendanceDTO.SubDetachmentId = uint(sub_detachment_id)
 
-	attendance, err := getMappingAttendance(attendanceDTO, sub_detachment_id, context)
-	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+	attendance, msg := getMappingAttendance(attendanceDTO, sub_detachment_id, context)
+	if msg != "" {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(msg))
 		return
 	}
 	existWeek, _ := attendanceService.IAttendance.GetFindByIdWeeksDetachment(attendanceDTO.WeekSubDetachment, attendanceDTO.UserId)
@@ -83,9 +83,9 @@ func (attendanceService *attendanceService) UpdateAttendanceService(context *gin
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	attendance, err := getMappingAttendance(attendanceDTO, attendanceDTO.SubDetachmentId, context)
-	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+	attendance, msg := getMappingAttendance(attendanceDTO, attendanceDTO.SubDetachmentId, context)
+	if msg != "" {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(msg))
 		return
 	}
 	attendanceById, _ := attendanceService.IAttendance.GetFindByIdAttendance(uint(id))
@@ -124,16 +124,19 @@ func (attendanceService *attendanceService) RemoveAttendanceService(context *gin
 	context.JSON(http.StatusOK, utilities.BuildRemovedResponse(data))
 }
 
-func getMappingAttendance(attendanceDTO dto.AttendanceDTO, sub_detachment_id uint, context *gin.Context) (entity.Attendance, error) {
+func getMappingAttendance(attendanceDTO dto.AttendanceDTO, sub_detachment_id uint, context *gin.Context) (entity.Attendance, string) {
 	var attendance entity.Attendance
 	err := context.ShouldBind(&attendanceDTO)
 	if err != nil {
-		return attendance, err
+		msgErros := utilities.GetMsgErrorRequired(err)
+		return attendance, msgErros
 	}
 	attendanceDTO.SubDetachmentId = sub_detachment_id
 
-	smapping.FillStruct(&attendance, smapping.MapFields(&attendanceDTO))
-
-	return attendance, nil
+	err = smapping.FillStruct(&attendance, smapping.MapFields(&attendanceDTO))
+	if err != nil {
+		return attendance, err.Error()
+	}
+	return attendance, ""
 
 }
