@@ -27,8 +27,12 @@ func NewChurchService() InterfacesService.IChurchService {
 
 // create Service
 func (churchService *churchService) CreateChurchService(context *gin.Context) {
-	var churchDTO dto.ChurchDTO
-	church, _ := getMappingChurch(churchDTO, context)
+	var churchDTO dto.ChurchRequest
+	church, msg := getMappingChurch(churchDTO, context)
+	if msg != "" {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(msg))
+		return
+	}
 	data, err := churchService.IChurch.SetCreateChurch(church)
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
@@ -40,7 +44,7 @@ func (churchService *churchService) CreateChurchService(context *gin.Context) {
 // update church
 func (churchService *churchService) UpdateChurch(context *gin.Context) {
 	id, err := strconv.Atoi(context.Param("id"))
-	var churchDTO dto.ChurchDTO
+	var churchDTO dto.ChurchRequest
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
@@ -49,8 +53,11 @@ func (churchService *churchService) UpdateChurch(context *gin.Context) {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
 		return
 	}
-	church, err := getMappingChurch(churchDTO, context)
-
+	church, msg := getMappingChurch(churchDTO, context)
+	if msg != "" {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(msg))
+		return
+	}
 	findById, _ := churchService.IChurch.GetFindChurchById(uint(id))
 	if findById.Id == 0 {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.GIVEN_ID))
@@ -115,20 +122,19 @@ func (churchService *churchService) DeleteChurch(context *gin.Context) {
 	}
 	if status {
 		context.JSON(http.StatusOK, utilities.BuildRemovedResponse(church))
-
 	}
-
 }
 
-func getMappingChurch(churchDTO dto.ChurchDTO, context *gin.Context) (entity.Church, error) {
+func getMappingChurch(churchDTO dto.ChurchRequest, context *gin.Context) (entity.Church, string) {
 	var church entity.Church
 	err := context.ShouldBind(&churchDTO)
 	if err != nil {
-		return church, err
+		msgErros := utilities.GetMsgErrorRequired(err)
+		return church, msgErros
 	}
 	err = smapping.FillStruct(&church, smapping.MapFields(&churchDTO))
 	if err != nil {
-		return church, err
+		return church, err.Error()
 	}
-	return church, nil
+	return church, ""
 }

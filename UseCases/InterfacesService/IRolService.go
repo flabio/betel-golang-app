@@ -10,4 +10,9 @@ type IRolService interface {
 	GetAllService(context *gin.Context)
 	GetAllGroupRolService(context *gin.Context)
 	GetAllRoleModuleService(context *gin.Context)
+	//Build() (*RolRepresented, error)
+}
+
+type IRolServiceTest interface {
+	GetAllService(context *gin.Context)
 }

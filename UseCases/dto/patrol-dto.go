@@ -9,7 +9,7 @@ type PatrolDTO struct {
 	Active          bool   `json:"active" form:"active"`
 }
 
-type PatrolListDTO struct {
+type PatrolResponse struct {
 	Id                uint   `json:"id"  `
 	Name              string `json:"name"`
 	Url               string `json:"url" `

@@ -35,7 +35,7 @@ func (db *OpenConnections) SetCreateDetachment(detachment entity.Detachment) (en
 
 func (db *OpenConnections) SetUpdateDetachment(detachment entity.Detachment, Id uint) (entity.Detachment, error) {
 	db.mux.Lock()
-	err := db.connection.Where("id=?", Id).Save(&detachment).Error
+	err := db.connection.Where("id=?", Id).Updates(&detachment).Error
 	defer entity.Closedb()
 	defer db.mux.Unlock()
 	return detachment, err
@@ -58,7 +58,7 @@ func (db *OpenConnections) SetRemoveDetachment(detachment entity.Detachment) (en
 func (db *OpenConnections) GetFindDetachmentById(Id uint) (entity.Detachment, error) {
 	var result entity.Detachment
 	db.mux.Lock()
-	err := db.connection.Find(&result, Id).Error
+	err := db.connection.Preload("Church").Find(&result, Id).Error
 	defer entity.Closedb()
 	defer db.mux.Unlock()
 	return result, err
@@ -70,4 +70,17 @@ func (db *OpenConnections) GetAllDetachment() ([]entity.Detachment, error) {
 	defer entity.Closedb()
 	defer db.mux.Unlock()
 	return results, err
+}
+
+func (db *OpenConnections) IsDuplicateNumber(Number uint8) (bool, error) {
+	var result entity.Detachment
+	db.mux.Lock()
+	err := db.connection.Where("number=?", Number).Take(&result).Error
+
+	defer entity.Closedb()
+	defer db.mux.Unlock()
+	if err == nil {
+		return true, err
+	}
+	return false, err
 }

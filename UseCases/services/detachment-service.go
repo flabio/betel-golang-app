@@ -12,6 +12,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/mashingan/smapping"
 )
 
@@ -19,56 +20,59 @@ type detachmentService struct {
 	IDetachment Interfaces.IDetachment
 }
 
-// NewDetachmentService creates a new instance of RolService
+// Newv creates a new instance of RolService
 func NewDetachmentService() InterfacesService.IDetachmentService {
 	return &detachmentService{
 		IDetachment: repositorys.GetDetachmentInstance(),
 	}
 }
 
-func (detachmentService *detachmentService) Create(context *gin.Context) {
-	var detachmentDTO dto.DetachmentDTO
-	detachment, err := getMappingDetachment(detachmentDTO, context)
+func (v *detachmentService) Create(context *gin.Context) {
+	var detachmentDTO dto.DetachmentRequest
+	detachment, msg := getMappingDetachment(detachmentDTO, context)
+	if msg != "" {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(msg))
+		return
+	}
+	//filename, err := UploadFile(context)
+	// if err != nil {
+	// 	context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+	// 	return
+	// }
+	//detachment.Archives = filename
+	isExistNumber, _ := v.IDetachment.IsDuplicateNumber(detachment.Number)
+	if isExistNumber {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.EXIST_NUMBER))
+		return
+	}
+	data, err := v.IDetachment.SetCreateDetachment(detachment)
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	filename, err := UploadFile(context)
-	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
-		return
-	}
-	detachment.Archives = filename
-
-	data, err := detachmentService.IDetachment.SetCreateDetachment(detachment)
-	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
-		return
-	}
-	context.JSON(http.StatusOK, utilities.BuildCreatedResponse(data))
-
+	context.JSON(http.StatusOK, utilities.BuildCreatedResponse(detachmentResponse(data)))
 }
-func (detachmentService *detachmentService) Update(context *gin.Context) {
+func (v *detachmentService) Update(context *gin.Context) {
 
-	var detachmentDTO dto.DetachmentDTO
+	var detachmentDTO dto.DetachmentRequest
 	id, err := strconv.Atoi(context.Param("id"))
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	detachment, err := getMappingDetachment(detachmentDTO, context)
-	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+	detachment, msg := getMappingDetachment(detachmentDTO, context)
+	if msg != "" {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(msg))
 		return
 	}
-	findId, err := detachmentService.IDetachment.GetFindDetachmentById(uint(id))
+	findId, err := v.IDetachment.GetFindDetachmentById(uint(id))
 
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
 	if findId.Id == 0 {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.GIVEN_ID))
 		return
 	}
 	filename, _ := UploadFile(context)
@@ -83,43 +87,41 @@ func (detachmentService *detachmentService) Update(context *gin.Context) {
 			detachment.Archives = findId.Archives
 		}
 	}
-	data, err := detachmentService.IDetachment.SetUpdateDetachment(detachment, uint(id))
+	data, err := v.IDetachment.SetUpdateDetachment(detachment, uint(id))
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildUpdatedResponse(data))
+	context.JSON(http.StatusOK, utilities.BuildUpdatedResponse(detachmentResponse(data)))
 }
 
 // Service of delete detachment
-func (detachmentService *detachmentService) Delete(context *gin.Context) {
+func (v *detachmentService) Delete(context *gin.Context) {
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
 		return
 	}
-	findId, err := detachmentService.IDetachment.GetFindDetachmentById(uint(id))
+	findId, err := v.IDetachment.GetFindDetachmentById(uint(id))
 
 	if findId.Id == 0 {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.GIVEN_ID))
 		return
 	}
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-
-	detachment, err := detachmentService.IDetachment.SetRemoveDetachment(findId)
+	detachment, err := v.IDetachment.SetRemoveDetachment(findId)
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	context.JSON(http.StatusOK, utilities.BuildRemovedResponse(detachment))
+	context.JSON(http.StatusOK, utilities.BuildRemovedResponse(detachmentResponse(detachment)))
 }
 
 // search by Id derachment
-func (detachmentService *detachmentService) FindById(context *gin.Context) {
-	var listDetament []dto.DetachmentListDTO
+func (v *detachmentService) FindById(context *gin.Context) {
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
@@ -129,60 +131,57 @@ func (detachmentService *detachmentService) FindById(context *gin.Context) {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
 		return
 	}
-	detachment, err := detachmentService.IDetachment.GetFindDetachmentById(uint(id))
+	data, err := v.IDetachment.GetFindDetachmentById(uint(id))
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
-	result := dto.DetachmentListDTO{
-		Id:         detachment.Id,
-		Name:       detachment.Name,
-		Archives:   detachment.Archives,
-		Number:     detachment.Number,
-		Section:    detachment.Section,
-		District:   detachment.District,
-		Active:     detachment.Active,
-		ChurchName: detachment.Church.Name,
-		ChurchId:   detachment.ChurchId,
+	if data.Id == 0 {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.GIVEN_ID))
+		return
 	}
-	listDetament = append(listDetament, result)
-	context.JSON(http.StatusOK, utilities.BuildResponse(result))
+	context.JSON(http.StatusOK, utilities.BuildResponse(detachmentResponse(data)))
 }
 
 // all od detachment
-func (detachmentService *detachmentService) All(context *gin.Context) {
-	var listDetament []dto.DetachmentListDTO
-	detachment, err := detachmentService.IDetachment.GetAllDetachment()
+func (v *detachmentService) All(context *gin.Context) {
+	var listDetament []dto.DetachmentResponse
+	detachment, err := v.IDetachment.GetAllDetachment()
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
 	for _, data := range detachment {
-		result := dto.DetachmentListDTO{
-			Id:         data.Id,
-			Name:       data.Name,
-			Archives:   data.Archives,
-			Number:     data.Number,
-			Section:    data.Section,
-			District:   data.District,
-			Active:     data.Active,
-			ChurchName: data.Church.Name,
-			ChurchId:   data.ChurchId,
-		}
-		listDetament = append(listDetament, result)
+		listDetament = append(listDetament, detachmentResponse(data))
 	}
 	context.JSON(http.StatusOK, utilities.BuildResponse(listDetament))
 }
 
-func getMappingDetachment(detachmentDTO dto.DetachmentDTO, context *gin.Context) (entity.Detachment, error) {
+func getMappingDetachment(detachmentDTO dto.DetachmentRequest, context *gin.Context) (entity.Detachment, string) {
 	var detachment entity.Detachment
-	err := context.ShouldBind(&detachmentDTO)
+	err := context.ShouldBindJSON(&detachmentDTO)
 	if err != nil {
-		return detachment, err
+		msgErros := utilities.GetMsgErrorRequired(err)
+		return detachment, msgErros
 	}
 	err = smapping.FillStruct(&detachment, smapping.MapFields(&detachmentDTO))
 	if err != nil {
-		return detachment, err
+		return detachment, err.Error()
 	}
-	return detachment, nil
+	return detachment, ""
+}
+
+func detachmentResponse(data entity.Detachment) dto.DetachmentResponse {
+
+	return dto.DetachmentResponse{
+		Id:         data.Id,
+		Name:       data.Name,
+		Archives:   data.Archives,
+		Number:     data.Number,
+		Section:    data.Section,
+		District:   data.District,
+		Active:     data.Active,
+		ChurchName: data.Church.Name,
+		ChurchId:   data.ChurchId,
+	}
 }

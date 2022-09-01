@@ -29,9 +29,9 @@ func NewPatrolService() InterfacesService.IPatrolService {
 // Create
 func (patrolService *patrolService) Create(context *gin.Context) {
 	var dto dto.PatrolDTO
-	patrol, err := getMappingPatrol(dto, context)
-	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+	patrol, msg := getMappingPatrol(dto, context)
+	if msg != "" {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(msg))
 		return
 	}
 	filename, err := UploadFile(context)
@@ -53,13 +53,17 @@ func (patrolService *patrolService) Create(context *gin.Context) {
 func (patrolService *patrolService) Update(context *gin.Context) {
 	var dto dto.PatrolDTO
 	id, err := strconv.Atoi(context.Param("id"))
+	if err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+		return
+	}
 	if id == 0 {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
 		return
 	}
-	patrol, err := getMappingPatrol(dto, context)
-	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+	patrol, msg := getMappingPatrol(dto, context)
+	if msg != "" {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(msg))
 		return
 	}
 
@@ -114,7 +118,7 @@ func (patrolService *patrolService) Remove(context *gin.Context) {
 
 // FindById
 func (patrolService *patrolService) FindById(context *gin.Context) {
-	var patrolList []dto.PatrolListDTO
+	var response []dto.PatrolResponse
 	id, err := strconv.ParseUint(context.Param("id"), 0, 0)
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
@@ -126,21 +130,13 @@ func (patrolService *patrolService) FindById(context *gin.Context) {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
 		return
 	}
-	patrol := dto.PatrolListDTO{
-		Id:                data.Id,
-		Name:              data.Name,
-		Archives:          data.Archives,
-		Active:            data.Active,
-		SubDetachmentId:   data.SubDetachmentId,
-		SubDetachmentName: data.SubDetachment.Name,
-	}
-	patrolList = append(patrolList, patrol)
-	context.JSON(http.StatusOK, utilities.BuildResponse(patrolList))
+	response = append(response, patrolResponse(data))
+	context.JSON(http.StatusOK, utilities.BuildResponse(response))
 }
 
 // All
 func (patrolService *patrolService) All(context *gin.Context) {
-	var patrolList []dto.PatrolListDTO
+	var patrolList []dto.PatrolResponse
 	res, err := patrolService.IPatrol.GetAllPatrol()
 
 	if err != nil {
@@ -148,29 +144,32 @@ func (patrolService *patrolService) All(context *gin.Context) {
 		return
 	}
 	for _, data := range res {
-		patrol := dto.PatrolListDTO{
-			Id:                data.Id,
-			Name:              data.Name,
-			Archives:          data.Archives,
-			Active:            data.Active,
-			SubDetachmentId:   data.SubDetachmentId,
-			SubDetachmentName: data.SubDetachment.Name,
-		}
-		patrolList = append(patrolList, patrol)
+		patrolList = append(patrolList, patrolResponse(data))
 	}
 	context.JSON(http.StatusOK, utilities.BuildResponse(patrolList))
 }
 
 // validate
-func getMappingPatrol(dto dto.PatrolDTO, context *gin.Context) (entity.Patrol, error) {
+func getMappingPatrol(dto dto.PatrolDTO, context *gin.Context) (entity.Patrol, string) {
 	patrol := entity.Patrol{}
 	err := context.ShouldBind(&dto)
 	if err != nil {
-		return patrol, err
+		return patrol, utilities.GetMsgErrorRequired(err)
 	}
 	err = smapping.FillStruct(&patrol, smapping.MapFields(&dto))
 	if err != nil {
-		return patrol, err
+		return patrol, err.Error()
 	}
-	return patrol, nil
+	return patrol, ""
+}
+
+func patrolResponse(data entity.Patrol) dto.PatrolResponse {
+	return dto.PatrolResponse{
+		Id:                data.Id,
+		Name:              data.Name,
+		Archives:          data.Archives,
+		Active:            data.Active,
+		SubDetachmentId:   data.SubDetachmentId,
+		SubDetachmentName: data.SubDetachment.Name,
+	}
 }

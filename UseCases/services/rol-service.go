@@ -32,10 +32,9 @@ func NewRolService() InterfacesService.IRolService {
 func (rolService *rolService) SetCreateService(context *gin.Context) {
 
 	var rolDto dto.RolDTO
-	rol, err := getMappingRol(rolDto, context)
-	if err != nil {
-
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+	rol, msg := getMappingRol(rolDto, context)
+	if msg != "" {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(msg))
 		return
 	}
 	data, err := rolService.Irol.SetCreateRol(rol)
@@ -61,9 +60,9 @@ func (rolService *rolService) SetUpdateService(context *gin.Context) {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
 		return
 	}
-	rol, err := getMappingRol(rolDto, context)
-	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+	rol, msg := getMappingRol(rolDto, context)
+	if msg != "" {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(msg))
 		return
 	}
 
@@ -179,18 +178,18 @@ func (rolService *rolService) GetFindByIdService(context *gin.Context) {
 
 //method private
 
-func getMappingRol(rolDto dto.RolDTO, context *gin.Context) (entity.Rol, error) {
+func getMappingRol(rolDto dto.RolDTO, context *gin.Context) (entity.Rol, string) {
 	rol := entity.Rol{}
 	err := context.ShouldBindJSON(&rolDto)
 
 	if err != nil {
-		return rol, err
+		return rol, utilities.GetMsgErrorRequired(err)
 	}
 
 	err = smapping.FillStruct(&rol, smapping.MapFields(&rolDto))
 	if err != nil {
-		return rol, err
+		return rol, err.Error()
 	}
-	return rol, nil
+	return rol, ""
 
 }

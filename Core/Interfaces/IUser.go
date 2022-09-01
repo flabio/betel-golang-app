@@ -12,9 +12,11 @@ type IUser interface {
 	SetRemoveUser(id uint) (bool, error)
 	VerifyCredential(email string, password string) interface{}
 	IsDuplicateEmail(email string) (bool, error)
+	IsDuplicateDiifEmailById(email string, Id uint) (bool, error)
 	GetFindUserNameLastName(data string) ([]entity.User, error)
 	GetFindByEmail(email string) (entity.User, error)
-	IsDuplicateIdentificatio(identification string) bool
+	IsDuplicateIdentification(identification string) bool
+	IsDuplicateIdentificationById(identification string, Id uint) (bool, error)
 	GetProfileUser(userId uint) (entity.User, error)
 	SetChangePassword(user entity.User) error
 	GetCountUser() int64
