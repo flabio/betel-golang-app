@@ -37,7 +37,6 @@ func NewScoutService() InterfacesService.IScoutService {
 func (scoutService *scoutService) ListKingsScouts(id uint, context *gin.Context) {
 
 	users, err := scoutService.IUser.GetListKingsScouts(uint(id))
-
 	if err != nil {
 		res := utilities.BuildErrResponse(err.Error())
 		context.AbortWithStatusJSON(http.StatusBadRequest, res)
@@ -49,8 +48,7 @@ func (scoutService *scoutService) ListKingsScouts(id uint, context *gin.Context)
 // Create scout
 func (scoutService *scoutService) Create(ChurchId uint, context *gin.Context) {
 
-	userToCreated := entity.User{}
-	var userDTO dto.ScoutDTO
+	var userDTO dto.ScoutRequest
 
 	userDTO.ChurchId = ChurchId
 
@@ -60,9 +58,9 @@ func (scoutService *scoutService) Create(ChurchId uint, context *gin.Context) {
 	if validateBirthDayScout(userDTO, scoutService, context) {
 		return
 	}
-	userToCreated, err := getMappingScout(userDTO, context)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+	userToCreated, msg := getMappingScout(userDTO, context)
+	if msg != "" {
+		context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(msg))
 		return
 	}
 
@@ -82,9 +80,7 @@ func (scoutService *scoutService) Create(ChurchId uint, context *gin.Context) {
 // update scout
 func (scoutService *scoutService) Update(ChurchId uint, context *gin.Context) {
 	id, err := strconv.Atoi(context.Param("id"))
-
-	var userDTO dto.ScoutDTO
-
+	var userDTO dto.ScoutRequest
 	userDTO.ChurchId = ChurchId
 
 	if err != nil {
@@ -98,9 +94,9 @@ func (scoutService *scoutService) Update(ChurchId uint, context *gin.Context) {
 		return
 
 	}
-	userToCreated, err := getMappingScout(userDTO, context)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+	userToCreated, msg := getMappingScout(userDTO, context)
+	if msg != "" {
+		context.JSON(http.StatusBadRequest, utilities.BuildErrResponse(msg))
 		return
 	}
 
@@ -148,7 +144,7 @@ func (scoutService *scoutService) Update(ChurchId uint, context *gin.Context) {
 
 // validarUser
 
-func validateBirthDayScout(u dto.ScoutDTO, scoutService *scoutService, context *gin.Context) bool {
+func validateBirthDayScout(u dto.ScoutRequest, scoutService *scoutService, context *gin.Context) bool {
 
 	context.ShouldBind(&u)
 	YearBirthday := strings.Split(u.Birthday, "-")
@@ -190,17 +186,15 @@ func validateBirthDayScout(u dto.ScoutDTO, scoutService *scoutService, context *
 	return false
 }
 
-func getMappingScout(userDTO dto.ScoutDTO, context *gin.Context) (entity.User, error) {
+func getMappingScout(userDTO dto.ScoutRequest, context *gin.Context) (entity.User, string) {
 	user := entity.User{}
 	err := context.ShouldBind(&userDTO)
 	if err != nil {
-		return user, err
+		return user, utilities.GetMsgErrorRequired(err)
 	}
-
 	err = smapping.FillStruct(&user, smapping.MapFields(&userDTO))
 	if err != nil {
-		return user, err
+		return user, err.Error()
 	}
-	return user, nil
-
+	return user, ""
 }

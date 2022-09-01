@@ -30,10 +30,10 @@ func NewSubDetachmentService() InterfacesService.ISubDetachmentService {
 // Create
 func (subDetachmentService *subDetachmentService) SetCreateSubDetachmentService(context *gin.Context) {
 
-	var dto dto.SubDetachmentDTO
-	subDetachment, err := getMappingSubDetachment(dto, context)
-	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+	var dto dto.SubDetachmentRequest
+	subDetachment, msg := getMappingSubDetachment(dto, context)
+	if msg != "" {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(msg))
 		return
 	}
 
@@ -51,10 +51,10 @@ func (subDetachmentService *subDetachmentService) SetCreateSubDetachmentService(
 // Update
 func (subDetachmentService *subDetachmentService) SetUpdateSubDetachmentService(context *gin.Context) {
 	id, err := strconv.Atoi(context.Param("id"))
-	var dto dto.SubDetachmentDTO
-	subDetachment, err := getMappingSubDetachment(dto, context)
-	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+	var dto dto.SubDetachmentRequest
+	subDetachment, msg := getMappingSubDetachment(dto, context)
+	if msg != "" {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(msg))
 		return
 	}
 	if id == 0 {
@@ -100,7 +100,6 @@ func (subDetachmentService *subDetachmentService) SetRemoveSubDetachmentService(
 		return
 	}
 	if id == 0 {
-
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
 		return
 	}
@@ -131,13 +130,12 @@ func (subDetachmentService *subDetachmentService) GetFindByIdSubDetachmentServic
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
 		return
 	}
-	findById, _ := subDetachmentService.iSubDetachment.GetFindByIdSubDetachment(uint(id))
-	if findById.Id == 0 {
+	data, _ := subDetachmentService.iSubDetachment.GetFindByIdSubDetachment(uint(id))
+	if data.Id == 0 {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
 		return
 	}
-	subDetachment := convetirEntitytoDtoSubDetachment(findById)
-	context.JSON(http.StatusOK, utilities.BuildResponse(subDetachment))
+	context.JSON(http.StatusOK, utilities.BuildResponse(getSubDetachmentResponse(data)))
 }
 
 // FindByIdDetachment
@@ -163,35 +161,34 @@ func (subDetachmentService *subDetachmentService) GetFindByIdDetachmentSubDetach
 
 // All
 func (subDetachmentService *subDetachmentService) GetAllSubDetachmentService(context *gin.Context) {
-	var subDetachmentList []dto.SubDetachmentListDTO
+	var subDetachmentList []dto.SubDetachmentResponse
 	res, err := subDetachmentService.iSubDetachment.GetAllSubDetachment()
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
 	}
 	for _, data := range res {
-		subDetachment := convetirEntitytoDtoSubDetachment(data)
-		subDetachmentList = append(subDetachmentList, subDetachment)
+		subDetachmentList = append(subDetachmentList, getSubDetachmentResponse(data))
 	}
 	context.JSON(http.StatusOK, utilities.BuildResponse(subDetachmentList))
 }
 
 // Validate
-func getMappingSubDetachment(dto dto.SubDetachmentDTO, context *gin.Context) (entity.SubDetachment, error) {
+func getMappingSubDetachment(dto dto.SubDetachmentRequest, context *gin.Context) (entity.SubDetachment, string) {
 	subDetachment := entity.SubDetachment{}
 	err := context.ShouldBind(&dto)
 	if err != nil {
-		return subDetachment, err
+		return subDetachment, utilities.GetMsgErrorRequired(err)
 	}
 	err = smapping.FillStruct(&subDetachment, smapping.MapFields(&dto))
 	if err != nil {
-		return subDetachment, err
+		return subDetachment, err.Error()
 	}
-	return subDetachment, nil
+	return subDetachment, ""
 }
 
-func convetirEntitytoDtoSubDetachment(data entity.SubDetachment) dto.SubDetachmentListDTO {
-	subDetachment := dto.SubDetachmentListDTO{
+func getSubDetachmentResponse(data entity.SubDetachment) dto.SubDetachmentResponse {
+	subDetachment := dto.SubDetachmentResponse{
 		Id:             data.Id,
 		Name:           data.Name,
 		Archives:       data.Archives,

@@ -2,7 +2,7 @@ package dto
 
 import "mime/multipart"
 
-type UserDTO struct {
+type UserRequest struct {
 	Id                 uint                  `json:"id" form:"id"`
 	Image              string                `json:"imagen" form:"imagen" `
 	Name               string                `json:"name" form:"name" binding:"required,min=3"`
@@ -36,7 +36,7 @@ type UserDTO struct {
 	File               *multipart.FileHeader `json:"file" form:"file"`
 }
 
-type UserUpdateDTO struct {
+type UserUpdateRequest struct {
 	Id                 uint                  `json:"id" form:"id"`
 	Image              string                `json:"imagen" form:"imagen" `
 	Name               string                `json:"name" form:"name" binding:"required,min=3"`
@@ -68,7 +68,7 @@ type UserUpdateDTO struct {
 	File               *multipart.FileHeader `json:"file" form:"file"`
 }
 
-type ScoutDTO struct {
+type ScoutRequest struct {
 	Id                     uint   `json:"id" form:"id"`
 	Image                  string `json:"imagen" form:"imagen" `
 	DocumentIdentification string `json:"document_identification" form:"document_identification" binding:"required" `
@@ -99,7 +99,7 @@ type LoginDTO struct {
 	Password string `json:"password" form:"password" binding:"required"`
 }
 
-type UserPasswordDTO struct {
+type UserPasswordRequest struct {
 	Id              uint   `json:"id" form:"id"`
 	Password        string `json:"password" form:"password" binding:"required,eqfield=ConfirmPassword"`
 	PasswordConfirm string `json:"passwordconfirm" form:"passwordconfirm" binding:"required"`
@@ -118,7 +118,7 @@ type UserAuthDTO struct {
 	Token      string `json:"token" form:"token"`
 }
 
-type UserListDTO struct {
+type UserResponse struct {
 	Id                 uint   `json:"id" form:"id"`
 	Image              string `json:"image" form:"image"`
 	Name               string `json:"name" form:"name"`

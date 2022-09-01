@@ -32,7 +32,7 @@ func NewUserService() InterfacesService.IUserService {
 
 // List user
 func (userService *userService) GetListUserService(context *gin.Context) {
-	var usersLists []dto.UserListDTO
+	var usersLists []dto.UserResponse
 	users, err := userService.IUser.GetAllUser()
 
 	if err != nil {
@@ -66,11 +66,11 @@ func (userService *userService) GetListKingsScoutsService(context *gin.Context) 
 
 // Create user
 func (userService *userService) SetCreateService(context *gin.Context) {
-	var userDTO dto.UserDTO
+	var userDTO dto.UserRequest
 
-	user, err := getMappingUser(userDTO, context)
-	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+	user, msg := getMappingUser(userDTO, context)
+	if msg != "" {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(msg))
 		return
 	}
 	existIdentification := userService.IUser.IsDuplicateIdentification(user.Identification)
@@ -101,7 +101,7 @@ func (userService *userService) SetCreateService(context *gin.Context) {
 // update user
 func (userService *userService) SetUpdateService(context *gin.Context) {
 	id, err := strconv.Atoi(context.Param("id"))
-	var userDTO dto.UserUpdateDTO
+	var userDTO dto.UserUpdateRequest
 
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
@@ -111,9 +111,9 @@ func (userService *userService) SetUpdateService(context *gin.Context) {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
 		return
 	}
-	user, err := getMappingUserUpdate(userDTO, context)
-	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+	user, msg := getMappingUserUpdate(userDTO, context)
+	if msg != "" {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(msg))
 		return
 	}
 	existIdentification, _ := userService.IUser.IsDuplicateIdentificationById(user.Identification, uint(id))
@@ -158,14 +158,14 @@ func (userService *userService) SetUpdateService(context *gin.Context) {
 }
 
 func (userService *userService) SetUpdatePasswordService(context *gin.Context) {
-	var userDTO dto.UserPasswordDTO
-	user, err := getMappingUserPassword(userDTO, context)
-	if err != nil {
+	var userDTO dto.UserPasswordRequest
+	user, msg := getMappingUserPassword(userDTO, context)
+	if msg != "" {
 
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(msg))
 		return
 	}
-	err = userService.IUser.SetChangePassword(user)
+	err := userService.IUser.SetChangePassword(user)
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
 		return
@@ -232,7 +232,7 @@ func (userService *userService) GetFindUserService(context *gin.Context) {
 	context.JSON(http.StatusOK, utilities.BuildResponse(user))
 }
 func (userService *userService) GetFindUserNameLastNameService(context *gin.Context) {
-	var listUsrs []dto.UserListDTO
+	var listUsrs []dto.UserResponse
 	search := context.Param("search")
 	data, err := userService.IUser.GetFindUserNameLastName(search)
 	if err != nil {
@@ -247,7 +247,7 @@ func (userService *userService) GetFindUserNameLastNameService(context *gin.Cont
 
 }
 func (userService *userService) GetAllService(context *gin.Context) {
-	var usersLists []dto.UserListDTO
+	var usersLists []dto.UserResponse
 
 	total := userService.IUser.GetCountUser()
 	var limit int64 = 9
@@ -267,11 +267,11 @@ func (userService *userService) GetAllService(context *gin.Context) {
 		usersLists = append(usersLists, user)
 	}
 	context.JSON(http.StatusOK, struct {
-		Data  []dto.UserListDTO `json:"data"`
-		Total int64             `json:"total"`
-		Page  int               `json:"page"`
-		Pages int64             `json:"pages"`
-		Limit int64             `json:"limit"`
+		Data  []dto.UserResponse `json:"data"`
+		Total int64              `json:"total"`
+		Page  int                `json:"page"`
+		Pages int64              `json:"pages"`
+		Limit int64              `json:"limit"`
 	}{
 		Data:  usersLists,
 		Total: total,
@@ -283,53 +283,47 @@ func (userService *userService) GetAllService(context *gin.Context) {
 
 // method private
 // mapping user
-func getMappingUser(userDTO dto.UserDTO, context *gin.Context) (entity.User, error) {
+func getMappingUser(userDTO dto.UserRequest, context *gin.Context) (entity.User, string) {
 	user := entity.User{}
 	err := context.ShouldBindJSON(&userDTO)
 	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
-		return user, err
+		return user, utilities.GetMsgErrorRequired(err)
 	}
 	err = smapping.FillStruct(&user, smapping.MapFields(&userDTO))
 	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
-		return user, err
+		return user, err.Error()
 	}
-	return user, nil
+	return user, ""
 }
-func getMappingUserUpdate(userDTO dto.UserUpdateDTO, context *gin.Context) (entity.User, error) {
+func getMappingUserUpdate(userDTO dto.UserUpdateRequest, context *gin.Context) (entity.User, string) {
 	user := entity.User{}
 	err := context.ShouldBindJSON(&userDTO)
 	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
-		return user, err
+		return user, utilities.GetMsgErrorRequired(err)
 	}
 	err = smapping.FillStruct(&user, smapping.MapFields(&userDTO))
 	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
-		return user, err
+		return user, err.Error()
 	}
-	return user, nil
+	return user, ""
 }
 
 // mapping update password
-func getMappingUserPassword(userDTO dto.UserPasswordDTO, context *gin.Context) (entity.User, error) {
+func getMappingUserPassword(userDTO dto.UserPasswordRequest, context *gin.Context) (entity.User, string) {
 	user := entity.User{}
 	err := context.ShouldBindJSON(&userDTO)
 	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
-		return user, err
+		return user, utilities.GetMsgErrorRequired(err)
 	}
 	err = smapping.FillStruct(&user, smapping.MapFields(&userDTO))
 	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
-		return user, err
+		return user, err.Error()
 	}
-	return user, nil
+	return user, ""
 }
 
-func getListsUserDto(data entity.User) dto.UserListDTO {
-	return dto.UserListDTO{
+func getListsUserDto(data entity.User) dto.UserResponse {
+	return dto.UserResponse{
 		Id:                 data.Id,
 		Image:              data.Image,
 		Name:               data.Name,
