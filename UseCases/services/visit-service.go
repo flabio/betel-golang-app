@@ -27,11 +27,11 @@ func NewVisitService() InterfacesService.IVisitService {
 
 // Create visit
 func (visitService *visitService) SetCreateVisitService(context *gin.Context) {
-	var visitDto dto.VisitDTO
+	var visitDto dto.VisitRequest
 
-	visit, err := getMappingVisit(visitDto, context)
-	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+	visit, msg := getMappingVisit(visitDto, context)
+	if msg != "" {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(msg))
 		return
 	}
 	data, err := visitService.IVisit.SetCreateVisit(visit)
@@ -46,7 +46,7 @@ func (visitService *visitService) SetCreateVisitService(context *gin.Context) {
 // Update
 func (visitService *visitService) SetUpdateVisitService(context *gin.Context) {
 	id, err := strconv.Atoi(context.Param("id"))
-	var visitDto dto.VisitDTO
+	var visitDto dto.VisitRequest
 
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
@@ -56,9 +56,9 @@ func (visitService *visitService) SetUpdateVisitService(context *gin.Context) {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(constantvariables.ID))
 		return
 	}
-	visit, err := getMappingVisit(visitDto, context)
-	if err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
+	visit, msg := getMappingVisit(visitDto, context)
+	if msg != "" {
+		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(msg))
 		return
 	}
 	existVisit, _ := visitService.IVisit.GetFindByIdVisit(visitDto.Id)
@@ -77,7 +77,7 @@ func (visitService *visitService) SetUpdateVisitService(context *gin.Context) {
 
 // All visit
 func (visitService *visitService) GetAllVisitService(context *gin.Context) {
-	var visitLists []dto.VisitListDTO
+	var visitLists []dto.VisitResponse
 	data, err := visitService.IVisit.GetAllVisit()
 
 	if err != nil {
@@ -85,7 +85,7 @@ func (visitService *visitService) GetAllVisitService(context *gin.Context) {
 		return
 	}
 	for _, item := range data {
-		visit := getVisitListDto(item)
+		visit := getVisitResponse(item)
 		visitLists = append(visitLists, visit)
 	}
 	context.JSON(http.StatusOK, utilities.BuildResponse(visitLists))
@@ -93,7 +93,7 @@ func (visitService *visitService) GetAllVisitService(context *gin.Context) {
 
 // AllVisitByUser by iduser and idsubdetachment
 func (visitService *visitService) GetAllVisitByUserVisitService(subDetachmentId uint, context *gin.Context) {
-	var visitLists []dto.VisitListDTO
+	var visitLists []dto.VisitResponse
 	id, err := strconv.ParseInt(context.Param("id"), 0, 0)
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, utilities.BuildErrResponse(err.Error()))
@@ -110,7 +110,7 @@ func (visitService *visitService) GetAllVisitByUserVisitService(subDetachmentId 
 		return
 	}
 	for _, item := range data {
-		visit := getVisitListDto(item)
+		visit := getVisitResponse(item)
 		visitLists = append(visitLists, visit)
 	}
 	context.JSON(http.StatusOK, utilities.BuildResponse(visitLists))
@@ -145,21 +145,21 @@ func (visitService *visitService) SetRemoveVisitService(context *gin.Context) {
 	}
 }
 
-func getMappingVisit(visitDto dto.VisitDTO, context *gin.Context) (entity.Visit, error) {
+func getMappingVisit(visitDto dto.VisitRequest, context *gin.Context) (entity.Visit, string) {
 	visit := entity.Visit{}
 	err := context.ShouldBind(&visitDto)
 	if err != nil {
-		return visit, err
+		return visit, utilities.GetMsgErrorRequired(err)
 	}
 	err = smapping.FillStruct(&visit, smapping.MapFields(&visitDto))
 	if err != nil {
-		return visit, err
+		return visit, err.Error()
 	}
-	return visit, nil
+	return visit, ""
 }
 
-func getVisitListDto(data entity.Visit) dto.VisitListDTO {
-	visit := dto.VisitListDTO{
+func getVisitResponse(data entity.Visit) dto.VisitResponse {
+	visit := dto.VisitResponse{
 		Id:                data.Id,
 		State:             data.State,
 		Description:       data.Description,

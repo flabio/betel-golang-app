@@ -15,6 +15,11 @@ func HashAndSalt(pwd []byte) string {
 	}
 	return string(hash)
 }
+func ComparePassword(HashedPwd string, PlainPassword []byte) bool {
+	byteHash := []byte(HashedPwd)
+	bcrypt.CompareHashAndPassword(byteHash, PlainPassword)
+	return true
+}
 func checkError(err error) bool {
 	if err != nil {
 		log.Fatalf("Failed map %v", err)

@@ -2,7 +2,7 @@ package dto
 
 import "mime/multipart"
 
-type SubDetachmentDTO struct {
+type SubDetachmentRequest struct {
 	Id           uint                  `json:"id" form:"id" `
 	Name         string                `json:"name" form:"name" binding:"required"`
 	Url          string                `json:"url" form:"url"`
@@ -12,7 +12,7 @@ type SubDetachmentDTO struct {
 	File         *multipart.FileHeader `json:"file" form:"file" `
 }
 
-type SubDetachmentListDTO struct {
+type SubDetachmentResponse struct {
 	Id             uint   `json:"id" form:"id" `
 	Name           string `json:"name" form:"name" `
 	Archives       string `json:"archives" form:"archives"`

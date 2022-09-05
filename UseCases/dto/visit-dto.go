@@ -1,6 +1,6 @@
 package dto
 
-type VisitDTO struct {
+type VisitRequest struct {
 	Id              uint   `json:"id" form:"id"`
 	State           string `json:"state" form:"state" binding:"required" `
 	Description     string `json:"description" form:"description"`
@@ -9,7 +9,7 @@ type VisitDTO struct {
 	Active          bool   `json:"active" form:"active"`
 }
 
-type VisitListDTO struct {
+type VisitResponse struct {
 	Id                uint   `json:"id"`
 	State             string `json:"state"`
 	Description       string `json:"description" `
