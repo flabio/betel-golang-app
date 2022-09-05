@@ -5,10 +5,7 @@ import (
 	"bete/Core/entity"
 	"bete/Core/repositorys"
 	"bete/UseCases/InterfacesService"
-	"bete/UseCases/dto"
-
-	"github.com/mashingan/smapping"
-	"golang.org/x/crypto/bcrypt"
+	"bete/UseCases/utilities"
 )
 
 //authService is a contract about something that this service can do
@@ -32,7 +29,7 @@ func (authService *authService) VerifyCredential(email string, password string) 
 		if v.Email == email {
 			return v
 		}
-		comparedPassword := comparePassword(v.Password, []byte(password))
+		comparedPassword := utilities.ComparePassword(v.Password, []byte(password))
 		if comparedPassword {
 			if v.Email == email && comparedPassword {
 				return res
@@ -43,26 +40,12 @@ func (authService *authService) VerifyCredential(email string, password string) 
 	return nil
 }
 
-/*
-@param User is of type struct
-*/
-func (authService *authService) CreateUser(User dto.UserDTO) entity.User {
-	userToCreate := entity.User{}
-	err := smapping.FillStruct(&userToCreate, smapping.MapFields(&User))
-	checkError(err)
-
-	res, err := authService.IUser.SetInsertUser(userToCreate)
-
-	return res
-}
-
 func (authService *authService) FindByEmail(email string) (entity.User, error) {
 	return authService.IUser.GetFindByEmail(email)
 }
 
 func (authService *authService) IsDuplicateEmail(email string) (bool, error) {
 	return authService.IUser.IsDuplicateEmail(email)
-
 }
 
 /*
@@ -72,14 +55,7 @@ func (authService *authService) GetIdRol(Id uint) uint {
 
 	user, err := authService.IUser.GetProfileUser(Id)
 	if err != nil {
-
 		return 0
 	}
 	return user.RolId
-}
-func comparePassword(HashedPwd string, PlainPassword []byte) bool {
-	byteHash := []byte(HashedPwd)
-	bcrypt.CompareHashAndPassword(byteHash, PlainPassword)
-
-	return true
 }
